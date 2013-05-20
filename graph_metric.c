@@ -566,6 +566,8 @@ int *graph_knn(const graph_t *g, int *_kmax){
 	assert(g);
 	assert(_kmax);
 	
+	int i, n = graph_num_vertices(g);
+	
 	double *avg_degree = malloc(n * sizeof(*avg_degree));
 	int kmax = graph_neighbor_degree(g, avg_degree);
 	
@@ -592,3 +594,32 @@ int *graph_knn(const graph_t *g, int *_kmax){
 	return knn;
 }
 
+double graph_assortativity(const graph_t *g){
+	assert(g);
+	
+	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
+	int *adj = malloc(n * sizeof(*adj));
+	if (!adj){ return 0.0/0.0; }
+	
+	double prod = 0.0;
+	double sum = 0.0;
+	double sq = 0.0;
+	
+	for (i=0; i < n; i++){
+		int ki = graph_adjacents(g, i, adj);
+		for (j=0; j < ki; j++){
+			int v = adj[j];
+			int kj = graph_num_adjacents(g, v);
+			if (v > i){
+				prod += (1.0/m) * (ki * kj);
+				sum += (0.5/m) * (ki + kj);
+				sq += (0.5/m) * (ki*ki + kj*kj);
+			}
+		}
+	}
+	
+	double r = (prod - sum*sum)/(sq - sum*sum);
+	
+	free(adj);
+	return r;
+}

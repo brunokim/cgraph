@@ -117,6 +117,9 @@ void *experiment(void *args){
 	// Degree correlations
 	int kmax;
 	fprintf(stderr, "Calculating degree distribution in %s...\n", folder);
+	
+	fprintf(f_summary, "assortativity = %+.3lf\n", graph_assortativity(g));
+	
 	int **mat = graph_degree_matrix(g, &kmax);
 	if (mat){
 		int max_dist = 0;
@@ -144,12 +147,11 @@ void *experiment(void *args){
 	}
 	fclose(fp);
 	
-	int kmax;
 	double *knn = graph_knn(g, &kmax);
 	snprintf(str, 256, "%s/knn.dat", folder); fp = fopen(str, "wt");
 	for (i=0; i < kmax; i++){
 		if (knn[i] > 0.0){
-			fprintf(fp, "%d %.3lf\n", i, avg);
+			fprintf(fp, "%d %.3lf\n", i, knn[i]);
 		}
 	}
 	fclose(fp);

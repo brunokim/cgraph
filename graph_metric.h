@@ -35,5 +35,6 @@ void graph_betweenness(const graph_t *g, double *betweenness,
 int **graph_degree_matrix(const graph_t *g, int *kmax);
 int graph_neighbor_degree(const graph_t *g, double *avg_degree);
 int *graph_knn(const graph_t *g, int *kmax);
+double graph_assortativity(const graph_t *g);
 
 #endif
