@@ -1,0 +1,9 @@
+*.o
+*~
+## Binaries
+experiment
+test_graph
+test_metric
+test_stat
+test_list
+test_set

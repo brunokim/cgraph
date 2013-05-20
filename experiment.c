@@ -1,0 +1,204 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "sorting.h"
+#include "stat.h"
+#include "graph.h"
+#include "graph_metric.h"
+
+void *experiment(void *args);
+
+int main(int argc, char *argv[]){
+	if (argc == 1){
+		printf("Usage: experiment <folders>\n"
+		       "       Each folder should have a file called edges.txt\n");
+		exit(EXIT_SUCCESS);
+	}
+	
+	int i, n = argc-1;
+	pthread_t *thread = malloc(n * sizeof(*thread));
+	
+	for (i=0; i < n; i++){
+		pthread_create(&thread[i], NULL, experiment, argv[i+1]);
+	}
+	fprintf(stderr, "%d experiments launched\n", n);
+	
+	for (i=0; i < n; i++){
+		void *dummy;
+		pthread_join(thread[i], &dummy);
+	}
+	
+	free(thread);
+	printf("success\n");
+	return 0;
+}
+
+void *experiment(void *args){
+	const char *folder = (char *)args;
+	char str[256];
+	
+	int i, j;
+	snprintf(str, 256, "%s/summary.txt", folder);
+	FILE *f_summary = fopen(str, "wt");
+	
+	// General information
+	bool is_directed = false;
+	snprintf(str, 256, "%s/edges.txt", folder);
+	graph_t *complete = load_graph(str, is_directed);
+	int n = graph_num_vertices(complete);
+	int m = graph_num_edges(complete);
+	fprintf(f_summary, "number of vertices = %d\n", n);
+	fprintf(f_summary, "number of edges = %d\n", m);
+	
+	// Component information
+	int *label = malloc(n * sizeof(*label));
+	int num_comp = graph_undirected_components(complete, label);
+	fprintf(f_summary, "number of components = %d\n", num_comp);
+	fprintf(f_summary, "component sizes = (");
+	pair_t *component_size = stat_frequencies(label, n, &num_comp);
+	for (i=0; i < num_comp; i++){
+		const char *interposed = (i == num_comp-1) ? ")\n" : " ";
+		fprintf(f_summary, "%d%s", component_size[i].value, interposed);
+	}
+	pair_t *max = search_max(component_size, num_comp, sizeof(*max), comp_value_asc);
+	fprintf(f_summary, "giant component size = %d\n", max->value);
+	fprintf(f_summary, "percent of vertices in giant component = %.2lf\n", 
+	                   (100.0*max->value)/n);
+	free(component_size);
+	free(label);
+	
+	// Giant component extraction
+	graph_t *g = graph_giant_component(complete);
+	delete_graph(complete);
+	n = graph_num_vertices(g);
+	m = graph_num_edges(g);
+	
+	FILE *fp;
+	
+	// Degree distribution
+	int *degree = malloc(n * sizeof(*degree));
+	fprintf(stderr, "Calculating degree in %s...\n", folder);
+	graph_degree(g, degree);
+	
+	fprintf(f_summary, "degree average = %.3lf\n", stat_int_average(degree, n));
+	fprintf(f_summary, "degree variance = %.3lf\n", stat_int_variance(degree, n));
+	fprintf(f_summary, "degree stddev = %.3lf\n", sqrt(stat_int_variance(degree, n)));
+	fprintf(f_summary, "degree entropy = %.3lf\n", stat_int_entropy(degree, n));
+	
+	int num_deg; pair_t *dist_degree = stat_frequencies(degree, n, &num_deg);
+	snprintf(str, 256, "%s/degree.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < num_deg; i++){
+		fprintf(fp, "%d %d\n", dist_degree[i].key, dist_degree[i].value);
+	}
+	fclose(fp);
+	
+	// Clustering coefficient distribution
+	double *clustering = malloc(n * sizeof(*clustering));
+	fprintf(stderr, "Calculating clustering in %s...\n", folder);
+	graph_clustering(g, clustering);
+	fprintf(f_summary, "clustering average = %.3lf\n", stat_double_average(clustering, n));
+	fprintf(f_summary, "transitivy = %.3lf\n", graph_transitivy(g));
+	
+	int num_bins = 100; 
+	interval_t *dist_cluster = stat_histogram(clustering, n, num_bins);
+	
+	snprintf(str, 256, "%s/clustering.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < num_bins; i++){
+		if (dist_cluster[i].value > 0){
+			fprintf(fp, "%lf %lf %d\n", dist_cluster[i].min, dist_cluster[i].max, 
+																	dist_cluster[i].value);
+		}
+	}
+	fclose(fp);
+	
+	// Degree correlations
+	int kmax;
+	fprintf(stderr, "Calculating degree distribution in %s...\n", folder);
+	int **mat = graph_degree_matrix(g, &kmax);
+	if (mat){
+		int max_dist = 0;
+		for (i=0; i < kmax*kmax; i++){
+			if (mat[0][i] > max_dist){ max_dist = mat[0][i]; }
+		}
+		
+		snprintf(str, 256, "%s/deg_matrix.pbm", folder); fp = fopen(str, "wt");
+		fprintf(fp, "P2\n%d %d\n%d\n", kmax, kmax, max_dist);
+		for (i=0; i < kmax; i++){
+			for (j=0; j < kmax; j++){
+				fprintf(fp, "%4d ", max_dist-mat[i][j]);
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp); 
+		free(mat[0]); free(mat);
+	}
+	
+	double *avg_degree = malloc(n * sizeof(*avg_degree));
+	graph_neighbor_degree(g, avg_degree);
+	snprintf(str, 256, "%s/correlation.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < n; i++){
+		fprintf(fp, "%d %.3lf\n", graph_num_adjacents(g, i), avg_degree[i]);
+	}
+	fclose(fp);
+	
+	int kmax;
+	double *knn = graph_knn(g, &kmax);
+	snprintf(str, 256, "%s/knn.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < kmax; i++){
+		if (knn[i] > 0.0){
+			fprintf(fp, "%d %.3lf\n", i, avg);
+		}
+	}
+	fclose(fp);
+	free(knn);
+	
+	// Betweenness distribution
+	int *distance = malloc(n*sizeof(*distance));
+	double *betweenness = malloc(n * sizeof(*betweenness));
+	fprintf(stderr, "Calculating betweenness in %s...\n", folder);
+	
+	graph_betweenness(g, betweenness, distance);
+	stat_double_normalization(betweenness, n);
+	fprintf(f_summary, "betweenness average = %+.3lg\n", stat_double_average(betweenness, n));
+	
+	double cpd = (n - stat_double_sum(betweenness, n))/(n-1);
+	fprintf(f_summary, "central point dominance = %+.3lg\n", cpd);
+	
+	num_bins = 100; 
+	interval_t *dist_between = stat_histogram(betweenness, n, num_bins);
+	snprintf(str, 256, "%s/betweenness.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < num_bins; i++){
+		if (dist_between[i].value > 0){
+			fprintf(fp, "%lf %lf %d\n", dist_between[i].min, dist_between[i].max, 
+																	dist_between[i].value);
+		}
+	}
+	fclose(fp);
+	
+	// Distance 
+	fprintf(f_summary, "distance average = %+.3lf\n", stat_int_dist_average(distance, n));
+	fprintf(f_summary, "efficiency = %.3lf\n", stat_int_dist_harmonic_sum(distance, n)/(n*(n-1)));
+	
+	for (i=0; distance[i] > 0; i++); // Finds greatest distance
+	fprintf(f_summary, "diameter = %d\n", i-1);
+	
+	snprintf(str, 256, "%s/distance.dat", folder); fp = fopen(str, "wt");
+	for (i=0; i < n; i++){
+		if (distance[i] > 0){
+			fprintf(fp, "%d %d\n", i, distance[i]);
+		} else break;
+	}
+	fclose(fp);
+	
+	free(distance);
+	free(betweenness); free(dist_between);
+	free(clustering); free(dist_cluster);
+	free(degree); free(dist_degree);
+	delete_graph(g);
+	fclose(f_summary);
+	fprintf(stderr, "Processing in %s completed\n", folder);
+	return NULL;
+}
