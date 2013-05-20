@@ -3,6 +3,9 @@
 
 #include "graph.h"
 
+#define GRAPH_METRIC_TOLERANCE      1e-6
+#define GRAPH_METRIC_MAX_ITERATIONS 100
+
 /* Return value: number of components */
 int graph_undirected_components(const graph_t *g, int *label);
 int graph_directed_components(const graph_t *g, int *label);
@@ -34,7 +37,10 @@ void graph_betweenness(const graph_t *g, double *betweenness,
                        
 int **graph_degree_matrix(const graph_t *g, int *kmax);
 int graph_neighbor_degree(const graph_t *g, double *avg_degree);
-int *graph_knn(const graph_t *g, int *kmax);
+double *graph_knn(const graph_t *g, int *kmax);
 double graph_assortativity(const graph_t *g);
+
+void graph_eigenvalue(const graph_t *g, double *eigen);
+void graph_pagerank(const graph_t *g, double alpha, double *rank);
 
 #endif

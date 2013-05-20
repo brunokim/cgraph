@@ -562,7 +562,7 @@ int graph_neighbor_degree(const graph_t *g, double *avg_degree){
 	return kmax;
 }
 
-int *graph_knn(const graph_t *g, int *_kmax){
+double *graph_knn(const graph_t *g, int *_kmax){
 	assert(g);
 	assert(_kmax);
 	
@@ -622,4 +622,99 @@ double graph_assortativity(const graph_t *g){
 	
 	free(adj);
 	return r;
+}
+
+double dist(double *u, double *v, int n){
+	double d = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		d += (u[i] - v[i])*(u[i] - v[i]);
+	}
+	return d;
+}
+
+void graph_eigenvalue(const graph_t *g, double *eigen){
+	assert(g);
+	assert(eigen);
+	
+	int i, j, n = graph_num_vertices(g);
+	
+	double *temp = malloc(n * sizeof(*temp)); 
+	if (!temp){ return; }
+	
+	int *adj = malloc(n * sizeof(*adj));	
+	if (!adj){ free(temp); return; }
+	
+	double *curr = eigen, *next = temp;
+	for (i=0; i < n; i++){
+		next[i] = 0.0;
+		curr[i] = 1.0/n;
+	}
+	
+	double tol = GRAPH_METRIC_TOLERANCE;
+	int max_iter = GRAPH_METRIC_MAX_ITERATIONS;
+	
+	int count = 0;
+	while(n*dist(curr, next, n) > tol || count < max_iter){
+		memset(next, 0, n * sizeof(*next));
+		
+		for (i=0; i < n; i++){
+			int ki = graph_adjacents(g, i, adj);
+			for (j=0; j < ki; j++){
+				int v = adj[j];
+				next[v] += curr[i];
+			}
+		}
+		
+		count++;
+		double *aux = curr;
+		curr = next;
+		next = aux;
+	}
+	
+	free(temp);
+	free(adj);
+}
+
+void graph_pagerank(const graph_t *g, double alpha, double *rank){
+	assert(g);
+	assert(rank);
+	
+	int i, j, n = graph_num_vertices(g);
+	
+	double *temp = malloc(n * sizeof(*temp)); 
+	if (!temp){ return; }
+	
+	int *adj = malloc(n * sizeof(*adj));	
+	if (!adj){ free(temp); return; }
+	
+	double *curr = rank, *next = temp;
+	for (i=0; i < n; i++){
+		next[i] = 0.0;
+		curr[i] = 1.0/n;
+	}
+	
+	double tol = GRAPH_METRIC_TOLERANCE;
+	int max_iter = GRAPH_METRIC_MAX_ITERATIONS;
+	
+	int count = 0;
+	while(n*dist(curr, next, n) > tol || count < max_iter){
+		memset(next, 0, n * sizeof(*next));
+		
+		for (i=0; i < n; i++){
+			int ki = graph_adjacents(g, i, adj);
+			for (j=0; j < ki; j++){
+				int v = adj[j];
+				next[v] += (1-alpha)/n + alpha * curr[i]/ki;
+			}
+		}
+		
+		count++;
+		double *aux = curr;
+		curr = next;
+		next = aux;
+	}
+	
+	free(temp);
+	free(adj);
 }
