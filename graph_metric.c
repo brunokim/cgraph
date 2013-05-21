@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 
 #include "sorting.h"
 #include "stat.h"
@@ -633,6 +634,15 @@ double dist(double *u, double *v, int n){
 	return d;
 }
 
+double norm(double *v, int n){
+	double s = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		s += v[i]*v[i];
+	}
+	return s;
+}
+
 void graph_eigenvalue(const graph_t *g, double *eigen){
 	assert(g);
 	assert(eigen);
@@ -648,14 +658,14 @@ void graph_eigenvalue(const graph_t *g, double *eigen){
 	double *curr = eigen, *next = temp;
 	for (i=0; i < n; i++){
 		next[i] = 0.0;
-		curr[i] = 1.0/n;
+		curr[i] = 1.0;
 	}
 	
 	double tol = GRAPH_METRIC_TOLERANCE;
 	int max_iter = GRAPH_METRIC_MAX_ITERATIONS;
 	
 	int count = 0;
-	while(n*dist(curr, next, n) > tol || count < max_iter){
+	while(dist(curr, next, n) > tol && count < max_iter){
 		memset(next, 0, n * sizeof(*next));
 		
 		for (i=0; i < n; i++){
@@ -664,6 +674,11 @@ void graph_eigenvalue(const graph_t *g, double *eigen){
 				int v = adj[j];
 				next[v] += curr[i];
 			}
+		}
+		
+		double s = sqrt(norm(next, n));
+		for (i=0; i < n; i++){
+			next[i] /= s;
 		}
 		
 		count++;
@@ -717,4 +732,15 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank){
 	
 	free(temp);
 	free(adj);
+}
+
+void graph_kcore(const graph_t *g, int *core){
+	assert(g);
+	assert(core);
+	
+	int i, n = graph_num_vertices(g);
+	
+	memset(core, 0, n * sizeof(*core));
+	
+	
 }

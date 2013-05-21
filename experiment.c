@@ -94,6 +94,8 @@ void *experiment(void *args){
 		fprintf(fp, "%d %d\n", dist_degree[i].key, dist_degree[i].value);
 	}
 	fclose(fp);
+	/*free(degree); */ // Still needed for centralities
+	free(dist_degree);
 	
 	// Clustering coefficient distribution
 	double *clustering = malloc(n * sizeof(*clustering));
@@ -113,6 +115,7 @@ void *experiment(void *args){
 		}
 	}
 	fclose(fp);
+	free(clustering); free(dist_cluster);
 	
 	// Degree correlations
 	int kmax;
@@ -179,6 +182,8 @@ void *experiment(void *args){
 		}
 	}
 	fclose(fp);
+	/*free(betweenness);*/ // Still needed for centralities
+	free(dist_between);
 	
 	// Distance 
 	fprintf(f_summary, "distance average = %+.3lf\n", stat_int_dist_average(distance, n));
@@ -194,11 +199,36 @@ void *experiment(void *args){
 		} else break;
 	}
 	fclose(fp);
-	
 	free(distance);
-	free(betweenness); free(dist_between);
-	free(clustering); free(dist_cluster);
-	free(degree); free(dist_degree);
+	
+	// Centralities
+	fprintf(stderr, "Computing centralities in %s\n", folder);
+	double *eigenvalue = malloc(n * sizeof(*eigenvalue));
+	double *pagerank = malloc(n * sizeof(*pagerank));
+	int *core = malloc(n * sizeof(*core));
+	
+	graph_eigenvalue(g, eigenvalue);
+	graph_pagerank(g, 0.15, pagerank);
+	graph_kcore(g, core);
+	
+	snprintf(str, 256, "%s/centrality.dat", folder); fp = fopen(str, "wt");
+	fprintf(fp, "#vertex degree betwenness eigenvalue pagerank kcore\n");
+	for (i=0; i < n; i++){
+		fprintf(fp, "%d ", i);
+		fprintf(fp, "%lf ", (double)degree[i]/kmax);
+		fprintf(fp, "%lf ", betweenness[i]);
+		fprintf(fp, "%lf ", eigenvalue[i]);
+		fprintf(fp, "%lf ", pagerank[i]);
+		fprintf(fp, "%d ", core[i]);
+		fprintf(fp, "\n");
+	}
+	
+	free(degree);
+	free(betweenness);
+	free(eigenvalue);
+	free(pagerank);
+	free(core);
+	
 	delete_graph(g);
 	fclose(f_summary);
 	fprintf(stderr, "Processing in %s completed\n", folder);

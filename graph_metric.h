@@ -42,5 +42,6 @@ double graph_assortativity(const graph_t *g);
 
 void graph_eigenvalue(const graph_t *g, double *eigen);
 void graph_pagerank(const graph_t *g, double alpha, double *rank);
+void graph_kcore(const graph_t *g, int *core);
 
 #endif
