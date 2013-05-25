@@ -1,7 +1,7 @@
 CC       = gcc
 CFLAGS = -Wall -g
 
-all: experiment test_list test_set test_graph test_metric test_stat
+all: experiment test_list test_set test_graph test_metric test_stat doc.pdf
 
 run-tests: test_list test_set test_graph test_metric test_stat
 	./test_list
@@ -9,6 +9,9 @@ run-tests: test_list test_set test_graph test_metric test_stat
 	./test_set
 	./test_graph
 	./test_metric
+
+*.pdf: *.tex
+	pdflatex $^
 	
 experiment : experiment.o graph_metric.o
 	$(CC) $(CFLAGS) -o experiment experiment.o graph_metric.o graph.o set.o list.o sorting.o stat.o -pthread -lm -std=c89

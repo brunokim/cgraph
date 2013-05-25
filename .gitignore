@@ -1,5 +1,8 @@
 *.o
 *~
+*.log
+*.backup
+*.aux
 ## Binaries
 experiment
 test_graph

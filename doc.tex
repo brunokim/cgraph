@@ -1,0 +1,65 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+% Title Page
+\title{CGraph documentation}
+\author{Bruno Kim Medeiros Cesar}
+
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+\end{abstract}
+
+\section{\texttt{sorting}}
+\section{\texttt{list}}
+\section{\texttt{set}}
+\section{\texttt{graph}}
+\section{\texttt{graph\_metric}}
+
+\subsection{Constants}
+
+These constants are hard-coded to protect some numeric processes of hanging.
+They can be redefined during compilation, passing a flag such as 
+
+\texttt{-DGRAPH\_METRIC\_TOLERANCE=1E-3}.
+
+\subsubsection{\texttt{GRAPH\_METRIC\_TOLERANCE}}
+
+Error tolerance for numeric methods.
+
+\subsubsection{\texttt{GRAPH\_METRIC\_MAX\_ITERATIONS}}
+
+Maximum number of iterations for numeric methods.
+
+\subsection{Component identification and extraction}
+
+\subsubsection{\texttt{graph\_undirected\_components}}
+
+Label vertices' components treating edges as undirected.
+
+For directed graphs, considers adjacencies as incidences.
+Labels start from 0 and are sequential with step 1.
+Component IDs are not ordered according to size.
+
+\subsubsection{\texttt{graph\_directed\_components}}
+
+Label vertices' components treating edges as directed.
+
+For undirected graphs, simply call \texttt{graph\_undirected\_components}. For 
+directed graphs, two vertices $v_i$ and $v_j$ are in the same component if and
+only if
+\begin{align*}
+ &d(v_i, v_j) \neq \infty \\
+ &d(v_j, v_i) \neq \infty
+\end{align*}
+
+where $d(u,v)$ is the geodesic distance between them. In other words, they are
+in the same component if they are mutually reachable.
+
+Labels start from 0 and are sequential with step 1.
+Component IDs are not ordered according to size.
+
+\end{document}

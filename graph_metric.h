@@ -4,21 +4,22 @@
 #include "graph.h"
 
 /* Error tolerance for numeric methods. */
-#define GRAPH_METRIC_TOLERANCE 1e-6
+#ifndef GRAPH_METRIC_TOLERANCE
+ #define GRAPH_METRIC_TOLERANCE 1e-6
+#endif
 /* Maximum number of iterations for numeric methods */
-#define GRAPH_METRIC_MAX_ITERATIONS 100
+#ifndef GRAPH_METRIC_MAX_ITERATIONS
+ #define GRAPH_METRIC_MAX_ITERATIONS 100
+#endif
 
 /************** Component identification and extraction ***********************/
 /* Label vertices' components treating edges as undirected.
- * For directed graphs, considers adjacencies as incidences.
- * 
- * Labels start from 0 and are sequential with step 1.
- * There is no guarantee on component ID vs. size.
- * 
- * Pre: label must be an array with size n.
- * Post: label[i] is the component ID of vertex i.
+ * Pre: 
+ *   label must be an array with size n.
+ * Post: 
+ *   label[i] is the component ID of vertex i.
  * Return value: 
- *  Number of components (or \max{label}+1).
+ *   Number of components
  */
 int graph_undirected_components(const graph_t *g, int *label);
 /* Label vertices' components treating edges as directed.
