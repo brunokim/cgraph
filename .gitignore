@@ -3,6 +3,8 @@
 *.log
 *.backup
 *.aux
+*.out
+*.toc
 ## Binaries
 experiment
 test_graph

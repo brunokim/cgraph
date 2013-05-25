@@ -218,31 +218,28 @@ void test_distance(){
 	for (i=1; i < n; i++){
 		d[i] = d[0] + i*n;
 	}
-	graph_geodesic(g, d);
+	graph_geodesic_all(g, d);
 	for (i=0; i < n; i++){
 		for (j=0; j < n; j++){
 			assert(d[i][j] == expected[i][j]);
 		}
 	}
 	
-	int *dist = malloc (n*sizeof(*dist));
-	int expected_dist[] =  {8, 24, 24, 6, 2, 0, 0, 0};
+	int expected_dist[] =  {8, 24, 24, 6, 2};
 	
-	graph_geodesic_distance_dist(g, dist);
-	for (i=0; i < n; i++){
+	int diameter;
+	int *dist = graph_geodesic_distribution(g, &diameter);
+	for (i=0; i < diameter; i++){
 		assert(dist[i] == expected_dist[i]);
 	}
+	assert(dist[diameter] == 0);
 	
 	double *betweenness = malloc (n*sizeof(*betweenness));
-	graph_betweenness(g, betweenness, dist);
-	for (i=0; i < n; i++){
-		assert(dist[i] == expected_dist[i]);
-	}
+	graph_betweenness(g, betweenness);
 	
 	free(betweenness);
 	free(dist);
-	free(d[0]);
-	free(d);
+	free(d[0]); free(d);
 	delete_graph(g);
 }
 
@@ -258,7 +255,7 @@ void test_betweenness(){
 		graph_add_edge(star, 0, i);
 	}
 	
-	graph_betweenness(star, betweenness, NULL);
+	graph_betweenness(star, betweenness);
 	assert(betweenness[0] > 1e-6);
 	for (i=1; i < n; i++){
 		assert(fabs(betweenness[i]) < 1e-6);
@@ -274,14 +271,14 @@ void test_betweenness(){
 		}
 	}
 	
-	graph_betweenness(clique, betweenness, NULL);
+	graph_betweenness(clique, betweenness);
 	for (i=1; i < n; i++){
 		assert(fabs(betweenness[0] - betweenness[i]) < 1e-6);
 	}
 		
 	/* Custom graph: do not know how betweenness should be previously */
 	graph_t *g = make_a_graph(false);
-	graph_betweenness(g, betweenness, NULL);
+	graph_betweenness(g, betweenness);
 	for (i=0; i < n; i++){
 		printf("%lf ", betweenness[i]);
 	}

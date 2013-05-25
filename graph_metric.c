@@ -11,6 +11,7 @@
 #include "graph.h"
 #include "graph_metric.h"
 
+/************** Component identification and extraction ***********************/
 int graph_undirected_components(const graph_t *g, int *label){
 	assert(g);
 	assert(label);
@@ -134,6 +135,8 @@ graph_t * graph_giant_component(const graph_t *g){
 	return giant;
 }
 
+/***************************** Degree metrics *********************************/
+
 void graph_degree(const graph_t *g, int *degree){
 	assert(g);
 	assert(degree);
@@ -174,6 +177,8 @@ void graph_directed_degree(const graph_t *g, int *in_degree, int *out_degree){
 	}
 	free(adj);
 }
+
+/***************************** Clustering metrics *****************************/
 
 void graph_clustering(const graph_t *g, double *clustering){
 	assert(g);
@@ -253,6 +258,8 @@ double graph_transitivy(const graph_t *g){
 	return (3.0*num_triangle)/num_triplet;
 }
 
+/************************ Geodesic distance metrics ***************************/
+
 int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 	assert(g);
 	int n = graph_num_vertices(g);
@@ -261,19 +268,17 @@ int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 	
 	if (origin == dest){ return 0; }
 	
+	bool is_found = false;
 	set_t *visited  = new_set(0);
 	set_t *adjacent = new_set(0);
 	set_t *seen     = new_set(0);
 	if (!(visited && adjacent && seen)){
-		if(visited) { delete_set(visited); }
-		if(seen)    { delete_set(seen); }
-		if(adjacent){ delete_set(adjacent); }
-		return INT_MIN; 
+		goto clean;
 	}
 	
+	// Breadth-first search
 	set_put(seen, origin);
 	int distance = 0;
-	bool is_found = false;
 	while (!is_found && set_size(seen) > 0){
 		set_union(adjacent, seen);
 		set_clean(seen);
@@ -295,16 +300,28 @@ int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 			distance++;
 		}
 	}
-	
-	delete_set(visited);
-	delete_set(adjacent);
-	delete_set(seen);
+
+clean:
+	if(visited) { delete_set(visited); }
+	if(seen)    { delete_set(seen); }
+	if(adjacent){ delete_set(adjacent); }
 	
 	if (is_found){ return distance; }
 	else         { return -1; }
 }
 
-void graph_geodesic(const graph_t *g, int **distance){
+void graph_geodesic_vertex(const graph_t *g, int i, int *distance){
+	assert(g);
+	assert(distance);
+	
+	//TODO: Use a real algorithm to compute this.
+	int j, n = graph_num_vertices(g);
+	for (j=0; j < n; j++){
+		distance[j] = graph_geodesic_distance(g, i, j);
+	}
+}
+
+void graph_geodesic_all(const graph_t *g, int **distance){
 	assert(g);
 	assert(distance);
 	assert(distance[0]);
@@ -352,12 +369,13 @@ void graph_geodesic(const graph_t *g, int **distance){
 	delete_set(seen);
 }
 
-void graph_geodesic_distance_dist(const graph_t *g, int *distance){
+int *graph_geodesic_distribution(const graph_t *g, int *_diameter){
 	assert(g);
-	assert(distance);
 	
 	int i, j, n = graph_num_vertices(g);
-	memset(distance, 0, n*sizeof(*distance));
+	int *distribution = malloc(n * sizeof(*distribution));
+	if (!distribution){ return NULL; }
+	memset(distribution, 0, n * sizeof(*distribution));
 	
 	set_t *visited  = new_set(0);
 	set_t *adjacent = new_set(0);
@@ -368,6 +386,7 @@ void graph_geodesic_distance_dist(const graph_t *g, int *distance){
 		if(adjacent){ delete_set(adjacent); }
 	}
 	
+	int diameter = 0;
 	int reachable_paths = 0;
 	
 	for (i=0; i < n; i++){
@@ -375,7 +394,7 @@ void graph_geodesic_distance_dist(const graph_t *g, int *distance){
 		set_put(seen, i);
 		int d = 0;
 		while (set_size(seen) > 0){
-			distance[d] += set_size(seen);
+			distribution[d] += set_size(seen);
 			reachable_paths += set_size(seen);
 			
 			set_union(adjacent, seen);
@@ -391,36 +410,51 @@ void graph_geodesic_distance_dist(const graph_t *g, int *distance){
 			set_clean(adjacent);
 			d++;
 		}
+		
+		if (d-1 > diameter){ diameter = d-1; }
 	}
 	
-	distance[n-1] = n*n - reachable_paths;
+	distribution = realloc(distribution, (diameter+1) * sizeof(*distribution));
+	distribution[diameter] = n*n - reachable_paths;
 	
 	delete_set(visited);
 	delete_set(adjacent);
 	delete_set(seen);
-}
-
-void graph_geodesic_weight(const graph_t *g, double **distance){
-	assert(g);
-	assert(distance);
-	assert(distance[0]);
 	
-	bool is_implemented = false;
-	assert(is_implemented);
+	if (_diameter){ *_diameter = diameter; }
+	return distribution;
 }
 
-/* Extracted from 
- * "A faster algorithm for betweenness centrality", Ulrik Brandes */
-void graph_betweenness(const graph_t *g, double *betweenness, 
-                       int *distance_dist){
+/************************ Centrality measures *********************************/
+// Vector distance, defined by canonical inner product
+double dist(double *u, double *v, int n){
+	double d = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		d += (u[i] - v[i])*(u[i] - v[i]);
+	}
+	return d;
+}
+
+// Vector norm, defined by canonical inner product
+double norm(double *v, int n){
+	double s = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		s += v[i]*v[i];
+	}
+	return s;
+}
+
+/* Extracted from "A faster algorithm for betweenness centrality", 
+ * Ulrik Brandes 
+ */
+void graph_betweenness(const graph_t *g, double *betweenness){
 	assert(g);
 	assert(betweenness);
 	
 	int i, s, n = graph_num_vertices(g);
 	memset(betweenness, 0, n * sizeof(*betweenness));
-	if (distance_dist){
-		memset(distance_dist, 0, n * sizeof(*distance_dist));
-	}
 	
 	list_t *stack = new_list(0);
 	list_t *queue = new_list(0);
@@ -449,7 +483,6 @@ void graph_betweenness(const graph_t *g, double *betweenness,
 		
 		for (i=0; i < n; i++){ distance[i] = -1; }
 		distance[s] = 0;
-		if (distance_dist){ distance_dist[0]++; }
 		
 		list_push(queue, s);
 		
@@ -464,7 +497,6 @@ void graph_betweenness(const graph_t *g, double *betweenness,
 				if (distance[w] < 0){
 					list_push(queue, w);
 					distance[w] = distance[v] + 1;
-					if (distance_dist){ distance_dist[ distance[w] ]++; }
 				}
 				// shortest path to w via v?
 				if (distance[w] == distance[v]+1){
@@ -503,147 +535,7 @@ clean:
 	if (dependency) { free(dependency); }
 }
 
-int **graph_degree_matrix(const graph_t *g, int *_kmax){
-	assert(g);
-	
-	int i, j, n = graph_num_vertices(g);
-	
-	// Discover highest degree
-	int kmax = 0;
-	for (i=0; i < n; i++){
-		int ki = graph_num_adjacents(g, i);
-		if (ki > kmax){ kmax = ki; }
-	}
-	
-	int **mat = malloc((kmax+1) * sizeof(*mat));
-	if (!mat){ return NULL; }
-	
-	mat[0] = malloc((kmax+1) * (kmax+1) * sizeof(*mat[0]));
-	if (!mat[0]){ free(mat); return NULL; }
-	for (i=1; i < kmax+1; i++){
-		mat[i] = mat[0] + i*(kmax+1);
-	}
-	
-	memset(mat[0], 0, (kmax+1) * (kmax+1) * sizeof(*mat[0]));
-	
-	int *adj = malloc(kmax * sizeof(*adj));
-	if (!adj){ free(mat[0]); free(mat); }
-	
-	for (i=0; i < n; i++){
-		int ki = graph_adjacents(g, i, adj);
-		for (j=0; j < ki; j++){
-			int kj = graph_num_adjacents(g, adj[j]);
-			mat[ki][kj]++;
-		}
-	}
-	free(adj);
-	
-	if (_kmax){ *_kmax = kmax+1; }
-	return mat;
-}
-
-int graph_neighbor_degree(const graph_t *g, double *avg_degree){
-	assert(g);
-	assert(avg_degree);
-	
-	int i, j, n = graph_num_vertices(g);
-	int kmax = 0;
-	
-	int *adj = malloc (n * sizeof(*adj));
-	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(g, i, adj);
-		if (num_adj > kmax){ kmax = num_adj; }
-		
-		avg_degree[i] = 0.0;
-		for (j=0; j < num_adj; j++){
-			avg_degree[i] += (double)graph_num_adjacents(g, adj[j])/num_adj;
-		}
-	}
-	free(adj);
-	return kmax;
-}
-
-double *graph_knn(const graph_t *g, int *_kmax){
-	assert(g);
-	assert(_kmax);
-	
-	int i, n = graph_num_vertices(g);
-	
-	double *avg_degree = malloc(n * sizeof(*avg_degree));
-	int kmax = graph_neighbor_degree(g, avg_degree);
-	
-	double *knn = malloc((kmax+1) * sizeof(*knn));
-	int *num_degree = malloc((kmax+1) * sizeof(*num_degree));
-	
-	memset(num_degree, 0, (kmax+1) * sizeof(*num_degree));
-	memset(knn, 0, (kmax+1) * sizeof(*knn));
-	
-	for (i=0; i < n; i++){
-		int ki = graph_num_adjacents(g, i);
-		knn[ki] += avg_degree[i];
-		num_degree[ki]++;
-	}
-	
-	for (i=0; i < kmax+1; i++){
-		knn[i] /= num_degree[i];
-	}
-	
-	free(avg_degree);
-	free(num_degree);
-	
-	*_kmax = kmax+1;
-	return knn;
-}
-
-double graph_assortativity(const graph_t *g){
-	assert(g);
-	
-	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
-	int *adj = malloc(n * sizeof(*adj));
-	if (!adj){ return 0.0/0.0; }
-	
-	double prod = 0.0;
-	double sum = 0.0;
-	double sq = 0.0;
-	
-	for (i=0; i < n; i++){
-		int ki = graph_adjacents(g, i, adj);
-		for (j=0; j < ki; j++){
-			int v = adj[j];
-			int kj = graph_num_adjacents(g, v);
-			if (v > i){
-				prod += (1.0/m) * (ki * kj);
-				sum += (0.5/m) * (ki + kj);
-				sq += (0.5/m) * (ki*ki + kj*kj);
-			}
-		}
-	}
-	
-	double r = (prod - sum*sum)/(sq - sum*sum);
-	
-	free(adj);
-	return r;
-}
-
-double dist(double *u, double *v, int n){
-	double d = 0.0;
-	int i;
-	for (i=0; i < n; i++){
-		d += (u[i] - v[i])*(u[i] - v[i]);
-	}
-	return d;
-}
-
-double norm(double *v, int n){
-	double s = 0.0;
-	int i;
-	for (i=0; i < n; i++){
-		s += v[i]*v[i];
-	}
-	return s;
-}
-
-void graph_eigenvalue(const graph_t *g, double *eigen){
+void graph_eigenvector(const graph_t *g, double *eigen){
 	assert(g);
 	assert(eigen);
 	
@@ -738,9 +630,154 @@ void graph_kcore(const graph_t *g, int *core){
 	assert(g);
 	assert(core);
 	
-	int i, n = graph_num_vertices(g);
+	int n = graph_num_vertices(g);
 	
 	memset(core, 0, n * sizeof(*core));
 	
 	
 }
+
+/************************ Correlation measures ********************************/
+
+int **graph_degree_matrix(const graph_t *g, int *_kmax){
+	assert(g);
+	
+	int i, j, n = graph_num_vertices(g);
+	
+	// Discover highest degree
+	int kmax = 0;
+	for (i=0; i < n; i++){
+		int ki = graph_num_adjacents(g, i);
+		if (ki > kmax){ kmax = ki; }
+	}
+	
+	int **mat = malloc((kmax+1) * sizeof(*mat));
+	if (!mat){ return NULL; }
+	
+	mat[0] = malloc((kmax+1) * (kmax+1) * sizeof(*mat[0]));
+	if (!mat[0]){ free(mat); return NULL; }
+	for (i=1; i < kmax+1; i++){
+		mat[i] = mat[0] + i*(kmax+1);
+	}
+	
+	memset(mat[0], 0, (kmax+1) * (kmax+1) * sizeof(*mat[0]));
+	
+	int *adj = malloc(kmax * sizeof(*adj));
+	if (!adj){ free(mat[0]); free(mat); }
+	
+	for (i=0; i < n; i++){
+		int ki = graph_adjacents(g, i, adj);
+		for (j=0; j < ki; j++){
+			int kj = graph_num_adjacents(g, adj[j]);
+			mat[ki][kj]++;
+		}
+	}
+	free(adj);
+	
+	if (_kmax){ *_kmax = kmax+1; }
+	return mat;
+}
+
+double graph_neighbor_degree_vertex(const graph_t *g, int i){
+	assert(g);
+	int n = graph_num_vertices(g);
+	assert(0 <= i && i < n);
+	
+	int ki = graph_num_adjacents(g, i);
+	int *adj = malloc(ki * sizeof(*adj));
+	graph_adjacents(g, i, adj);
+	
+	double knn = 0.0;
+	int j;
+	for (j=0; j < ki; j++){
+		int v = adj[j];
+		knn += graph_num_adjacents(g, v) / ki;
+	}
+	
+	free(adj);
+	return knn;
+}
+
+int graph_neighbor_degree_all(const graph_t *g, double *avg_degree){
+	assert(g);
+	assert(avg_degree);
+	
+	int i, j, n = graph_num_vertices(g);
+	int kmax = 0;
+	
+	int *adj = malloc (n * sizeof(*adj));
+	for (i=0; i < n; i++){
+		int num_adj = graph_adjacents(g, i, adj);
+		if (num_adj > kmax){ kmax = num_adj; }
+		
+		avg_degree[i] = 0.0;
+		for (j=0; j < num_adj; j++){
+			avg_degree[i] += (double)graph_num_adjacents(g, adj[j])/num_adj;
+		}
+	}
+	free(adj);
+	return kmax;
+}
+
+double *graph_knn(const graph_t *g, int *_kmax){
+	assert(g);
+	assert(_kmax);
+	
+	int i, n = graph_num_vertices(g);
+	
+	double *avg_degree = malloc(n * sizeof(*avg_degree));
+	int kmax = graph_neighbor_degree_all(g, avg_degree);
+	
+	double *knn = malloc((kmax+1) * sizeof(*knn));
+	int *num_degree = malloc((kmax+1) * sizeof(*num_degree));
+	
+	memset(num_degree, 0, (kmax+1) * sizeof(*num_degree));
+	memset(knn, 0, (kmax+1) * sizeof(*knn));
+	
+	for (i=0; i < n; i++){
+		int ki = graph_num_adjacents(g, i);
+		knn[ki] += avg_degree[i];
+		num_degree[ki]++;
+	}
+	
+	for (i=0; i < kmax+1; i++){
+		knn[i] /= num_degree[i];
+	}
+	
+	free(avg_degree);
+	free(num_degree);
+	
+	*_kmax = kmax+1;
+	return knn;
+}
+
+double graph_assortativity(const graph_t *g){
+	assert(g);
+	
+	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
+	int *adj = malloc(n * sizeof(*adj));
+	if (!adj){ return 0.0/0.0; }
+	
+	double prod = 0.0;
+	double sum = 0.0;
+	double sq = 0.0;
+	
+	for (i=0; i < n; i++){
+		int ki = graph_adjacents(g, i, adj);
+		for (j=0; j < ki; j++){
+			int v = adj[j];
+			int kj = graph_num_adjacents(g, v);
+			if (v > i){
+				prod += (1.0/m) * (ki * kj);
+				sum += (0.5/m) * (ki + kj);
+				sq += (0.5/m) * (ki*ki + kj*kj);
+			}
+		}
+	}
+	
+	double r = (prod - sum*sum)/(sq - sum*sum);
+	
+	free(adj);
+	return r;
+}
+

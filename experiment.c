@@ -143,7 +143,7 @@ void *experiment(void *args){
 	}
 	
 	double *avg_degree = malloc(n * sizeof(*avg_degree));
-	graph_neighbor_degree(g, avg_degree);
+	graph_neighbor_degree_all(g, avg_degree);
 	snprintf(str, 256, "%s/correlation.dat", folder); fp = fopen(str, "wt");
 	for (i=0; i < n; i++){
 		fprintf(fp, "%d %.3lf\n", graph_num_adjacents(g, i), avg_degree[i]);
@@ -161,11 +161,10 @@ void *experiment(void *args){
 	free(knn);
 	
 	// Betweenness distribution
-	int *distance = malloc(n*sizeof(*distance));
 	double *betweenness = malloc(n * sizeof(*betweenness));
 	fprintf(stderr, "Calculating betweenness in %s...\n", folder);
 	
-	graph_betweenness(g, betweenness, distance);
+	graph_betweenness(g, betweenness);
 	stat_double_normalization(betweenness, n);
 	fprintf(f_summary, "betweenness average = %+.3lg\n", stat_double_average(betweenness, n));
 	
@@ -186,28 +185,26 @@ void *experiment(void *args){
 	free(dist_between);
 	
 	// Distance 
-	fprintf(f_summary, "distance average = %+.3lf\n", stat_int_dist_average(distance, n));
-	fprintf(f_summary, "efficiency = %.3lf\n", stat_int_dist_harmonic_sum(distance, n)/(n*(n-1)));
-	
-	for (i=0; distance[i] > 0; i++); // Finds greatest distance
-	fprintf(f_summary, "diameter = %d\n", i-1);
+	int diameter;
+	int *distance = graph_geodesic_distribution(g, &diameter);
+	fprintf(f_summary, "distance average = %+.3lf\n", stat_int_dist_average(distance, diameter));
+	fprintf(f_summary, "efficiency = %.3lf\n", stat_int_dist_harmonic_sum(distance, diameter)/(n*(n-1)));
+	fprintf(f_summary, "diameter = %d\n", diameter);
 	
 	snprintf(str, 256, "%s/distance.dat", folder); fp = fopen(str, "wt");
-	for (i=0; i < n; i++){
-		if (distance[i] > 0){
-			fprintf(fp, "%d %d\n", i, distance[i]);
-		} else break;
+	for (i=0; i < diameter; i++){
+		fprintf(fp, "%d %d\n", i, distance[i]);
 	}
 	fclose(fp);
 	free(distance);
 	
 	// Centralities
 	fprintf(stderr, "Computing centralities in %s\n", folder);
-	double *eigenvalue = malloc(n * sizeof(*eigenvalue));
+	double *eigenvector = malloc(n * sizeof(*eigenvector));
 	double *pagerank = malloc(n * sizeof(*pagerank));
 	int *core = malloc(n * sizeof(*core));
 	
-	graph_eigenvalue(g, eigenvalue);
+	graph_eigenvector(g, eigenvector);
 	graph_pagerank(g, 0.15, pagerank);
 	graph_kcore(g, core);
 	
@@ -217,7 +214,7 @@ void *experiment(void *args){
 		fprintf(fp, "%d ", i);
 		fprintf(fp, "%lf ", (double)degree[i]/kmax);
 		fprintf(fp, "%lf ", betweenness[i]);
-		fprintf(fp, "%lf ", eigenvalue[i]);
+		fprintf(fp, "%lf ", eigenvector[i]);
 		fprintf(fp, "%lf ", pagerank[i]);
 		fprintf(fp, "%d ", core[i]);
 		fprintf(fp, "\n");
@@ -225,7 +222,7 @@ void *experiment(void *args){
 	
 	free(degree);
 	free(betweenness);
-	free(eigenvalue);
+	free(eigenvector);
 	free(pagerank);
 	free(core);
 	
