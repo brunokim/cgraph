@@ -205,4 +205,148 @@ Compute the ratio between number of triangles and number of triplets.
 \subsubsection{\texttt{graph\_knn}}
 \subsubsection{\texttt{graph\_assortativity}}
 
+\section{\texttt{graph\_layout}}
+
+\subsection{Types}
+
+\subsubsection{\texttt{coord\_t}}
+
+Euclidean coordinates in 2D.
+
+\subsubsection{\texttt{box\_t}}
+
+Box (rectangle) definition in 2D, given by its SW and NE vertices in a 
+positively oriented world frame, such as the screen. Images may have
+a negatively oriented frame, with $y$ pointing down.
+It is necessary that \texttt{box.sw.y < box.ne.y} and \texttt{box.sw.x < box.ne.x}.
+
+\subsubsection{\texttt{circle\_style\_t}}
+
+SVG circle style.
+
+\begin{description}
+ \item[\texttt{radius}] Circle radius in pixels.
+ \item[\texttt{width}] Stroke width in pixels. This is added to the radius for total
+ size.
+ \item[\texttt{color}] Array with 4 colors: red ($R$), green ($G$), blue ($B$) and 
+  alpha ($A$), lying between 0 and 255. $A=0$ means totally transparent, and 
+  $A = 255$ means totally opaque.
+\end{description}
+
+\subsubsection{\texttt{path\_style\_t}}
+
+SVG path style.
+
+\begin{description}
+ \item[\texttt{type}] Path type.
+ \item[\texttt{from, to}] Path origin and destination.
+ \item[\texttt{control}] Control point
+ \item[\texttt{width}] Stroke width in pixels.
+ \item[\texttt{color}] Array with 4 colors: red ($R$), green ($G$), blue ($B$) and 
+  alpha ($A$), lying between 0 and 255. $A=0$ means totally transparent, and 
+  $A = 255$ means totally opaque.
+\end{description}
+
+ For \texttt{style.type == GRAPH\_STRAIGHT}, draws a straight line from origin
+ to destination.
+ 
+ For \texttt{style.type == GRAPH\_PARABOLA}, draws a parabola from origin
+ to destination using the control point.
+ 
+ For \texttt{style.type == GRAPH\_CIRCULAR}, draws the arc of a circle from 
+ origin to destination using the control point as the circle center.
+
+\subsection{Layout}
+
+\subsubsection{\texttt{graph\_layout\_random}}
+
+Place points uniformly inside specified box.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{box} must be a valid box.\\
+   \texttt{p} must have dimension $n$.
+ \item[Postconditions] \texttt{p[i]} is a random coordinate inside \texttt{box}.
+\end{description}
+
+\subsubsection{\texttt{graph\_layout\_random\_wout\_overlap}}
+
+Place points with specified radius uniformly avoiding overlap 
+with probability $t$.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{radius} must be positive.\\
+   $t$ must be a valid probability ($0 \ge t \ge 1$).\\
+   \texttt{p} must have dimension $n$.
+ \item[Postconditions] \texttt{p[i]} is a random coordinate.
+\end{description}
+
+The algorithm determines a box with size $l$ such that, if $n$ 
+points with radius $r$ are thrown within it, will not have any 
+collision with probability $t$. The formula is derived in 
+\href{http://math.stackexchange.com/q/325844/37667}{Math Exchange}.
+
+\begin{equation*}
+ l = \frac{nr}{2} \sqrt{\frac{2 \pi}{-\log(1-t)}}
+\end{equation*}
+
+\subsection{Printing}
+
+\subsubsection{\texttt{graph\_print\_svg}}
+
+Prints graph as SVG to file, using vertex coordinates given in p and with a 
+style for each point and edge.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{p} must have dimension $n$.
+   \texttt{point\_style} must have dimension $n$.
+   \texttt{edge\_style} must have dimension $m$.
+ \item[Postconditions]
+   \texttt{filename} is a valid SVG file.
+\end{description}
+
+Edges are ordered according to vertices' order. In undirected graphs, 
+an edge $E_{ij}$ is considered only if $i < j$. In directed graphs,
+mutual edges will superimpose if \texttt{edge\_style.type == GRAPH\_STRAIGHT}.
+
+\subsubsection{\texttt{graph\_print\_svg\_one\_style}}
+
+Prints graph as SVG to file, using vertex coordinates given in p and with a 
+single style for all points and edges.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{p} must have dimension $n$.
+ \item[Postconditions]
+   \texttt{filename} is a valid SVG file.
+\end{description}
+
+The edge style type is ignored, using only \texttt{GRAPH\_STRAIGHT}.
+
+\subsubsection{\texttt{graph\_print\_svg\_some\_styles}}
+
+Prints graph as SVG to file, using vertex coordinates given in \texttt{p} and
+with a number of styles given. The mapping vertex$\to$style is given in \texttt{ps},
+and the mapping edge$\to$style is given in \texttt{es}.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{p} must have dimension $n$.\\
+   \texttt{ps} must have dimension $n$.\\
+   \texttt{es} must have dimension $m$.\\
+   \texttt{point\_style} must have dimension \texttt{num\_point\_style}.\\
+   \texttt{edge\_style} must have dimension \texttt{num\_edge\_style}.
+ \item[Postconditions]
+   \texttt{filename} is a valid SVG file.
+\end{description}
+
+This function tries to avoid extensive memory utilization one just some 
+styles are desired. If vertex $v_i$ should have style $S_j$, then 
+\texttt{ps[i] = j}. Ditto for edges.
+
+Edge order is based on vertices order. In undirected edges, edge $E_{ij}$ 
+is considered only if $i < j$.
+
 \end{document}
