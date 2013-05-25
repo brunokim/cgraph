@@ -5,7 +5,6 @@
 \title{CGraph documentation}
 \author{Bruno Kim Medeiros Cesar}
 
-
 \begin{document}
 \maketitle
 
@@ -40,6 +39,12 @@ Maximum number of iterations for numeric methods.
 
 Label vertices' components treating edges as undirected.
 
+\begin{description}
+ \item[Preconditions] \texttt{label} must have dimension $n$.
+ \item[Postconditions] \texttt{label[i]} is the component ID of vertex $v_i$.
+ \item[Return] Number of components
+\end{description}
+
 For directed graphs, considers adjacencies as incidences.
 Labels start from 0 and are sequential with step 1.
 Component IDs are not ordered according to size.
@@ -47,6 +52,12 @@ Component IDs are not ordered according to size.
 \subsubsection{\texttt{graph\_directed\_components}}
 
 Label vertices' components treating edges as directed.
+
+\begin{description}
+ \item[Preconditions] \texttt{label} must have dimension $n$.
+ \item[Postconditions] \texttt{label[i]} is the component ID of vertex $v_i$.
+ \item[Return] Number of components
+\end{description}
 
 For undirected graphs, simply call \texttt{graph\_undirected\_components}. For 
 directed graphs, two vertices $v_i$ and $v_j$ are in the same component if and
@@ -61,5 +72,135 @@ in the same component if they are mutually reachable.
 
 Labels start from 0 and are sequential with step 1.
 Component IDs are not ordered according to size.
+
+\subsubsection{\texttt{graph\_num\_components}}
+
+Extract number of components from label vector.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   $n > 0$ \\
+   \texttt{label} must have dimension $n$. \\
+   \texttt{label} must contain sequential IDs starting from 0.
+ \item[Return] Number of components
+\end{description}
+
+\subsubsection{\texttt{graph\_components}}
+
+Map components to vertices from label vector.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   $n > 0$ \\
+   \texttt{label} must have dimension $n$. \\
+   \texttt{label} must contain sequential IDs starting from 0. \\
+   \texttt{comp} must have size \texttt{num\_comp} and all sets should be already
+   initialized. \\
+   \texttt{graph\_num\_components(g) == num\_comp}
+ \item[Postconditions] ~\\
+   If $v_i$ is in component $c_j$, then \\
+    \quad\texttt{label[i] == j} and \\
+    \quad\texttt{set\_contains(comp[j], i)} is true.
+ \item[Return] Number of components
+\end{description}
+
+\subsubsection{\texttt{graph\_components}}
+
+Creates a new graph from \texttt{g}'s largest component.
+
+The guarantee of vertices' order ID is the same as \texttt{graph\_subset}.
+If two or more components have the same maximum size, one will be chosen in
+an undefined way.
+
+\begin{description}
+ \item[Return] A new graph isomorphic to \texttt{g}'s largest component.
+ \item[Memory deallocation] ~\\
+   \texttt{graph\_t *largest = graph\_components(g);} \\
+   \texttt{delete\_graph(largest);}
+\end{description}
+
+\subsection{Degree metrics}
+\subsubsection{\texttt{graph\_degree}}
+
+List all vertices' degrees.
+
+\begin{description}
+ \item[Preconditions] \texttt{degree} must have dimension $n$.
+ \item[Postconditions] \texttt{degree[i]} is the degree of vertex $v_i$.
+\end{description}
+
+The degree of a directed graph's vertex is defined as the sum of incoming
+and outgoing edges.
+
+\subsubsection{\texttt{graph\_directed\_degree}}
+
+List all vertices' incoming and outgoing degrees.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   \texttt{g} must be directed.
+   \texttt{in\_degree} must have dimension $n$.
+   \texttt{out\_degree} must have dimension $n$.
+ \item[Postconditions] ~\\
+   \texttt{in\_degree[i]} is the number of incoming edges to vertex $v_i$.
+   \texttt{out\_degree[i]} is the number of outgoing edges from vertex $v_i$.
+\end{description}
+
+\subsection{Clustering metrics}
+\subsubsection{\texttt{graph\_clustering}}
+List all vertices' local clustering.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   \texttt{g} must be undirected. \\
+   \texttt{clustering} must have dimension $n$.
+ \item[Postconditions] \texttt{clustering[i]} is the local clustering coefficient
+  of vertex $v_i$.
+\end{description}
+
+
+The local clustering coefficient is only defined for undirected graphs, and
+gives the ratio of edges between a vertex' neighbors and all possible edges.
+
+Formally,
+
+\begin{equation*}
+ C_i = \frac{e_i}{\binom{k_i}{2}} = \frac{2 e_i}{k_i (k_i - 1)}
+\end{equation*}
+
+where
+
+\begin{description}
+ \item[$C_i$] is the local clustering coefficient of vertex $v_i$.
+ \item[$e_i$] is the number of edges between $v_i$'s neighbors.
+ \item[$k_i$] is the degree of $v_i$.
+\end{description}
+
+If a vertex $v_i$ has 0 or 1 adjacents, $C_i = 0$ by definition.
+ 
+\subsubsection{\texttt{graph\_num\_triplets}}
+Counts number of triplets and triangles (6 * number of closed triplets).
+\subsubsection{\texttt{graph\_transitivity}}
+Compute the ratio between number of triangles and number of triplets.
+
+\subsection{Geodesic distance metrics}
+\subsubsection{Definitions}
+\subsubsection{\texttt{graph\_geodesic\_distance}}
+\subsubsection{\texttt{graph\_geodesic\_vertex}}
+\subsubsection{\texttt{graph\_geodesic\_all}}
+\subsubsection{\texttt{graph\_geodesic\_distribution}}
+
+\subsection{Centrality measures}
+\subsubsection{\texttt{graph\_betweenness}}
+\subsubsection{\texttt{graph\_eigenvector}}
+\subsubsection{\texttt{graph\_pagerank}}
+\subsubsection{\texttt{graph\_kcore}}
+
+\subsection{Correlation measures}
+\subsubsection{\texttt{graph\_degree\_matrix}}
+\subsubsection{\texttt{graph\_neighbor\_degree\_vertex}}
+\subsubsection{\texttt{graph\_neighbor\_degree\_all}}
+\subsubsection{\texttt{graph\_knn}}
+\subsubsection{\texttt{graph\_assortativity}}
 
 \end{document}

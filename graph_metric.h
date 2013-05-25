@@ -13,110 +13,25 @@
 #endif
 
 /************** Component identification and extraction ***********************/
-/* Label vertices' components treating edges as undirected.
- * Pre: 
- *   label must be an array with size n.
- * Post: 
- *   label[i] is the component ID of vertex i.
- * Return value: 
- *   Number of components
- */
+// Label vertices' components treating edges as undirected.
 int graph_undirected_components(const graph_t *g, int *label);
-/* Label vertices' components treating edges as directed.
- * Vertices i and j are in the same component iff 
- *  distance(i, j) != infinity &&
- *  distance(j, i) != infinity.
- * 
- * For undirected graphs, simply call graph_undirected_components.
- * 
- * Labels start from 0 and are sequential with step 1.
- * There is no guarantee on component ID vs. size.
- * 
- * Pre: 
- *   label must be an array with size n.
- * Post: 
- *   label[i] is the component ID of vertex i.
- * Return value:
- *   Number of components (or \max{label} + 1)
- * */
+// Label vertices' components treating edges as directed.
 int graph_directed_components(const graph_t *g, int *label);
-/* Extract number of components from label vector.
- * 
- * Pre:
- *   label must have size n.
- *   label must contain sequential IDs starting from 0.
- * Post:
- *   None
- * Return value:
- *   Number of different IDs in vector
- */
+// Extract number of components from label vector.
 int graph_num_components(const int *label, int n);
-/* Map componenents to vertices from a label vector.
- * 
- * Pre:
- *   label must have size n.
- *   comp must have size num_comp and all sets should be already created.
- *   graph_num_components(label) == num_comp.
- * Post:
- *   if label[i] == id, set_contains(comp[id], i) == true
- * */
+// Map componenents to vertices from a label vector.
 void graph_components(const int *label, int n, set_t **comp, int num_comp);
-/* Creates a new graph from g's largest component.
- * 
- * The guarantee on the order of vertices' ID is the same as graph_subset.
- * If two or more components have the same maximum size, there's no guarantee
- * in which one will be chosen.
- * 
- * Pre:
- *   None.
- * Post:
- *   None.
- * Return value:
- *   A new graph isomorphic to g's giant component.
- * */
+// Creates a new graph from g's largest component.
 graph_t * graph_giant_component(const graph_t *g);
 
 /***************************** Degree metrics *********************************/
-/* List all vertices' degrees.
- * The degree of a digraph's vertex is defined as the sum of incoming and 
- * outgoing edges.
- * 
- * Pre: 
- *   degree must be an array of size n.
- * Post:
- *   degree[i] is the degree of vertex i
- * */
+// List all vertices' degrees.
 void graph_degree(const graph_t *g, int *degree);
-/* List all vertices' incoming and outgoing degrees.
- * 
- * Pre:
- *   g must be directed
- *   in_degree must be an array with size n
- *   out_degree must be an array with size n
- * Post:
- *   in_degree[i] is the number of incoming edges to vertex i
- *   out_degree[i] is the number of outgoing edges to vertex i
- * */
+// List all vertices' incoming and outgoing degrees.
 void graph_directed_degree(const graph_t *g, int *in_degree, int *out_degree);
 
 /***************************** Clustering metrics *****************************/
-/* List all vertices' local clustering.
- * The local clustering coefficient is only defined for undirected graphs, and
- * gives the ratio of edges between a vertex' neighbors and all possible edges.
- * Formally,
- *     C_i = e_i / binom(k_i, 2)
- * where 
- *   C_i is the local clustering coefficient of vertex i
- *   e_i is the number of edges between v_i's neighbors
- *   k_i is the degree of v_i
- *   binom(n,k) is the binomial coeff., defined as n!/(k!(n-k)!)
- * 
- * Pre:
- *   g must be undirected
- *   clustering must be an array with size n
- * Post:
- *   clustering[i] is the clustering of vertex i.
- * */
+// List all vertices' local clustering.
 void graph_clustering(const graph_t *g, double *clustering);
 /* Counts number of triplets and triangles (6 * number of closed triplets).
  * This measures are only defined for undirected graphs.
