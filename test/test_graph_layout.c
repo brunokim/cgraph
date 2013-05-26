@@ -70,7 +70,7 @@ void test_one_style(){
 		{0  , 0, 0, 255}
 	};
 	
-	graph_print_svg_one_style("test_one_style.svg", g, p, point_style, edge_style);
+	graph_print_svg_one_style("test/test_one_style.svg", g, p, point_style, edge_style);
 	
 	delete_graph(g);
 }
@@ -125,7 +125,7 @@ void test_many_styles(){
 		point_style[i].stroke[3] = 255;
 	}
 	
-	graph_print_svg("test_many_style.svg", g, p, point_style, edge_style);
+	graph_print_svg("test/test_many_style.svg", g, p, point_style, edge_style);
 	
 	delete_graph(g);
 	free(p);
@@ -186,7 +186,7 @@ void test_some_styles(){
 	copy_color(point_style[1].fill, solid_green);
 	copy_color(point_style[1].stroke, black);
 	
-	graph_print_svg_some_styles("test_some_styles.svg", g, p, 
+	graph_print_svg_some_styles("test/test_some_styles.svg", g, p, 
 	                            ps, point_style, num_point_style,
 	                            es, edge_style, num_edge_style);
 	delete_graph(g);

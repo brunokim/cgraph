@@ -1,24 +1,26 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
-TESTS = stat list set graph graph_metric graph_layout
+MODULES = sorting stat list set graph graph_metric graph_layout
 BIN = experiment
 
-all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(TESTS))
+all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(MODULES))
 
-doc: doc/doc.pdf
+doc: doc/main.pdf 
 
-run-tests: $(patsubst %,test/test_%, $(TESTS))
+run-tests: $(patsubst %,test/test_%, $(MODULES))
+	test/test_sorting
 	test/test_list
 	test/test_stat
 	test/test_set
 	test/test_graph
-	test/test_metric
-	test/test_layout
+	test/test_graph_metric
+	test/test_graph_layout
 
 # Documentation
 
-doc/doc.pdf: doc/doc.tex
-	pdflatex -output-directory doc $^
+doc/main.pdf: doc/main.tex $(patsubst %,doc/%.tex, $(MODULES))
+	pdflatex -output-directory doc $<
+	pdflatex -output-directory doc $<
 
 # Binaries
 
@@ -45,6 +47,9 @@ test/test_stat : obj/test_stat.o obj/stat.o obj/sorting.o
 test/test_list : obj/test_list.o obj/list.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ 
 
+test/test_sorting : obj/test_sorting.o obj/sorting.o
+	$(CC) $(CFLAGS) -o $@ $^
+
 ## Test objects
 
 obj/test_graph_layout.o : test/test_graph_layout.c include/error.h include/graph_layout.h include/graph.h include/set.h
@@ -63,6 +68,9 @@ obj/test_list.o    : test/test_list.c include/error.h include/list.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/test_stat.o    : test/test_stat.c include/error.h include/stat.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_sorting.o : test/test_sorting.c include/sorting.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 ## Basic objets
