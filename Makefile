@@ -62,6 +62,9 @@ obj/test_set.o     : test/test_set.c include/error.h include/set.h
 obj/test_list.o    : test/test_list.c include/error.h include/list.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+obj/test_stat.o    : test/test_stat.c include/error.h include/stat.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 ## Basic objets
 
 obj/experiment.o   : src/experiment.c include/graph_metric.h include/graph.h include/set.h
