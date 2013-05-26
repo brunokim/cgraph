@@ -133,6 +133,13 @@ void test_many_styles(){
 	free(point_style);
 }
 
+void copy_color(color_t copy, const color_t original){
+	copy[0] = original[0];
+	copy[1] = original[1];
+	copy[2] = original[2];
+	copy[3] = original[3];
+}
+
 void test_some_styles(){
 	graph_t *g = make_a_graph(true);
 	
@@ -143,52 +150,41 @@ void test_some_styles(){
 	int es[] = {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2};
 	path_style_t edge_style[3];
 	
+	color_t solid_red   = {255, 0, 0, 255};
+	color_t solid_green = {0, 255, 0, 255};
+	color_t solid_blue  = {0, 0, 255, 255};
+	color_t black       = {0, 0, 0,   255};
+	
+	// Edges within community 0 in blue
 	edge_style[0].type = GRAPH_STRAIGHT;
 	edge_style[0].width = 1;
-	edge_style[0].color[0] = 0;
-	edge_style[0].color[1] = 0;
-	edge_style[0].color[2] = 255;
-	edge_style[0].color[3] = 255;
+	copy_color(edge_style[0].color, solid_blue);
 	
+	// Edges between communities 0 and 1 in red
 	edge_style[1].type = GRAPH_STRAIGHT;
 	edge_style[1].width = 1;
-	edge_style[1].color[0] = 255;
-	edge_style[1].color[1] = 0;
-	edge_style[1].color[2] = 0;
-	edge_style[1].color[3] = 255;
+	copy_color(edge_style[1].color, solid_red);
 	
+	// Edges within community 1 in green
 	edge_style[2].type = GRAPH_STRAIGHT;
 	edge_style[2].width = 1;
-	edge_style[2].color[0] = 0;
-	edge_style[2].color[1] = 255;
-	edge_style[2].color[2] = 0;
-	edge_style[2].color[3] = 255;
+	copy_color(edge_style[2].color, solid_green);
 	
 	int num_point_style = 2;
 	int ps[] = {0, 0, 0, 1, 1, 1, 1, 1};
 	circle_style_t point_style[2];
 	
+	// Vertices in community 0 are blue
 	point_style[0].radius = radius;
 	point_style[0].width = width;
-	point_style[0].fill[0] = 0;
-	point_style[0].fill[1] = 0;
-	point_style[0].fill[2] = 255;
-	point_style[0].fill[3] = 255;
-	point_style[0].stroke[0] = 0;
-	point_style[0].stroke[1] = 0;
-	point_style[0].stroke[2] = 0;
-	point_style[0].stroke[3] = 255;
+	copy_color(point_style[0].fill, solid_blue);
+	copy_color(point_style[0].stroke, black);
 	
+	// Vertices in community 1 are green
 	point_style[1].radius = radius;
 	point_style[1].width = width;
-	point_style[1].fill[0] = 0;
-	point_style[1].fill[1] = 255;
-	point_style[1].fill[2] = 0;
-	point_style[1].fill[3] = 255;
-	point_style[1].stroke[0] = 0;
-	point_style[1].stroke[1] = 0;
-	point_style[1].stroke[2] = 0;
-	point_style[1].stroke[3] = 255;
+	copy_color(point_style[1].fill, solid_green);
+	copy_color(point_style[1].stroke, black);
 	
 	graph_print_svg_some_styles("test_some_styles.svg", g, p, 
 	                            ps, point_style, num_point_style,
