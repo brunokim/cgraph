@@ -1,46 +1,89 @@
-CC       = gcc
-CFLAGS = -Wall -g
+CC     = gcc
+CFLAGS = -Iinclude -Wall -g
+TESTS = stat list set graph graph_metric graph_layout
+BIN = experiment
 
-all: experiment test_list test_set test_graph test_metric test_stat test_layout
+all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(TESTS))
 
-doc: doc.pdf
+doc: doc/doc.pdf
 
-run-tests: test_list test_set test_graph test_metric test_stat test_layout
-	./test_list
-	./test_stat
-	./test_set
-	./test_graph
-	./test_metric
-	./test_layout
+run-tests: $(patsubst %,test/test_%, $(TESTS))
+	test/test_list
+	test/test_stat
+	test/test_set
+	test/test_graph
+	test/test_metric
+	test/test_layout
 
-*.pdf: *.tex
-	pdflatex $^
-	
-experiment : experiment.o graph_metric.o
-	$(CC) $(CFLAGS) -o experiment experiment.o graph_metric.o graph.o set.o list.o sorting.o stat.o -pthread -lm -std=c89
+# Documentation
 
-test_layout: test_layout.o graph_layout.o
-	$(CC) $(CFLAGS) -o test_layout test_layout.o graph_layout.o graph.o set.o list.o sorting.o stat.o -lm
+doc/doc.pdf: doc/doc.tex
+	pdflatex -output-directory doc $^
 
-test_metric: test_metric.o graph_metric.o
-	$(CC) $(CFLAGS) -o test_metric test_metric.o graph_metric.o graph.o set.o list.o sorting.o stat.o -lm
+# Binaries
 
-test_graph : test_graph.o graph.o
-	$(CC) $(CFLAGS) -o test_graph test_graph.o graph.o set.o list.o sorting.o -lm
+bin/experiment : obj/experiment.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
-test_set : test_set.o set.o
-	$(CC) $(CFLAGS) -o test_set test_set.o set.o list.o sorting.o -lm 
+# Test binaries
 
-test_stat : test_stat.o stat.o
-	$(CC) $(CFLAGS) -o test_stat test_stat.o stat.o sorting.o -lm
+test/test_graph_layout: obj/test_graph_layout.o obj/graph_layout.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-test_list : test_list.o list.o
-	$(CC) $(CFLAGS) -o test_list test_list.o list.o sorting.o 
+test/test_graph_metric: obj/test_graph_metric.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-graph_layout.o : graph_layout.h graph.o
-graph_metric.o : error.h graph_metric.h graph.o stat.o
-stat.o : error.h stat.h sorting.o
-graph.o : error.h graph.h set.o
-set.o : error.h set.h list.o
-list.o : error.h list.h sorting.o
-sorting.o : sorting.h
+test/test_graph : obj/test_graph.o obj/graph.o obj/set.o obj/list.o obj/sorting.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+test/test_set : obj/test_set.o obj/set.o obj/list.o obj/sorting.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm 
+
+test/test_stat : obj/test_stat.o obj/stat.o obj/sorting.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+test/test_list : obj/test_list.o obj/list.o obj/sorting.o
+	$(CC) $(CFLAGS) -o $@ $^ 
+
+## Test objects
+
+obj/test_graph_layout.o : test/test_graph_layout.c include/error.h include/graph_layout.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_graph_metric.o : test/test_graph_metric.c include/error.h include/graph_metric.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_graph.o   : test/test_graph.c include/error.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_set.o     : test/test_set.c include/error.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_list.o    : test/test_list.c include/error.h include/list.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+## Basic objets
+
+obj/experiment.o   : src/experiment.c include/graph_metric.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph_layout.o : src/graph_layout.c include/graph_layout.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph_metric.o : src/graph_metric.c include/error.h include/graph_metric.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/stat.o         : src/stat.c include/error.h include/stat.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph.o        : src/graph.c include/error.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/set.o          : src/set.c include/error.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/list.o         : src/list.c include/error.h include/list.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/sorting.o      : src/sorting.c include/sorting.h
+	$(CC) $(CFLAGS) -o $@ -c $<

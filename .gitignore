@@ -6,11 +6,12 @@
 *.out
 *.toc
 *.svg
-## Binaries
-experiment
-test_layout
-test_graph
-test_metric
-test_stat
-test_list
-test_set
+bin/
+obj/
+# Test binaries
+test/test_graph
+test/test_graph_layout
+test/test_graph_metric
+test/test_list
+test/test_set
+test/test_stat
