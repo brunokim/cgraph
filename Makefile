@@ -1,7 +1,7 @@
 CC       = gcc
 CFLAGS = -Wall -g
 
-all: experiment test_list test_set test_graph test_metric test_stat 
+all: experiment test_list test_set test_graph test_metric test_stat test_layout
 
 doc: doc.pdf
 

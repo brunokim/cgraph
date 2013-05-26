@@ -220,6 +220,11 @@ positively oriented world frame, such as the screen. Images may have
 a negatively oriented frame, with $y$ pointing down.
 It is necessary that \texttt{box.sw.y < box.ne.y} and \texttt{box.sw.x < box.ne.x}.
 
+\subsubsection{\texttt{color\_t}}
+
+Array with 4 colors between 0 and 255, inclusive: red ($R$), green ($G$), blue ($B$) and 
+alpha ($A$). $A=0$ means totally transparent, and $A = 255$ means totally opaque.
+
 \subsubsection{\texttt{circle\_style\_t}}
 
 SVG circle style.
@@ -228,9 +233,8 @@ SVG circle style.
  \item[\texttt{radius}] Circle radius in pixels.
  \item[\texttt{width}] Stroke width in pixels. This is added to the radius for total
  size.
- \item[\texttt{color}] Array with 4 colors: red ($R$), green ($G$), blue ($B$) and 
-  alpha ($A$), lying between 0 and 255. $A=0$ means totally transparent, and 
-  $A = 255$ means totally opaque.
+ \item[\texttt{fill}] Color of the fill.
+ \item[\texttt{stroke}] Color of the stroke.
 \end{description}
 
 \subsubsection{\texttt{path\_style\_t}}
@@ -242,9 +246,7 @@ SVG path style.
  \item[\texttt{from, to}] Path origin and destination.
  \item[\texttt{control}] Control point
  \item[\texttt{width}] Stroke width in pixels.
- \item[\texttt{color}] Array with 4 colors: red ($R$), green ($G$), blue ($B$) and 
-  alpha ($A$), lying between 0 and 255. $A=0$ means totally transparent, and 
-  $A = 255$ means totally opaque.
+ \item[\texttt{color}] Stroke color.
 \end{description}
 
  For \texttt{style.type == GRAPH\_STRAIGHT}, draws a straight line from origin

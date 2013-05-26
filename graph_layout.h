@@ -10,10 +10,15 @@ typedef struct {
 	coord_t sw, ne;
 } box_t;
 
+typedef enum {COLOR_R, COLOR_G, COLOR_B, COLOR_A} color_type_t;
+#define COLOR_MAX 255
+typedef short color_t[4];
+
 typedef struct{
-	int radius;
-	int width;
-	int color[4];
+	short radius;
+	short width;
+	color_t fill;
+	color_t stroke;
 } circle_style_t;
 
 typedef enum{GRAPH_STRAIGHT, GRAPH_PARABOLA, GRAPH_CIRCULAR} edge_type_t;
@@ -21,9 +26,8 @@ typedef enum{GRAPH_STRAIGHT, GRAPH_PARABOLA, GRAPH_CIRCULAR} edge_type_t;
 typedef struct{
 	coord_t from, to, control;
 	edge_type_t type;
-	int width;
-	int color[4];
-	
+	short width;
+	color_t color;
 } path_style_t;
 
 /********************************* Layout *************************************/
@@ -62,6 +66,6 @@ void graph_print_svg_some_styles
 	 const graph_t *g, 
 	 const coord_t *p, 
 	 const int *ps, const circle_style_t *point_style, int num_point_style,
-	 const int *es, const path_style_t edge_style, int num_edge_style);
+	 const int *es, const path_style_t *edge_style, int num_edge_style);
 
 #endif

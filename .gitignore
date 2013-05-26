@@ -5,8 +5,10 @@
 *.aux
 *.out
 *.toc
+*.svg
 ## Binaries
 experiment
+test_layout
 test_graph
 test_metric
 test_stat
