@@ -32,9 +32,11 @@ typedef bool (*is_propagation_end)
 	(const short *state, int n, int num_step, const void *params);
 	
 typedef struct {
+	const char *name;
 	short infectious_state;
 	state_transition_f transition;
 	is_propagation_end is_end;
+	int num_state;
 } propagation_model_t;
 
 /********************************* Functions **********************************/
@@ -95,13 +97,42 @@ bool is_sis_end
 extern const propagation_model_t sis;
 
 /********************************* SIR model **********************************/
+typedef struct { 
+	double alpha;
+	double beta;
+} graph_sir_params_t;
+
 typedef enum {
 	GRAPH_SIR_S, GRAPH_SIR_I, GRAPH_SIR_R, GRAPH_SIR_NUM_STATE
 } graph_state_sir_t;
 
+void graph_sir_transition
+	(short *next, const propagation_step_t curr, int n, 
+	 const void *params, unsigned int *seedp);
+
+bool is_sir_end
+	(const short *state, int n, int num_step, const void *params);
+
+extern const propagation_model_t sir;
+
 /********************************* SEIR model *********************************/
+typedef struct { 
+	double alpha;
+	double beta;
+	double gamma;
+} graph_seir_params_t;
+
 typedef enum {
 	GRAPH_SEIR_S, GRAPH_SEIR_E, GRAPH_SEIR_I, GRAPH_SEIR_R, GRAPH_SEIR_NUM_STATE
 } graph_state_seir_t;
+
+void graph_seir_transition
+	(short *next, const propagation_step_t curr, int n, 
+	 const void *params, unsigned int *seedp);
+
+bool is_seir_end
+	(const short *state, int n, int num_step, const void *params);
+
+extern const propagation_model_t seir;
 
 #endif

@@ -268,8 +268,8 @@ double graph_layout_degree(const graph_t *g, int radius, coord_t *p){
 		double theta = t0[j] + (2 * M_PI * count[j]) / freq[j];
 		count[j]++;
 		
-		p[i].x = R + dR*(1+j) * cos(theta);
-		p[i].y = R + dR*(1+j) * sin(theta);
+		p[i].x = R+radius + dR*(1+j) * cos(theta);
+		p[i].y = R+radius + dR*(1+j) * sin(theta);
 	}
 	
 	free(t0);

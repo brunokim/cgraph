@@ -8,10 +8,8 @@
 #include "graph_model.h"
 #include "graph_propagation.h"
 
-
-
-void test_animate_si(){
-	int n = 64, k = 4;
+void test_animate(int n, propagation_model_t model, void *params){
+	int k = 4;
 	int width = 1, radius = 5;
 	unsigned int seed = 42;
 	
@@ -21,57 +19,57 @@ void test_animate_si(){
 	graph_layout_degree(g, radius+width, p);
 	
 	short *state = malloc(n * sizeof(*state));
-	memset(state, GRAPH_SI_S, n * sizeof(*state));
-	state[0] = GRAPH_SI_I;
-	
-	graph_si_params_t params;
-	params.alpha = 0.5;
+	memset(state, 0, n * sizeof(*state));
+	state[0] = model.infectious_state;
 	
 	int num_step;
-	propagation_step_t *step = graph_propagation(g, state, &num_step,si,&params);
+	propagation_step_t *step = 
+		graph_propagation(g, state, &num_step, model, params);
 	
+	char folder[256];
+	sprintf(folder, "test/animate_%s", model.name);
 	graph_animate_propagation
-		("test/animate_si", g, p, GRAPH_SI_NUM_STATE, step, num_step);
+		(folder, g, p, model.num_state, step, num_step);
+	
 	free(p);
 	free(state);
 	delete_propagation_steps(step, num_step);
 	delete_graph(g);
+}
+
+void test_animate_si(){
+	graph_si_params_t params;
+	params.alpha = 1.0;
+	test_animate(64, si, &params);
 }
 
 void test_animate_sis(){
-	int n = 64, k = 4;
-	int width = 1, radius = 5;
-	unsigned int seed = 42;
-	
-	graph_t *g = new_barabasi_albert_r(n, k, &seed);
-	coord_t *p = malloc(n * sizeof(*p));
-	srand(42);
-	graph_layout_degree(g, radius+width, p);
-	
-	short *state = malloc(n * sizeof(*state));
-	memset(state, GRAPH_SIS_S, n * sizeof(*state));
-	state[0] = GRAPH_SIS_I;
-	
 	graph_sis_params_t params;
 	params.alpha = 1.0;
-	params.beta = 0.5;
-	params.num_iter = 20;
-	
-	int num_step;
-	propagation_step_t *step = graph_propagation(g, state, &num_step,sis,&params);
-	
-	graph_animate_propagation
-		("test/animate_sis", g, p, GRAPH_SIS_NUM_STATE, step, num_step);
-	free(p);
-	free(state);
-	delete_propagation_steps(step, num_step);
-	delete_graph(g);
+	params.beta  = 0.5;
+	test_animate(64, sis, &params);
 }
 
+void test_animate_sir(){
+	graph_sir_params_t params;
+	params.alpha = 1.0;
+	params.beta  = 0.5;
+	test_animate(64, sir, &params);
+}
+
+void test_animate_seir(){
+	graph_seir_params_t params;
+	params.alpha = 1.0;
+	params.beta  = 0.5;
+	params.gamma = 0.5;
+	test_animate(64, seir, &params);
+}
 
 int main(){
 	test_animate_si();
 	test_animate_sis();
+	test_animate_sir();
+	test_animate_seir();
 	printf("success\n");
 	return 0;
 }

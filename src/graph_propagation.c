@@ -235,7 +235,8 @@ bool is_si_end
 	return num_infected == n;
 }
 
-const propagation_model_t si = {GRAPH_SI_I, graph_si_transition, is_si_end};
+const propagation_model_t si = 
+	{"si", GRAPH_SI_I, graph_si_transition, is_si_end, GRAPH_SI_NUM_STATE};
 
 /********************************* SIS model **********************************/
 void graph_sis_transition
@@ -274,4 +275,121 @@ bool is_sis_end
 	return num_step > p->num_iter || num_infected == 0;
 }
 
-const propagation_model_t sis = {GRAPH_SIS_I, graph_sis_transition, is_sis_end};
+const propagation_model_t sis = 
+	{"sis", GRAPH_SIS_I, graph_sis_transition, is_sis_end, GRAPH_SIS_NUM_STATE};
+
+/********************************* SIR model **********************************/
+/*
+typedef struct { 
+	double alpha;
+	double beta;
+} graph_sir_params_t;
+
+typedef enum {
+	GRAPH_SIR_S, GRAPH_SIR_I, GRAPH_SIR_R, GRAPH_SIR_NUM_STATE
+} graph_state_sir_t;
+*/
+void graph_sir_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_sir_params_t *p = (graph_sir_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	
+	int i;
+	for (i=0; i < n; i++){
+		next[i] = curr.state[i];
+	}
+	
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		int r;
+		// Test for contamination
+		if (curr.state[dest] == GRAPH_SIR_S){
+			if (seedp){ r = rand_r(seedp); }
+			else      { r = rand(); }
+			if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SIR_I; }
+		}
+		
+		// Test for cure
+		if (seedp){ r = rand_r(seedp); }
+		else      { r = rand(); }
+		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SIR_R; }
+	}
+}
+
+bool is_sir_end
+		(const short *state, int n, int num_step, const void *params){
+	int num_infected = graph_count_state(GRAPH_SIR_I, state, n);
+	return num_infected == 0;
+}
+
+const propagation_model_t sir = 
+	{"sir", GRAPH_SIR_I, graph_sir_transition, is_sir_end, GRAPH_SIR_NUM_STATE};
+
+/********************************* SEIR model *********************************/
+
+/*typedef struct { 
+	double alpha;
+	double beta;
+	double gamma;
+} graph_seir_params_t;
+
+typedef enum {
+	GRAPH_SEIR_S, GRAPH_SEIR_E, GRAPH_SEIR_I, GRAPH_SEIR_R, GRAPH_SEIR_NUM_STATE
+} graph_state_seir_t;
+*/
+void graph_seir_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_seir_params_t *p = (graph_seir_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	assert(p->gamma >= 0.0 && p->gamma <= 1.0);
+	
+	int i;
+	for (i=0; i < n; i++){
+		next[i] = curr.state[i];
+	}
+	
+	for (i=0; i < n; i++){
+		int r;
+		// Test for infecciosity
+		if (next[i] == GRAPH_SEIR_E){
+			if (seedp){ r = rand_r(seedp); }
+			else      { r = rand(); }
+			if (r < p->gamma*RAND_MAX){ next[i] = GRAPH_SEIR_I; }
+		}
+	}
+	
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		int r;
+		// Test for contamination
+		if (curr.state[dest] == GRAPH_SEIR_S){
+			if (seedp){ r = rand_r(seedp); }
+			else      { r = rand(); }
+			if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SEIR_E; }
+		}
+		
+		// Test for cure
+		if (seedp){ r = rand_r(seedp); }
+		else      { r = rand(); }
+		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SEIR_R; }
+	}
+}
+
+bool is_seir_end
+		(const short *state, int n, int num_step, const void *params){
+	int num_exposed  = graph_count_state(GRAPH_SEIR_E, state, n);
+	int num_infected = graph_count_state(GRAPH_SEIR_I, state, n);
+	return num_exposed == 0 && num_infected == 0;
+}
+
+const propagation_model_t seir = 
+	{"seir", GRAPH_SEIR_I, graph_seir_transition, 
+	 is_seir_end, GRAPH_SEIR_NUM_STATE};
