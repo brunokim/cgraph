@@ -6,6 +6,13 @@
 #include "graph.h"
 #include "graph_layout.h"
 
+void copy_color(color_t copy, const color_t original){
+	copy[0] = original[0];
+	copy[1] = original[1];
+	copy[2] = original[2];
+	copy[3] = original[3];
+}
+
 /********************************* Layout *************************************/
 
 void graph_layout_random(box_t box, coord_t *p, int n){
@@ -30,14 +37,68 @@ void graph_layout_random_wout_overlap(int radius, double t, coord_t *p, int n){
 	assert(n > 0);
 	
 	float l = n * radius/2.0 * sqrt(2*M_PI / -log(1-t));
-	printf("l: %f\n", l);
 	box_t box = {{0.0f, 0.0f}, {l, l}};
 	graph_layout_random(box, p, n);
+}
+
+double graph_layout_circle(int radius, coord_t *p, int n){
+	assert(radius > 0);
+	assert(p);
+	assert(n > 0);
+	double R = 1.25 * (2*radius)*n/(2*M_PI);
+	double size = 2*R + 2*radius;
 	
 	int i;
 	for (i=0; i < n; i++){
-		printf("(%6.3f, %6.3f)\n", p[i].x, p[i].y);
+		p[i].x = R+radius + R*cos((2*M_PI*i)/n);
+		p[i].y = R+radius + R*sin((2*M_PI*i)/n);
 	}
+	
+	return size;
+}
+
+void graph_layout_circle_edges
+		(const graph_t *g, double size, int width, const color_t color, 
+		 int *es, path_style_t edge_style[]){
+	assert(g);
+	assert(size > 0.0);
+	assert(width > 0);
+	assert(color);
+	assert(es);
+	
+	// Circular style, for edges that lie in the circle when |i - v| == 1 
+	edge_style[0].type = GRAPH_CIRCULAR;
+	edge_style[0].control.x = size/2;
+	edge_style[0].control.y = size/2;
+	edge_style[0].width = width;
+	copy_color(edge_style[0].color, color);
+	
+	// Parabolic style, for edges that do not lie in the circle
+	edge_style[1].type = GRAPH_PARABOLA;
+	edge_style[1].control.x = size/2;
+	edge_style[1].control.y = size/2;
+	edge_style[1].width = width;
+	copy_color(edge_style[1].color, color);
+	
+	int e = 0; // edge count
+	int i, j, n = graph_num_vertices(g);
+	int *adj = malloc (n*sizeof(*adj));
+	for (i=0; i < n; i++){
+		int ki = graph_adjacents(g, i, adj);
+		for (j=0; j < ki; j++){
+			int v = adj[j];
+			if (graph_is_directed(g) || i < v){
+				if (v-i == 1 || i-v == 1 || i-v == n || v-i == n){
+					es[e] = 0; // circular
+				} else {
+					es[e] = 1; // parabola
+				}
+				e++;
+			}
+		}
+	}
+	assert(e == graph_num_edges(g));
+	free(adj);
 }
 
 /******************************* Printing *************************************/
@@ -242,7 +303,8 @@ void graph_print_svg_some_styles
 			if (graph_is_directed(g) || i < v){
 				int s = es[e];
 				path_style_t style = {
-					{p[i].x, p[i].y}, {p[v].x, p[v].y}, {0.0f, 0.0f},
+					{p[i].x, p[i].y}, {p[v].x, p[v].y}, 
+					{edge_style[s].control.x, edge_style[s].control.y},
 					edge_style[s].type,
 					edge_style[s].width,
 					{edge_style[s].color[0], 

@@ -2,9 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "graph.h"
 #include "graph_layout.h"
+#include "graph_model.h"
 
 /*    1 --- 3 --- 5
  *   /|     |\  _/|
@@ -53,7 +55,6 @@ coord_t *make_a_position(int width, int radius){
 }
 
 void test_one_style(){
-	int n = 8;
 	graph_t *g = make_a_graph(true);
 	
 	int width = 1, radius = 5;
@@ -133,13 +134,6 @@ void test_many_styles(){
 	free(point_style);
 }
 
-void copy_color(color_t copy, const color_t original){
-	copy[0] = original[0];
-	copy[1] = original[1];
-	copy[2] = original[2];
-	copy[3] = original[3];
-}
-
 void test_some_styles(){
 	graph_t *g = make_a_graph(true);
 	
@@ -193,10 +187,74 @@ void test_some_styles(){
 	free(p);
 }
 
+void test_random_layout(){
+	int n = 64, k = 6;
+	int radius = 5, width=1;
+	graph_t *g = new_erdos_renyi(n, (double)k);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	graph_layout_random_wout_overlap(width+radius, 0.5, p, n);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	copy_color(point_style.fill, solid_red);
+	copy_color(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	copy_color(edge_style.color, black);
+	
+	graph_print_svg_one_style("test/test_random_layout.svg", g, p, 
+	                          point_style, edge_style);
+	
+	free(p);
+	delete_graph(g);
+}
+
+void test_circle_layout(){
+	int n = 64, k = 6;
+	int radius = 5, width=1;
+	graph_t *g = new_watts_strogatz(n, k, 0.25);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	double size = graph_layout_circle(width+radius, p, n);
+	
+	int m = graph_num_edges(g);
+	int *es = malloc(m * sizeof(*es));
+	path_style_t edge_style[2];
+	
+	graph_layout_circle_edges(g, size, width, black, es, &edge_style[0]);
+	
+	int *ps = malloc(n * sizeof(*ps));
+	memset(ps, 0, n*sizeof(*ps));
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	copy_color(point_style.fill, solid_red);
+	copy_color(point_style.stroke, black);
+	
+	graph_print_svg_some_styles("test/test_circle_layout.svg", g, p, 
+	                            ps, &point_style, 1, 
+	                            es, edge_style, 2);
+	free(ps); free(es);
+	free(p);
+	delete_graph(g);
+}
+
 int main(){
 	test_one_style();
 	test_many_styles();
 	test_some_styles();
+	test_random_layout();
+	test_circle_layout();
 	printf("success\n");
 	return 0;
 }

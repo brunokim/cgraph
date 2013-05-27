@@ -32,11 +32,20 @@ typedef struct{
 
 /********************************* Layout *************************************/
 
+void copy_color(color_t copy, const color_t original);
+
 // Place points uniformly inside specified box
 void graph_layout_random(box_t box, coord_t *p, int n);
 // Place points with specified radius uniformly avoiding overlap with 
 // probability t
 void graph_layout_random_wout_overlap(int radius, double t, coord_t *p, int n);
+
+// Place points with specified radius in a circle without overlap
+double graph_layout_circle(int radius, coord_t *p, int n);
+// Fill edge style for a circular layout.
+void graph_layout_circle_edges
+		(const graph_t *g, double size, int width, const color_t color, 
+		 int *es, path_style_t edge_style[]);
 
 /******************************* Printing *************************************/
 
