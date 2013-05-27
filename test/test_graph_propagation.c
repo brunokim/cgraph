@@ -19,8 +19,12 @@ void test_animate_si(){
 	short *state = malloc(n * sizeof(*state));
 	memset(state, GRAPH_SI_S, n * sizeof(*state));
 	state[0] = GRAPH_SI_I;
+	
+	graph_si_params_t params;
+	params.alpha = 0.5;
+	
 	int num_step;
-	propagation_step_t *step = graph_propagation_si(g, state, &num_step);
+	propagation_step_t *step = graph_propagation(g, state, &num_step,si,&params);
 	
 	graph_animate_propagation
 		("test/animate_si", g, p, GRAPH_SI_NUM_STATE, step, num_step);

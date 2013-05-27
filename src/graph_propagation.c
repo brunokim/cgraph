@@ -8,16 +8,7 @@
 #include "graph.h"
 #include "graph_propagation.h"
 
-void delete_propagation_steps(propagation_step_t *step, int num_step){
-	int i;
-	for (i=0; i < num_step; i++){
-		free(step[i].state);
-		free(step[i].message);
-	}
-	free(step);
-}
-
-int graph_count_state(int state, short *v, int n){
+int graph_count_state(int state, const short *v, int n){
 	int i;
 	int num_state = 0;
 	for (i=0; i < n; i++){
@@ -26,6 +17,15 @@ int graph_count_state(int state, short *v, int n){
 		}
 	}
 	return num_state;
+}
+
+void delete_propagation_steps(propagation_step_t *step, int num_step){
+	int i;
+	for (i=0; i < num_step; i++){
+		free(step[i].state);
+		free(step[i].message);
+	}
+	free(step);
 }
 
 int graph_find_edge(const graph_t *g, int orig, int dest){
@@ -53,17 +53,21 @@ int graph_find_edge(const graph_t *g, int orig, int dest){
 	return e;
 }
 
-propagation_step_t *graph_propagation_si
-		(const graph_t *g, const short *init_state, int *_num_step){
-	return graph_propagation_si_r(g, init_state, _num_step, NULL);
+propagation_step_t *graph_propagation
+		(const graph_t *g, const short *init_state, int *num_step,
+		 propagation_model_t model, const void *params){
+	return graph_propagation_r(g, init_state, num_step, model, params, NULL);
 }
 
-propagation_step_t *graph_propagation_si_r
-		(const graph_t *g, const short *init_state, int *_num_step, 
-		 unsigned int *seedp){
+propagation_step_t *graph_propagation_r
+		(const graph_t *g, const short *init_state, int *_num_step,
+		 propagation_model_t model, const void *params, unsigned int *seedp){
 	assert(g);
 	assert(init_state);
 	assert(_num_step);
+	assert(model.infectious_state >= 0);
+	assert(model.transition);
+	assert(model.is_end);
 	
 	int i, n = graph_num_vertices(g);
 	
@@ -79,16 +83,17 @@ propagation_step_t *graph_propagation_si_r
 		step[num_step].n = n;
 	}
 	
-	int count_infected;
+	int num_infected;
 	do{
-		count_infected = graph_count_state(GRAPH_SI_I, step[num_step].state, n);
-		step[num_step].num_message = count_infected;
-		step[num_step].message = malloc(count_infected * sizeof(edge_t));
+		num_infected = 
+			graph_count_state(model.infectious_state, step[num_step].state, n);
+		step[num_step].num_message = num_infected;
+		step[num_step].message = malloc(num_infected * sizeof(edge_t));
 		
 		// Create messages from infected to random adjacents
 		int m = 0;
 		for (i=0; i < n; i++){
-			if (step[num_step].state[i] == GRAPH_SI_I){
+			if (step[num_step].state[i] == model.infectious_state){
 				step[num_step].message[m].orig = i;
 				
 				int ki = graph_adjacents(g, i, adj);
@@ -98,7 +103,7 @@ propagation_step_t *graph_propagation_si_r
 				m++;
 			}
 		}
-		assert(m == step[num_step].num_message);
+		assert(m == num_infected);
 		
 		// Next step creation
 		num_step++;
@@ -108,18 +113,10 @@ propagation_step_t *graph_propagation_si_r
 		}
 		step[num_step].state = malloc(n * sizeof(short));
 		step[num_step].n = n;
-		for (i=0; i < n; i++){
-			step[num_step].state[i] = GRAPH_SI_S;
-		}
 		
-		// The destination of a message is always infected
-		for (i=0; i < step[num_step-1].num_message; i++){
-			int orig = step[num_step-1].message[i].orig;
-			int dest = step[num_step-1].message[i].dest;
-			step[num_step].state[orig] = GRAPH_SI_I;
-			step[num_step].state[dest] = GRAPH_SI_I;
-		}
-	} while (count_infected < n && 
+		model.transition(step[num_step].state, step[num_step-1], n, params, seedp);	
+			
+	} while (!model.is_end(step[num_step].state, n, num_step, params) && 
 	          num_step < GRAPH_PROPAGATION_K * log2(n));
 	
 	step = realloc(step, num_step * sizeof(*step));
@@ -202,3 +199,40 @@ void graph_animate_propagation
 	free(point_style);
 	free(edge_style);
 }
+
+/******************************** SI model ************************************/
+void graph_si_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_si_params_t *p = (graph_si_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	
+	int i;
+	for (i=0; i < n; i++){
+		next[i] = GRAPH_SI_S;
+	}
+	
+	double target = p->alpha * RAND_MAX;
+		
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		next[orig] = GRAPH_SI_I;
+		
+		int r;
+		if (seedp){ r = rand_r(seedp); }
+		else      { r = rand(); }
+		if (r < target){
+			next[dest] = GRAPH_SI_I;
+		}
+	}
+}
+
+bool is_si_end
+		(const short *state, int n, int num_step, const void *params){
+	int num_infected = graph_count_state(GRAPH_SI_I, state, n);
+	return num_infected == n;
+}
+
+const propagation_model_t si = {GRAPH_SI_I, graph_si_transition, is_si_end};
