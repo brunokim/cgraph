@@ -20,7 +20,7 @@ int uniform(int n, unsigned int *seedp){
 	do {
 		r = seedp ? rand_r(seedp) : rand();
 	} while(r > RAND_MAX - rem);
-	return r % RAND_MAX;
+	return r % n;
 }
 
 graph_t *new_clique(int n){
@@ -126,33 +126,40 @@ graph_t *new_barabasi_albert_r(int n, int k, unsigned int *seedp){
 	
 	// Creates initial clique
 	int i, j;
-	for (i=0; i < k; i++){
-		for (j=i+1; j < k; j++){
+	for (i=0; i < k+1; i++){
+		for (j=i+1; j < k+1; j++){
 			graph_add_edge(g, i, j);
 		}
 	}
 	
+	// degree keeps track of the actual degree of each vertex.
 	int *degree = malloc(n * sizeof(*degree));
 	int *d = malloc(n * sizeof(*d));
 	memset(degree, 0, n * sizeof(*degree));
-	for (i=0; i < k; i++){
+	for (i=0; i < k+1; i++){
 		degree[i] = k;
 	}
 	
-	int total_edges = k * (k-1);
+	int total_edges = k * (k+1);
 	
-	for (i=k; i < n; i++){
-		memcpy(d, degree, (i-1) * sizeof(*d));
+	for (i=k+1; i < n; i++){
+		// For each new vertex, do k rounds of a raffle algorithm to select
+		// its target vertices. m is the number of tickets, and each vertex 
+		// has as many tickets as its degree
+		memcpy(d, degree, i * sizeof(*d));
 		int m = total_edges;
 		
 		for (j=0; j < k; j++){
+			// Selects a ticket at random and searches for the winner vertex
 			int s = uniform(m, seedp);
 			int v;
-			for (v=0; v < k; v++){ 
+			for (v=0; v < i; v++){ 
 				s -= d[v]; 
 				if (s < 0) break;
 			}
 			
+			// Once a vertex is selected, its tickets are taken off the bowl
+			// so it wont be chosen in the next selection round 
 			m -= d[v];
 			d[v] = 0;
 			
