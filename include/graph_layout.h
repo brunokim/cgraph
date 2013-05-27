@@ -31,7 +31,7 @@ typedef struct{
 } path_style_t;
 
 /********************************* Layout *************************************/
-
+// Copy color from original to copy
 void copy_color(color_t copy, const color_t original);
 
 // Place points uniformly inside specified box
@@ -47,12 +47,15 @@ void graph_layout_circle_edges
 		(const graph_t *g, double size, int width, const color_t color, 
 		 int *es, path_style_t edge_style[]);
 
+// Place points in concentric shells, with highest degrees near the center
+double graph_layout_degree(const graph_t *g, int radius, coord_t *p);
 /******************************* Printing *************************************/
 
 // Prints graph as SVG to file, using vertex coordinates given in p and
 // with a style for each point and edge.
 void graph_print_svg
 	(const char *filename,
+	 int width, int height, 
 	 const graph_t *g, 
 	 const coord_t *p, 
 	 const circle_style_t *point_style,
@@ -62,6 +65,7 @@ void graph_print_svg
 // with a single style for all points and edges.
 void graph_print_svg_one_style
 	(const char *filename,
+	 int width, int height, 
 	 const graph_t *g, 
 	 const coord_t *p, 
 	 const circle_style_t point_style, 
@@ -72,6 +76,7 @@ void graph_print_svg_one_style
 // and the mapping edge->style is given in es.
 void graph_print_svg_some_styles
 	(const char *filename,
+	 int width, int height, 
 	 const graph_t *g, 
 	 const coord_t *p, 
 	 const int *ps, const circle_style_t *point_style, int num_point_style,

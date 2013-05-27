@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
+#include "sorting.h"
 #include "graph.h"
 #include "graph_layout.h"
 
@@ -101,6 +103,79 @@ void graph_layout_circle_edges
 	free(adj);
 }
 
+double graph_layout_degree(const graph_t *g, int radius, coord_t *p){
+	assert(g);
+	assert(radius > 0);
+	assert(p);
+	
+	int i, j, k, n = graph_num_vertices(g);
+	int *degree = malloc(n * sizeof(*degree));
+	memset(degree, 0, n*sizeof(*degree));
+	
+	int kmax = 0;
+	int num_layer = 0;
+	for (i=0; i < n; i++){
+		k = graph_num_adjacents(g, i);
+		
+		if (degree[k] == 0){ num_layer++; }
+		degree[k]++;
+		kmax = k > kmax ? k : kmax;
+	}
+	
+	int *freq = malloc(num_layer * sizeof(*freq));
+	int *layer = malloc(num_layer * sizeof(*layer));
+	double drmin = 0.0;
+	j = 0;
+	for (k=kmax; k >= 0; k--){
+		if (degree[k] > 0){
+			layer[j] = k;
+			freq[j] = degree[k];
+			
+			double dr = (2*radius)*freq[j]/(2*M_PI*(1+j));
+			drmin = dr < drmin ? drmin : dr;
+			
+			j++;
+		}
+	}
+	assert(j == num_layer);
+	free(degree);
+	
+	double dR = 1.25*(2*radius);
+	dR = dR < drmin ? drmin : dR;
+	double R = dR*num_layer;
+	
+	// Random initial angle
+	double *t0 = malloc(num_layer * sizeof(*t0));
+	for (i=0; i < num_layer; i++){
+		t0[i] = 2*M_PI*(double)rand()/RAND_MAX;
+	}
+	
+	int *count = malloc(num_layer * sizeof(*count));
+	memset(count, 0, num_layer * sizeof(*count));
+	
+	for (i=0; i < n; i++){
+		k = graph_num_adjacents(g, i);
+		for (j=0; j < num_layer; j++){
+			if (layer[j] == k){
+				break;
+			}
+		}
+		
+		double theta = t0[j] + (2 * M_PI * count[j]) / freq[j];
+		count[j]++;
+		
+		p[i].x = R + dR*(1+j) * cos(theta);
+		p[i].y = R + dR*(1+j) * sin(theta);
+	}
+	
+	free(t0);
+	free(freq);
+	free(layer);
+	free(count);
+	
+	return 2*R + 2*radius;
+}
+
 /******************************* Printing *************************************/
 
 // Finds a circle that contains p1 and p2 as close as possible to pc.
@@ -181,6 +256,7 @@ void graph_print_svg_circle
 
 void graph_print_svg
 		(const char *filename,
+		 int width, int height, 
 		 const graph_t *g, 
 		 const coord_t *p, 
 		 const circle_style_t *point_style,
@@ -194,7 +270,10 @@ void graph_print_svg
 	FILE *fp = fopen(filename, "wt");
 	if (!fp){ return; }
 	
-	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+	if (width > 0){ fprintf(fp, "width=\"%dpx\" ", width); }
+	if (height > 0){ fprintf(fp, "height=\"%dpx\" ", height); }
+	fprintf(fp, ">\n");
 	
 	// Print edges
 	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
@@ -225,6 +304,7 @@ void graph_print_svg
 
 void graph_print_svg_one_style
 		(const char *filename,
+		 int width, int height,
 		 const graph_t *g, 
 		 const coord_t *p, 
 		 const circle_style_t point_style,
@@ -236,7 +316,10 @@ void graph_print_svg_one_style
 	FILE *fp = fopen(filename, "wt");
 	if (!fp){ return; }
 	
-	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+	if (width > 0){ fprintf(fp, "width=\"%dpx\" ", width); }
+	if (height > 0){ fprintf(fp, "height=\"%dpx\" ", height); }
+	fprintf(fp, ">\n");
 	
 	// Print edges
 	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
@@ -274,6 +357,7 @@ void graph_print_svg_one_style
 
 void graph_print_svg_some_styles
 		(const char *filename,
+		 int width, int height,
 		 const graph_t *g, 
 		 const coord_t *p, 
 		 const int *ps, const circle_style_t *point_style, int num_point_style,
@@ -289,7 +373,10 @@ void graph_print_svg_some_styles
 	FILE *fp = fopen(filename, "wt");
 	if (!fp){ return; }
 	
-	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+	fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+	if (width > 0){ fprintf(fp, "width=\"%dpx\" ", width); }
+	if (height > 0){ fprintf(fp, "height=\"%dpx\" ", height); }
+	fprintf(fp, ">\n");
 	
 	// Print edges
 	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);

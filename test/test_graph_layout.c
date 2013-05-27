@@ -71,7 +71,7 @@ void test_one_style(){
 		{0  , 0, 0, 255}
 	};
 	
-	graph_print_svg_one_style("test/test_one_style.svg", g, p, point_style, edge_style);
+	graph_print_svg_one_style("test/test_one_style.svg", 0, 0, g, p, point_style, edge_style);
 	
 	delete_graph(g);
 }
@@ -126,7 +126,7 @@ void test_many_styles(){
 		point_style[i].stroke[3] = 255;
 	}
 	
-	graph_print_svg("test/test_many_style.svg", g, p, point_style, edge_style);
+	graph_print_svg("test/test_many_style.svg", 0, 0, g, p, point_style, edge_style);
 	
 	delete_graph(g);
 	free(p);
@@ -180,7 +180,7 @@ void test_some_styles(){
 	copy_color(point_style[1].fill, solid_green);
 	copy_color(point_style[1].stroke, black);
 	
-	graph_print_svg_some_styles("test/test_some_styles.svg", g, p, 
+	graph_print_svg_some_styles("test/test_some_styles.svg", 0, 0, g, p, 
 	                            ps, point_style, num_point_style,
 	                            es, edge_style, num_edge_style);
 	delete_graph(g);
@@ -188,7 +188,7 @@ void test_some_styles(){
 }
 
 void test_random_layout(){
-	int n = 64, k = 6;
+	int n = 64, k = 4;
 	int radius = 5, width=1;
 	graph_t *g = new_erdos_renyi(n, (double)k);
 	
@@ -208,7 +208,7 @@ void test_random_layout(){
 	edge_style.width = width;
 	copy_color(edge_style.color, black);
 	
-	graph_print_svg_one_style("test/test_random_layout.svg", g, p, 
+	graph_print_svg_one_style("test/test_random_layout.svg", 0, 0, g, p, 
 	                          point_style, edge_style);
 	
 	free(p);
@@ -216,7 +216,7 @@ void test_random_layout(){
 }
 
 void test_circle_layout(){
-	int n = 64, k = 6;
+	int n = 64, k = 4;
 	int radius = 5, width=1;
 	graph_t *g = new_watts_strogatz(n, k, 0.25);
 	
@@ -241,12 +241,80 @@ void test_circle_layout(){
 	copy_color(point_style.fill, solid_red);
 	copy_color(point_style.stroke, black);
 	
-	graph_print_svg_some_styles("test/test_circle_layout.svg", g, p, 
+	graph_print_svg_some_styles("test/test_circle_layout.svg", 0, 0, g, p, 
 	                            ps, &point_style, 1, 
 	                            es, edge_style, 2);
 	free(ps); free(es);
 	free(p);
 	delete_graph(g);
+}
+
+void test_degree_layout(){
+	int n = 64, k = 4;
+	int radius = 5, width=1;
+	graph_t *g = new_barabasi_albert(n, k);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	graph_layout_degree(g, width+radius, p);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	copy_color(point_style.fill, solid_red);
+	copy_color(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	copy_color(edge_style.color, black);
+	
+	graph_print_svg_one_style("test/test_degree_layout.svg", 0, 0, g, p, 
+	                          point_style, edge_style);
+	
+	free(p);
+	delete_graph(g);
+}
+
+void test_animation(){
+	int n = 64, k = 4;
+	int radius = 5, width=1;
+	int seed = 42;
+	unsigned int state = seed;
+	graph_t *g = new_barabasi_albert_r(n, k, &state);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	double size = graph_layout_degree(g, width+radius, p);
+	delete_graph(g);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	copy_color(point_style.fill, solid_red);
+	copy_color(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	copy_color(edge_style.color, black);
+	
+	int i;
+	for (i=k+1; i <= n; i++){
+		state = seed;
+		g = new_barabasi_albert_r(i, k, &state);
+		
+		char filename[256];
+		sprintf(filename, "test/anim_ba/frame%03d.svg", i-k-1);
+		graph_print_svg_one_style(filename, (int)size, (int)size, g, p, 
+		                          point_style, edge_style);
+		
+		delete_graph(g);
+	}
+	
+	free(p);
 }
 
 int main(){
@@ -255,6 +323,8 @@ int main(){
 	test_some_styles();
 	test_random_layout();
 	test_circle_layout();
+	test_degree_layout();
+	test_animation();
 	printf("success\n");
 	return 0;
 }

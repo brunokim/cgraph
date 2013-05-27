@@ -86,6 +86,57 @@ collision with probability $t$. The formula is derived in
  l = \frac{nr}{2} \sqrt{\frac{2 \pi}{-\log(1-t)}}
 \end{equation*}
 
+\subsubsection{\texttt{graph\_layout\_circle}}
+
+Place points with specified radius in a circle without overlap.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{radius} must be positive.\\
+   \texttt{p} must have dimension $n$.
+ \item[Postconditions] \texttt{p[i]} is a coordinate in a circle.
+ \item[Return value] Circle bounding box size.
+\end{description}
+
+Points are positioned sequentially in a circle, starting from the rightmost
+and following in counterclockwise order.
+
+\subsubsection{\texttt{graph\_layout\_circle\_edges}}
+
+Fill edge style for a circular layout.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{size} must be the circle bounding box size.\\
+   \texttt{width} must be positive.\\
+   \texttt{color} must be a valid color.\\
+   \texttt{es} must have dimension $m$.\\
+   \texttt{edge\_style} must have dimension 2.
+ \item[Postconditions]~\\
+   \texttt{es[i]} is one of the styles \texttt{CIRCULAR} or \texttt{PARABOLA}.\\
+   \texttt{edge\_style[0]} is the \texttt{CIRCULAR} style.\\
+   \texttt{edge\_style[1]} is the \texttt{PARABOLA} style.\\
+\end{description}
+
+This function maps \texttt{es} to a circular or parabolic style, where
+an edge is circular if its endpoints are adjacent in a circle, and 
+parabolic otherwise.
+
+\subsubsection{\texttt{graph\_layout\_degree}}
+
+Place points in concentric shells, with highest degrees near the center.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{radius} must be positive.\\
+   \texttt{p} must have dimension $n$.
+ \item[Postconditions] \texttt{p[i]} is a coordinate.
+\end{description}
+
+Each shell is attached to a degree value; the inner shell contains elements
+of the highest degree, and the outer shell contains elements with the lowest
+degree. In each shell, elements are placed equally apart.
+
 \subsection{Printing}
 
 \subsubsection{\texttt{graph\_print\_svg}}
