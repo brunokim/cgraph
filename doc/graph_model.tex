@@ -44,13 +44,35 @@ depending on $k$:
  \centering
  \begin{tabular}{lll}
   \hline
-  Regime       & Size      & Loop \\ \hline
-  $k < 1$      & $\log n$  & No loop\\
-  $k = 1$      & $n^{1/2}$ & No loop\\
-  $k > 1$      & $n^{2/3}$ & Some loops\\
-  $k > \log n$ & $n$       & Many loops \\\hline
+  Regime       & Size       & Loop \\ \hline
+  $k < 1$      & $\log n$   & No loop\\
+  $k = 1$      & $n^{2/3}$  & No loop\\
+  $k > 1$      & $\alpha n$ & Some loops\\
+  $k > \log n$ & $n$        & Many loops \\\hline
  \end{tabular}
 \end{table*}
 
 \subsubsection{\texttt{new\_watts\_strogatz}}
+
+Creates a small-world network with $n$ vertices and average degree $k$,
+with rewiring probability $\beta$.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   $n > 0$ \\
+   $k$ is even\\
+   $0 < k < n$\\
+   $\beta$ is a valid probability ($0 <= \beta <= 1$)
+ \item[Return value] An undirected, unweighted small-world graph.
+\end{description}
+
 \subsubsection{\texttt{new\_barabasi\_albert}}
+
+Creates a scale-free network with $n$ vertices and average degree $k$.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   $n > 0$ \\
+   $0 < k < n$
+ \item[Return value] An undirected, unweighted scale-free graph.
+\end{description}

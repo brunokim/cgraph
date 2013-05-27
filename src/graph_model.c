@@ -86,27 +86,25 @@ graph_t *new_watts_strogatz_r(int n, int k, double beta, unsigned int *seedp){
 	int i, j;
 	for (i=0; i < n; i++){
 		for (j=0; j < k/2; j++){
-			if (i != j){
-				int r;
-				if (seedp) { r = rand_r(seedp); }
-				else       { r = rand(); }
-				
-				int next;
-				if (r < target) // Wire randomly to a vertex not yet adjacent to i
-				{
-					do 
-					{ 
-						next = uniform(n, seedp); 
-					}
-					while(i == next || graph_is_adjacent(g, i, next));
+			int r;
+			if (seedp) { r = rand_r(seedp); }
+			else       { r = rand(); }
+			
+			int next;
+			if (r < target) // Wire randomly to a vertex not yet adjacent to i
+			{
+				do 
+				{ 
+					next = uniform(n, seedp); 
 				}
-				else // Wire to neighbor
-				{
-					next = i+j+1;
-				}
-				
-				graph_add_edge(g, i, mod(next, n));
+				while(i == next || graph_is_adjacent(g, i, next));
 			}
+			else // Wire to neighbor
+			{
+				next = i+j+1;
+			}
+			
+			graph_add_edge(g, i, mod(next, n));
 		}
 	}
 	

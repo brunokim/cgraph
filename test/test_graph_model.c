@@ -33,8 +33,17 @@ void test_erdos_renyi(){
 void test_watts_strogatz(){
 	int n = 1000, k = 4;
 	double beta = 0.25;
-	graph_t *g = new_watts_strogatz(n, k, beta);
+	graph_t *g;
+	g = new_watts_strogatz(n, k, beta);
 	degree_dist(g, "test/test_watts_strogatz.dat");
+	delete_graph(g);
+	
+	g = new_watts_strogatz(n, k, 0.0);
+	degree_dist(g, "test/test_watts_strogatz_structured.dat");
+	delete_graph(g);
+	
+	g = new_watts_strogatz(n, k, 1.0);
+	degree_dist(g, "test/test_watts_strogatz_random.dat");
 	delete_graph(g);
 }
 
