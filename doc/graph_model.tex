@@ -1,6 +1,56 @@
 \section{\texttt{graph\_model}}
 
 \subsection{Graph creation}
+
+These functions creates new graphs, whose memory should be managed by the caller.
+
+The reentrant versions \texttt{new\_erdos\_renyi\_r}, 
+\texttt{new\_watts\_strogatz\_r} and \texttt{new\_barabasi\_albert\_r} accept 
+a state argument that will be used to call \texttt{rand\_r} for pseudo-random 
+number generation. 
+Two calls with the same state argument yield the same graph and same final
+state, allowing reproducibility.
+
+\subsubsection{\texttt{new\_clique}}
+
+Creates a complete network with $n$ vertices.
+
+\begin{description}
+ \item[Preconditions] $n > 0$
+ \item[Return value] An undirected, unweighted complete graph, or \texttt{NULL}
+ in case of memory exhaustion.
+\end{description}
+
+It should be noticed that the data structure is inefficient to represent
+large dense graphs, so it is recommended to check for memory exhaustion upon
+return.
+
 \subsubsection{\texttt{new\_erdos\_renyi}}
+
+Creates a random network with $n$ vertices and average degree $k$.
+
+\begin{description}
+ \item[Preconditions] ~\\
+   $n > 0$ \\
+   $0 < k < n$
+ \item[Return value] An undirected, unweighted random graph.
+\end{description}
+
+There is no guarantee that the network will be connected. The size and 
+characteristic of the largest component follow different regimes 
+depending on $k$:
+
+\begin{table*}[!hb]
+ \centering
+ \begin{tabular}{lll}
+  \hline
+  Regime       & Size      & Loop \\ \hline
+  $k < 1$      & $\log n$  & No loop\\
+  $k = 1$      & $n^{1/2}$ & No loop\\
+  $k > 1$      & $n^{2/3}$ & Some loops\\
+  $k > \log n$ & $n$       & Many loops \\\hline
+ \end{tabular}
+\end{table*}
+
 \subsubsection{\texttt{new\_watts\_strogatz}}
 \subsubsection{\texttt{new\_barabasi\_albert}}
