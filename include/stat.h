@@ -12,6 +12,8 @@ typedef struct {
 	int value;
 } interval_t;
 
+int uniform(int n, unsigned int *seedp);
+
 int comp_key_asc(const void*, const void*);
 int comp_key_desc(const void*, const void*);
 

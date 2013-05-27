@@ -5,6 +5,15 @@
 #include "sorting.h"
 #include "stat.h"
 
+int uniform(int n, unsigned int *seedp){
+	int r;
+	int rem = RAND_MAX % n;
+	do {
+		r = seedp ? rand_r(seedp) : rand();
+	} while(r > RAND_MAX - rem);
+	return r % n;
+}
+
 int comp_key_asc(const void *p_p1, const void *p_p2){
 	pair_t p1 = *(pair_t *)p_p1;
 	pair_t p2 = *(pair_t *)p_p2;

@@ -10,7 +10,8 @@ typedef struct {
 	coord_t sw, ne;
 } box_t;
 
-typedef enum {COLOR_R, COLOR_G, COLOR_B, COLOR_A} color_type_t;
+typedef enum {COLOR_R, COLOR_G, COLOR_B, COLOR_A} color_rgb_t;
+typedef enum {COLOR_H, COLOR_S, COLOR_V} color_hsv_t;
 #define COLOR_MAX 255
 typedef short color_t[4];
 
@@ -30,10 +31,15 @@ typedef struct{
 	color_t color;
 } path_style_t;
 
-/********************************* Layout *************************************/
+/***************************** Color functions ********************************/
 // Copy color from original to copy
-void copy_color(color_t copy, const color_t original);
+void color_copy(color_t copy, const color_t original);
+// Convert from HSV to RGB
+void color_hsv_to_rgb(color_t rgb, const color_t hsv);
+// Convert from RGB to HSV
+void color_rgb_to_hsv(color_t hsv, const color_t rgb);
 
+/********************************* Layout *************************************/
 // Place points uniformly inside specified box
 void graph_layout_random(box_t box, coord_t *p, int n);
 // Place points with specified radius uniformly avoiding overlap with 

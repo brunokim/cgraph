@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "error.h"
+#include "stat.h"
 #include "graph.h"
 #include "graph_model.h"
 
@@ -12,15 +13,6 @@ int mod(int a, int b){
 	int ret = a % b;
 	if (ret < 0){ ret += b; }
 	return ret;
-}
-
-int uniform(int n, unsigned int *seedp){
-	int r;
-	int rem = RAND_MAX % n;
-	do {
-		r = seedp ? rand_r(seedp) : rand();
-	} while(r > RAND_MAX - rem);
-	return r % n;
 }
 
 graph_t *new_clique(int n){

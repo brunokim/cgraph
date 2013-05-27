@@ -152,17 +152,17 @@ void test_some_styles(){
 	// Edges within community 0 in blue
 	edge_style[0].type = GRAPH_STRAIGHT;
 	edge_style[0].width = 1;
-	copy_color(edge_style[0].color, solid_blue);
+	color_copy(edge_style[0].color, solid_blue);
 	
 	// Edges between communities 0 and 1 in red
 	edge_style[1].type = GRAPH_STRAIGHT;
 	edge_style[1].width = 1;
-	copy_color(edge_style[1].color, solid_red);
+	color_copy(edge_style[1].color, solid_red);
 	
 	// Edges within community 1 in green
 	edge_style[2].type = GRAPH_STRAIGHT;
 	edge_style[2].width = 1;
-	copy_color(edge_style[2].color, solid_green);
+	color_copy(edge_style[2].color, solid_green);
 	
 	int num_point_style = 2;
 	int ps[] = {0, 0, 0, 1, 1, 1, 1, 1};
@@ -171,14 +171,14 @@ void test_some_styles(){
 	// Vertices in community 0 are blue
 	point_style[0].radius = radius;
 	point_style[0].width = width;
-	copy_color(point_style[0].fill, solid_blue);
-	copy_color(point_style[0].stroke, black);
+	color_copy(point_style[0].fill, solid_blue);
+	color_copy(point_style[0].stroke, black);
 	
 	// Vertices in community 1 are green
 	point_style[1].radius = radius;
 	point_style[1].width = width;
-	copy_color(point_style[1].fill, solid_green);
-	copy_color(point_style[1].stroke, black);
+	color_copy(point_style[1].fill, solid_green);
+	color_copy(point_style[1].stroke, black);
 	
 	graph_print_svg_some_styles("test/test_some_styles.svg", 0, 0, g, p, 
 	                            ps, point_style, num_point_style,
@@ -201,12 +201,12 @@ void test_random_layout(){
 	circle_style_t point_style;
 	point_style.radius = radius;
 	point_style.width = width;
-	copy_color(point_style.fill, solid_red);
-	copy_color(point_style.stroke, black);
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
 	
 	path_style_t edge_style;
 	edge_style.width = width;
-	copy_color(edge_style.color, black);
+	color_copy(edge_style.color, black);
 	
 	graph_print_svg_one_style("test/test_random_layout.svg", 0, 0, g, p, 
 	                          point_style, edge_style);
@@ -238,8 +238,8 @@ void test_circle_layout(){
 	circle_style_t point_style;
 	point_style.radius = radius;
 	point_style.width = width;
-	copy_color(point_style.fill, solid_red);
-	copy_color(point_style.stroke, black);
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
 	
 	graph_print_svg_some_styles("test/test_circle_layout.svg", 0, 0, g, p, 
 	                            ps, &point_style, 1, 
@@ -263,12 +263,12 @@ void test_degree_layout(){
 	circle_style_t point_style;
 	point_style.radius = radius;
 	point_style.width = width;
-	copy_color(point_style.fill, solid_red);
-	copy_color(point_style.stroke, black);
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
 	
 	path_style_t edge_style;
 	edge_style.width = width;
-	copy_color(edge_style.color, black);
+	color_copy(edge_style.color, black);
 	
 	graph_print_svg_one_style("test/test_degree_layout.svg", 0, 0, g, p, 
 	                          point_style, edge_style);
@@ -294,12 +294,12 @@ void test_animation(){
 	circle_style_t point_style;
 	point_style.radius = radius;
 	point_style.width = width;
-	copy_color(point_style.fill, solid_red);
-	copy_color(point_style.stroke, black);
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
 	
 	path_style_t edge_style;
 	edge_style.width = width;
-	copy_color(edge_style.color, black);
+	color_copy(edge_style.color, black);
 	
 	int i;
 	for (i=k+1; i <= n; i++){
