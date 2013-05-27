@@ -1,6 +1,6 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
-MODULES = sorting stat list set graph graph_metric graph_layout graph_model
+MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 BIN = experiment
 
 all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(MODULES))
@@ -16,6 +16,7 @@ run-tests: $(patsubst %,test/test_%, $(MODULES))
 	test/test_graph_metric
 	test/test_graph_layout
 	test/test_graph_model
+	test/test_graph_propagation
 
 # Documentation
 
@@ -29,6 +30,9 @@ bin/experiment : obj/experiment.o obj/graph_metric.o obj/graph.o obj/set.o obj/l
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
 # Test binaries
+
+test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -55,6 +59,9 @@ test/test_sorting : obj/test_sorting.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 ## Test objects
+
+obj/test_graph_propagation.o : test/test_graph_propagation.c include/error.h include/graph_propagation.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/test_graph_model.o : test/test_graph_model.c include/error.h include/graph_model.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -83,6 +90,9 @@ obj/test_sorting.o : test/test_sorting.c include/sorting.h
 ## Basic objets
 
 obj/experiment.o   : src/experiment.c include/graph_metric.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph_propagation.o : src/graph_propagation.c include/graph_propagation.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/graph_model.o : src/graph_model.c include/graph_model.h include/graph.h
