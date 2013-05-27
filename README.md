@@ -38,4 +38,4 @@ geodesic distance.
 
 Layouting and printing graphs into SVG files.
 
-For more information, please check the documentation, available in `doc/main.tex`.
+For more information, please check the documentation, available in `doc/main.pdf`.

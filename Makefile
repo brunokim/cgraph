@@ -1,6 +1,6 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
-MODULES = sorting stat list set graph graph_metric graph_layout
+MODULES = sorting stat list set graph graph_metric graph_layout graph_model
 BIN = experiment
 
 all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(MODULES))
@@ -15,6 +15,7 @@ run-tests: $(patsubst %,test/test_%, $(MODULES))
 	test/test_graph
 	test/test_graph_metric
 	test/test_graph_layout
+	test/test_graph_model
 
 # Documentation
 
@@ -28,6 +29,9 @@ bin/experiment : obj/experiment.o obj/graph_metric.o obj/graph.o obj/set.o obj/l
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
 # Test binaries
+
+test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 test/test_graph_layout: obj/test_graph_layout.o obj/graph_layout.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -51,6 +55,9 @@ test/test_sorting : obj/test_sorting.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 ## Test objects
+
+obj/test_graph_model.o : test/test_graph_model.c include/error.h include/graph_model.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/test_graph_layout.o : test/test_graph_layout.c include/error.h include/graph_layout.h include/graph.h include/set.h
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -76,6 +83,9 @@ obj/test_sorting.o : test/test_sorting.c include/sorting.h
 ## Basic objets
 
 obj/experiment.o   : src/experiment.c include/graph_metric.h include/graph.h include/set.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph_model.o : src/graph_model.c include/graph_model.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/graph_layout.o : src/graph_layout.c include/graph_layout.h
