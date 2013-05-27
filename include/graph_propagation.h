@@ -75,9 +75,24 @@ bool is_si_end
 extern const propagation_model_t si;
 
 /********************************* SIS model **********************************/
+typedef struct { 
+	double alpha;
+	double beta;
+	int num_iter;
+} graph_sis_params_t;
+
 typedef enum {
 	GRAPH_SIS_S, GRAPH_SIS_I, GRAPH_SIS_NUM_STATE
 } graph_state_sis_t;
+
+void graph_sis_transition
+	(short *next, const propagation_step_t curr, int n, 
+	 const void *params, unsigned int *seedp);
+
+bool is_sis_end
+	(const short *state, int n, int num_step, const void *params);
+
+extern const propagation_model_t sis;
 
 /********************************* SIR model **********************************/
 typedef enum {

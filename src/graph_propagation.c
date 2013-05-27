@@ -236,3 +236,42 @@ bool is_si_end
 }
 
 const propagation_model_t si = {GRAPH_SI_I, graph_si_transition, is_si_end};
+
+/********************************* SIS model **********************************/
+void graph_sis_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_sis_params_t *p = (graph_sis_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	
+	int i;
+	for (i=0; i < n; i++){
+		next[i] = curr.state[i];
+	}
+	
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		int r;
+		// Test for contamination
+		if (seedp){ r = rand_r(seedp); }
+		else      { r = rand(); }
+		if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SIS_I; }
+		
+		// Test for cure
+		if (seedp){ r = rand_r(seedp); }
+		else      { r = rand(); }
+		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SIS_S; }
+	}
+}
+
+bool is_sis_end
+		(const short *state, int n, int num_step, const void *params){
+	graph_sis_params_t *p = (graph_sis_params_t*)params;
+	int num_infected = graph_count_state(GRAPH_SIS_I, state, n);
+	return num_step > p->num_iter || num_infected == 0;
+}
+
+const propagation_model_t sis = {GRAPH_SIS_I, graph_sis_transition, is_sis_end};
