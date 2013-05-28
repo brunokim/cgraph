@@ -1,14 +1,26 @@
 *.o
+
+# Auxiliaries
 *~
 *.log
 *.backup
 *.aux
 *.out
 *.toc
-*.svg
+
+# Raw data
 *.dat
+summary.txt
+
+# Images
+*.svg
+*.pbm
+*.pdf
+
+# Binaries
 bin/
 obj/
+
 # Test binaries
 test/test_graph
 test/test_graph_layout

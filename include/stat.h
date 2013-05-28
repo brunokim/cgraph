@@ -12,6 +12,7 @@ typedef struct {
 	int value;
 } interval_t;
 
+int my_rand_r(unsigned int *seedp);
 int uniform(int n, unsigned int *seedp);
 
 int comp_key_asc(const void*, const void*);

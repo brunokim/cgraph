@@ -22,8 +22,8 @@ int graph_count_state(int state, const short *v, int n){
 void delete_propagation_steps(propagation_step_t *step, int num_step){
 	int i;
 	for (i=0; i < num_step; i++){
-		free(step[i].state);
-		free(step[i].message);
+		if (step[i].n > 0)          { free(step[i].state); }
+		if (step[i].num_message > 0){ free(step[i].message); }
 	}
 	free(step);
 }
@@ -118,6 +118,8 @@ propagation_step_t *graph_propagation_r
 			
 	} while (!model.is_end(step[num_step].state, n, num_step, params) && 
 	          num_step < GRAPH_PROPAGATION_K * log2(n));
+	
+	step[num_step].num_message = 0;
 	
 	step = realloc(step, (num_step+1) * sizeof(*step));
 	*_num_step = num_step+1;
@@ -233,9 +235,7 @@ void graph_si_transition
 		
 		next[orig] = GRAPH_SI_I;
 		
-		int r;
-		if (seedp){ r = rand_r(seedp); }
-		else      { r = rand(); }
+		int r = my_rand_r(seedp);
 		if (r < target){
 			next[dest] = GRAPH_SI_I;
 		}
@@ -270,13 +270,11 @@ void graph_sis_transition
 		
 		int r;
 		// Test for contamination
-		if (seedp){ r = rand_r(seedp); }
-		else      { r = rand(); }
+		r = my_rand_r(seedp);
 		if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SIS_I; }
 		
 		// Test for cure
-		if (seedp){ r = rand_r(seedp); }
-		else      { r = rand(); }
+		r = my_rand_r(seedp);
 		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SIS_S; }
 	}
 }
@@ -292,16 +290,7 @@ const propagation_model_t sis =
 	{"sis", GRAPH_SIS_I, graph_sis_transition, is_sis_end, GRAPH_SIS_NUM_STATE};
 
 /********************************* SIR model **********************************/
-/*
-typedef struct { 
-	double alpha;
-	double beta;
-} graph_sir_params_t;
 
-typedef enum {
-	GRAPH_SIR_S, GRAPH_SIR_I, GRAPH_SIR_R, GRAPH_SIR_NUM_STATE
-} graph_state_sir_t;
-*/
 void graph_sir_transition
 		(short *next, const propagation_step_t curr, int n, 
 		 const void *params, unsigned int *seedp){
@@ -321,14 +310,12 @@ void graph_sir_transition
 		int r;
 		// Test for contamination
 		if (curr.state[dest] == GRAPH_SIR_S){
-			if (seedp){ r = rand_r(seedp); }
-			else      { r = rand(); }
+			r = my_rand_r(seedp);
 			if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SIR_I; }
 		}
 		
 		// Test for cure
-		if (seedp){ r = rand_r(seedp); }
-		else      { r = rand(); }
+		r = my_rand_r(seedp);
 		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SIR_R; }
 	}
 }
@@ -344,16 +331,6 @@ const propagation_model_t sir =
 
 /********************************* SEIR model *********************************/
 
-/*typedef struct { 
-	double alpha;
-	double beta;
-	double gamma;
-} graph_seir_params_t;
-
-typedef enum {
-	GRAPH_SEIR_S, GRAPH_SEIR_E, GRAPH_SEIR_I, GRAPH_SEIR_R, GRAPH_SEIR_NUM_STATE
-} graph_state_seir_t;
-*/
 void graph_seir_transition
 		(short *next, const propagation_step_t curr, int n, 
 		 const void *params, unsigned int *seedp){
@@ -384,14 +361,12 @@ void graph_seir_transition
 		int r;
 		// Test for contamination
 		if (curr.state[dest] == GRAPH_SEIR_S){
-			if (seedp){ r = rand_r(seedp); }
-			else      { r = rand(); }
+			r = my_rand_r(seedp);
 			if (r < p->alpha*RAND_MAX){ next[dest] = GRAPH_SEIR_E; }
 		}
 		
 		// Test for cure
-		if (seedp){ r = rand_r(seedp); }
-		else      { r = rand(); }
+		r = my_rand_r(seedp);
 		if (r < p->beta*RAND_MAX){ next[orig] = GRAPH_SEIR_R; }
 	}
 }
@@ -406,3 +381,57 @@ bool is_seir_end
 const propagation_model_t seir = 
 	{"seir", GRAPH_SEIR_I, graph_seir_transition, 
 	 is_seir_end, GRAPH_SEIR_NUM_STATE};
+
+/**************************** Daley-Kendall model *****************************/
+void graph_dk_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_dk_params_t *p = (graph_dk_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	
+	int i;
+	for (i=0; i < n; i++){
+		next[i] = curr.state[i];
+	}
+	
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		int r;
+		// Test for infection
+		if (curr.state[dest] == GRAPH_DK_X)
+		{
+			r = my_rand_r(seedp);
+			if (r < p->alpha * RAND_MAX){
+				next[dest] = GRAPH_DK_Y;
+			}
+		}
+		else
+		{
+			// Test for origin stifling
+			r = my_rand_r(seedp);
+			if (r < p->beta * RAND_MAX){
+				next[orig] = GRAPH_DK_Z;
+			}
+			
+			// Test for destination stifling
+			if (curr.state[dest] == GRAPH_DK_Y){
+				r = my_rand_r(seedp);
+				if (r < p->beta * RAND_MAX){
+					next[dest] = GRAPH_DK_Z;
+				}
+			}
+		}
+	}
+}
+
+bool is_dk_end
+		(const short *state, int n, int num_step, const void *params){
+	int num_spreaders = graph_count_state(GRAPH_DK_Y, state, n);
+	return num_spreaders == 0;
+}
+
+const propagation_model_t dk = 
+	{"dk", GRAPH_DK_Y, graph_dk_transition, is_dk_end, GRAPH_DK_NUM_STATE};

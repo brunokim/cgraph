@@ -24,23 +24,25 @@ typedef struct {
 	int num_message; // number of messages exchanged
 } propagation_step_t;
 
+// Callback for state transition
 typedef void (*state_transition_f)
 	(short *next, const propagation_step_t curr, int n, 
 	 const void *params, unsigned int *seedp);
 
+// Callback to test for simulation end
 typedef bool (*is_propagation_end)
 	(const short *state, int n, int num_step, const void *params);
 	
 typedef struct {
-	const char *name;
-	short infectious_state;
-	state_transition_f transition;
-	is_propagation_end is_end;
-	int num_state;
+	const char *name;                // Model name
+	short infectious_state;          // Infectious state value
+	state_transition_f transition; // Transition callback
+	is_propagation_end is_end;     // Ending predicate callback
+	int num_state;                   // Total number of states
 } propagation_model_t;
 
 /********************************* Functions **********************************/
-
+// Counts number of individuals in s that are in the given state
 int graph_count_state(int state, const short *s, int n);
 
 propagation_step_t *graph_propagation
@@ -137,5 +139,24 @@ bool is_seir_end
 	(const short *state, int n, int num_step, const void *params);
 
 extern const propagation_model_t seir;
+
+/**************************** Daley-Kendall model *****************************/
+typedef struct { 
+	double alpha;
+	double beta;
+} graph_dk_params_t;
+
+typedef enum {
+	GRAPH_DK_X, GRAPH_DK_Y, GRAPH_DK_Z, GRAPH_DK_NUM_STATE
+} graph_state_dk_t;
+
+void graph_dk_transition
+	(short *next, const propagation_step_t curr, int n, 
+	 const void *params, unsigned int *seedp);
+
+bool is_dk_end
+	(const short *state, int n, int num_step, const void *params);
+
+extern const propagation_model_t dk;
 
 #endif

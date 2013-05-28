@@ -5,11 +5,15 @@
 #include "sorting.h"
 #include "stat.h"
 
+int my_rand_r(unsigned int *seedp){
+	return seedp ? rand_r(seedp) : rand();
+}
+
 int uniform(int n, unsigned int *seedp){
 	int r;
 	int rem = RAND_MAX % n;
 	do {
-		r = seedp ? rand_r(seedp) : rand();
+		r = my_rand_r(seedp);
 	} while(r > RAND_MAX - rem);
 	return r % n;
 }
