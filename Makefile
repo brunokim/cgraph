@@ -1,22 +1,28 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
-BIN = experiment
+TESTS = $(patsubst %, test/test_%, $(MODULES))
+BIN = metrics
 
-all: $(patsubst %,bin/%, $(BIN)) $(patsubst %,test/test_%, $(MODULES))
+all: $(patsubst %,bin/%, $(BIN)) $(TESTS)
 
 doc: doc/main.pdf 
 
-run-tests: $(patsubst %,test/test_%, $(MODULES))
-	test/test_sorting
-	test/test_list
-	test/test_stat
-	test/test_set
-	test/test_graph
-	test/test_graph_metric
-	test/test_graph_layout
-	test/test_graph_model
-	test/test_graph_propagation
+run-tests: $(TESTS)
+	for test in $(TESTS); do echo $$test && ./$$test; done
+
+clean-binaries:
+	rm obj/*
+	rm $(TESTS)
+	rm bin/*
+
+clean-test:
+	rm test/*.svg
+	rm test/*.dat
+	for dir in test/*/; do rm $${dir}*; done
+
+.PHONY: clean
+clean: clean-binaries clean-test
 
 # Documentation
 
@@ -26,7 +32,7 @@ doc/main.pdf: doc/main.tex $(patsubst %,doc/%.tex, $(MODULES))
 
 # Binaries
 
-bin/experiment : obj/experiment.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
 # Test binaries
@@ -90,7 +96,7 @@ obj/test_sorting.o : test/test_sorting.c include/sorting.h
 
 ## Basic objets
 
-obj/experiment.o   : src/experiment.c include/graph_metric.h include/graph.h include/set.h
+obj/metrics.o   : src/metrics.c include/graph_metric.h include/graph.h include/set.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/graph_propagation.o : src/graph_propagation.c include/graph_propagation.h include/graph.h

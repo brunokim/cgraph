@@ -38,4 +38,14 @@ geodesic distance.
 
 Layouting and printing graphs into SVG files.
 
+### `graph_model`
+
+Common models in Complex Network research: clique, random, scale-free and 
+small-world included.
+
+### `graph_propagation`
+
+Information propagation models in networks: SI, SIS, SIR, SEIR and 
+Daley-Kendall.
+
 For more information, please check the documentation, available in `doc/main.pdf`.

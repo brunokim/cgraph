@@ -40,7 +40,7 @@ void test_basic(){
 }
 
 void test_input(){
-	char *filename = "../redes/powergrid/edges.txt";
+	char *filename = "datasets/powergrid/edges.txt";
 	graph_t *g = load_graph(filename, true);
 	
 	int n = graph_num_vertices(g);
