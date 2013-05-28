@@ -119,8 +119,8 @@ propagation_step_t *graph_propagation_r
 	} while (!model.is_end(step[num_step].state, n, num_step, params) && 
 	          num_step < GRAPH_PROPAGATION_K * log2(n));
 	
-	step = realloc(step, num_step * sizeof(*step));
-	*_num_step = num_step;
+	step = realloc(step, (num_step+1) * sizeof(*step));
+	*_num_step = num_step+1;
 	return step;
 }
 
@@ -369,7 +369,7 @@ void graph_seir_transition
 	
 	for (i=0; i < n; i++){
 		int r;
-		// Test for infecciosity
+		// Test for exposure
 		if (next[i] == GRAPH_SEIR_E){
 			if (seedp){ r = rand_r(seedp); }
 			else      { r = rand(); }
