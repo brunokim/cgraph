@@ -58,6 +58,9 @@ void graph_animate_propagation
 	 int num_state,
 	 const propagation_step_t *step, int num_step);
 
+void graph_propagation_freq
+	(const propagation_step_t *step, int num_step, int **freq, int num_state);
+
 /********************************* SI model ***********************************/
 typedef struct { 
 	double alpha;

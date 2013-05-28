@@ -9,7 +9,7 @@
 #include "graph_propagation.h"
 
 void test_animate(int n, propagation_model_t model, void *params){
-	int k = 4;
+	int i, j, k = 4;
 	int width = 1, radius = 5;
 	unsigned int seed = 42;
 	
@@ -26,11 +26,29 @@ void test_animate(int n, propagation_model_t model, void *params){
 	propagation_step_t *step = 
 		graph_propagation(g, state, &num_step, model, params);
 	
-	char folder[256];
-	sprintf(folder, "test/animate_%s", model.name);
+	char str[256];
+	sprintf(str, "test/animate_%s", model.name);
 	graph_animate_propagation
-		(folder, g, p, model.num_state, step, num_step);
+		(str, g, p, model.num_state, step, num_step);
 	
+	int **freq = malloc (num_step * sizeof(*freq));
+	freq[0] = malloc (num_step * model.num_state * sizeof(*freq[0]));
+	for (i=1; i < num_step; i++)
+		freq[i] = freq[0] + i * model.num_state;
+	graph_propagation_freq(step, num_step, freq, model.num_state);
+	
+	sprintf(str, "test/animate_%s/freq.dat", model.name);
+	FILE *fp = fopen(str, "wt");
+	for (i=0; i < num_step; i++){
+		fprintf(fp, "%d ", i);
+		for (j=0; j < model.num_state; j++){
+			fprintf(fp, "%d ", freq[i][j]);
+		}
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
+	
+	free(freq[0]); free(freq);
 	free(p);
 	free(state);
 	delete_propagation_steps(step, num_step);

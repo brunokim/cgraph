@@ -200,6 +200,19 @@ void graph_animate_propagation
 	free(edge_style);
 }
 
+void graph_propagation_freq
+		(const propagation_step_t *step, int num_step, int **freq, int num_state){
+	int s, i;
+	
+	memset(freq[0], 0, num_step * num_state * sizeof(*freq[0]));
+	
+	for (s=0; s < num_step; s++){
+		for (i=0; i < step[s].n; i++){
+			freq[s][ step[s].state[i] ]++;
+		}
+	}
+}
+
 /******************************** SI model ************************************/
 void graph_si_transition
 		(short *next, const propagation_step_t curr, int n, 
