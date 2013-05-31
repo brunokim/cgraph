@@ -88,7 +88,7 @@ propagation_step_t *graph_propagation_r
 		num_infected = 
 			graph_count_state(model.infectious_state, step[num_step].state, n);
 		step[num_step].num_message = num_infected;
-		step[num_step].message = malloc(num_infected * sizeof(edge_t));
+		step[num_step].message = malloc(num_infected * sizeof(message_t));
 		
 		// Create messages from infected to random adjacents
 		int m = 0;

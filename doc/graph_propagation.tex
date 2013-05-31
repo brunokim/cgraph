@@ -1,1 +1,143 @@
 \section{\texttt{graph\_propagation}}
+
+Information dissemination simulation in networks are implemented in
+CGraph in a more abstract way, as there is lots in common between 
+different propagation models.
+
+Propagation models consists in a state diagram that represent the
+transition sequence for each individual, where one of them is 
+the \textit{infectious state}. At each time step, an infectious individual 
+sends a message to one of its adjacents, chosen from an uniform distribution.
+Care should be taken to determine the next state if an individual receives
+more than one message per time step.
+
+Models are implemented using two callbacks that are called in each time step: 
+
+\texttt{state\_transition\_f} determine the next state vector (ie, in which 
+state each individual is in);
+
+and \texttt{is\_propagation\_end} determines if the propagation has ended. 
+
+Some models may never reach an end, so there's an additional condition that 
+each simulation will run for at most $K \log_2 n$ iterations, where $K$ is 
+defined in \texttt{GRAPH\_PROPAGATION\_K}. It can be redefined during
+compilation with 
+
+\texttt{-DGRAPH\_PROPAGATION\_K=10}
+
+\subsection{Types}
+
+\subsubsection{\texttt{message\_t}}
+
+Message type storing the origin \texttt{orig} and destination \texttt{dest} of
+a message.
+
+\subsubsection{\texttt{propagation\_step\_t}}
+
+Structure storing information on a propagation time step: its state vector
+and the messages exchanged.
+
+\begin{description}
+ \item[\texttt{n}] Number of individuals in this time step.
+ \item[\texttt{state}] State vector, where \texttt{state[i]} is the state of 
+   individual $i$.
+ \item[\texttt{num\_message}] Number of messages exchanged, that must be equal
+   to the number of individuals in the infectious state.
+ \item[\texttt{message}] Message array, storing the origin and destination of 
+   messages.
+\end{description}
+
+\subsubsection{\texttt{state\_transition\_f}}
+
+Callback for state transition, implemented by the propagation model.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{next} must have dimension $n$.
+   \texttt{curr} must be information about the current step, including exchanged
+   messages.\\
+   \texttt{n} is the number of elements, that in a dynamic network may be 
+   different than the one in the current time step.\\
+   \texttt{params} is a pointer to model specific parameters.\\
+   \texttt{seedp} is a pointer to a PRNG state variable, or \texttt{NULL}.
+ \item[Postcondition] \texttt{next[i]} is the next state of the element $i$.
+\end{description}
+
+\subsubsection{\texttt{is\_propagation\_end}}
+
+Callback for simulation termination, implemented by the propagation model.
+
+\texttt{state} is the state vector, and \texttt{num\_step} is the current
+iteration number. \texttt{params} is a pointer to model specific parameters.
+
+\subsection{Functions}
+
+\subsubsection{\texttt{graph\_count\_state}}
+
+Counts number of individuals in $s$ that are in the given state.
+
+\subsubsection{\texttt{graph\_propagation}}
+
+Simulates a propagation in graph with a given initial state vector using
+the given propagation model.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{init\_state} is a valid state vector with dimension $n$.\\
+   \texttt{model} is a valid propagation model.\\
+   \texttt{params} is a pointer to the model specific parameter structure.
+ \item[Postcondition]~\\
+   \texttt{num\_step} is the number of steps in simulation.
+ \item[Return value]~\\
+   Array of \texttt{propagation\_step\_t}.
+ \item[Memory deallocation]~\\
+   \texttt{int num\_step;}\\
+   \texttt{propagation\_step\_t *step = graph\_propagation(..., \&num\_step, ...);}\\
+   \texttt{delete\_propagation\_steps(step, num\_step);}
+\end{description}
+
+There is a reentrant version \texttt{graph\_propagation\_r}, that expects a
+pointer to the PRNG state variable, allowing reproducible simulations.
+
+\subsubsection{\texttt{delete\_propagation\_steps}}
+
+Deallocate a \texttt{propagation\_step\_t} array that was allocated with 
+\texttt{graph\_propagation}.
+
+\subsubsection{\texttt{graph\_animate\_coefficient}}
+
+Creates animation frames of a propagation in the given graph.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{folder} is an existing folder.\\
+   \texttt{p} is a coordinate array with dimension $n$.\\
+   \texttt{num\_state} is the number of states in the propagation model used.
+   \texttt{step} is a propagation step array with dimension \texttt{num\_step}.
+ \item[Postcondition]~\\
+   The given folder has \texttt{num\_step} SVG files with name format 
+   \texttt{frame\%05d}, numbered incrementally from 0.
+\end{description}
+
+\subsubsection{\texttt{graph\_propagation\_freq}}
+
+Compute the number of individuals in each state at each propagation step.
+
+\begin{description}
+ \item[Preconditions]~\\
+   \texttt{step} is an array with dimension \texttt{num\_step}.\\
+   \texttt{freq} is an allocated matrix with dimensions \texttt{num\_step}
+    $\times$ \texttt{num\_state} \\
+   \texttt{num\_state} is the number of states in the propagation model used.
+ \item[Postcondition]~\\
+   \texttt{freq[i][s]} is the number of individuals in state $s$ at iteration 
+    $i$.
+\end{description}
+
+\subsection{Models}
+
+\subsubsection{SI}
+\subsubsection{SIS}
+\subsubsection{SIR}
+\subsubsection{SEIR}
+\subsubsection{Daley-Kendall}

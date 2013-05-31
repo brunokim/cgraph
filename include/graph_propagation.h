@@ -8,19 +8,21 @@
 
 /********************************* Constants **********************************/
 
-#define GRAPH_PROPAGATION_K 10
+#ifndef GRAPH_PROPAGATION_K
+ #define GRAPH_PROPAGATION_K 10
+#endif
 
 /*********************************** Types ************************************/
 
 typedef struct {
 	int orig, dest;
-} edge_t;
+} message_t;
 
 typedef struct {
 	short *state;   // state vector
 	int n;          // number of vertices
 	
-	edge_t *message; // messages exchanged
+	message_t *message; // messages exchanged
 	int num_message; // number of messages exchanged
 } propagation_step_t;
 
@@ -45,27 +47,32 @@ typedef struct {
 // Counts number of individuals in s that are in the given state
 int graph_count_state(int state, const short *s, int n);
 
+// Simulates a propagation in graph with the given state vector and model
 propagation_step_t *graph_propagation
 	(const graph_t *g, const short *init_state, int *num_step,
 	 propagation_model_t model, const void *params);
 
+// Simulates a propagation using a seed state variable
 propagation_step_t *graph_propagation_r
 	(const graph_t *g, const short *init_state, int *num_step,
 	 propagation_model_t model, const void *params, unsigned int *seedp);
 
+// Deallocate a step array that was allocated with graph_propagation.
 void delete_propagation_steps(propagation_step_t *step, int num_step);
 
+// Creates animation frames of a propagation in the given graph.
 void graph_animate_propagation
 	(const char *folder, const graph_t *g, const coord_t *p, 
 	 int num_state,
 	 const propagation_step_t *step, int num_step);
 
+// Compute the number of individuals in each state at each propagation step.
 void graph_propagation_freq
 	(const propagation_step_t *step, int num_step, int **freq, int num_state);
 
 /********************************* SI model ***********************************/
 typedef struct { 
-	double alpha;
+	double alpha; // Infection probability
 } graph_si_params_t;
 
 typedef enum {
@@ -83,9 +90,9 @@ extern const propagation_model_t si;
 
 /********************************* SIS model **********************************/
 typedef struct { 
-	double alpha;
-	double beta;
-	int num_iter;
+	double alpha; // Infection probability
+	double beta;  // Cure probability
+	int num_iter; // Maximum number of iterations
 } graph_sis_params_t;
 
 typedef enum {
@@ -103,8 +110,8 @@ extern const propagation_model_t sis;
 
 /********************************* SIR model **********************************/
 typedef struct { 
-	double alpha;
-	double beta;
+	double alpha; // Infection probability
+	double beta;  // Cure probability
 } graph_sir_params_t;
 
 typedef enum {
@@ -122,9 +129,9 @@ extern const propagation_model_t sir;
 
 /********************************* SEIR model *********************************/
 typedef struct { 
-	double alpha;
-	double beta;
-	double gamma;
+	double alpha; // Exposure probability
+	double beta;  // Cure probability
+	double gamma; // Infection probability
 } graph_seir_params_t;
 
 typedef enum {
@@ -142,8 +149,8 @@ extern const propagation_model_t seir;
 
 /**************************** Daley-Kendall model *****************************/
 typedef struct { 
-	double alpha;
-	double beta;
+	double alpha; // Spreading probability
+	double beta;  // Stifling probability
 } graph_dk_params_t;
 
 typedef enum {

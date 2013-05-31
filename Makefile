@@ -2,7 +2,9 @@ CC     = gcc
 CFLAGS = -Iinclude -Wall -g
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 TESTS = $(patsubst %, test/test_%, $(MODULES))
-BIN = metrics
+BIN = metrics propagation
+
+.PHONY: all doc run-tests clean-binaries clean-test clean
 
 all: $(patsubst %,bin/%, $(BIN)) $(TESTS)
 
@@ -21,7 +23,6 @@ clean-test:
 	rm test/*.dat
 	for dir in test/*/; do rm $${dir}*; done
 
-.PHONY: clean
 clean: clean-binaries clean-test
 
 # Documentation
@@ -34,6 +35,9 @@ doc/main.pdf: doc/main.tex $(patsubst %,doc/%.tex, $(MODULES))
 
 bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
+
+bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm -std=c89
 
 # Test binaries
 
@@ -95,6 +99,9 @@ obj/test_sorting.o : test/test_sorting.c include/sorting.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 ## Basic objets
+
+obj/propagation.o : src/propagation.c include/graph_propagation.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/metrics.o   : src/metrics.c include/graph_metric.h include/graph.h include/set.h
 	$(CC) $(CFLAGS) -o $@ -c $<
