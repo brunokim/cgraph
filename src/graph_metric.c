@@ -626,15 +626,80 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank){
 	free(adj);
 }
 
-void graph_kcore(const graph_t *g, int *core){
+int graph_kcore(const graph_t *g, int *core){
 	assert(g);
+	assert(!graph_is_directed(g));
 	assert(core);
 	
-	int n = graph_num_vertices(g);
+	int i, j, n = graph_num_vertices(g);
 	
 	memset(core, 0, n * sizeof(*core));
 	
+	// Lists current degrees, and finds maximum degree kmax
+	int *degree = malloc(n * sizeof(*degree));
+	int kmax = 0;
 	
+	for (i=0; i < n; i++){
+		int ki = graph_num_adjacents(g, i);
+		degree[i] = ki;
+		if (ki > kmax){ kmax = ki; }
+	}
+	
+	// Map from degree to vertex
+	list_t **map = malloc((kmax+1) * sizeof(*map));
+	for (i=0; i < kmax+1; i++){
+		map[i] = new_list(0);
+	}
+	
+	for (i=0; i < n; i++){
+		int ki = degree[i];
+		list_insert(map[ki], i);
+	}
+	
+	int *adj = malloc(kmax * sizeof(*adj));
+	
+	int k = 0; // core count
+	for (i=0; i < n; i++){
+		
+		// Finds minimum degree with unprocessed vertices
+		int d;
+		for (d=0; d < kmax+1; d++){
+			if (list_size(map[d]) > 0){
+				break;
+			}
+		}
+		assert(d < kmax+1);
+		
+		// "Remove" vertex from graph, storing its core number
+		if (d > k){ k = d; }
+		int u = list_pop(map[d]);
+		degree[u] = 0;
+		core[u] = k;
+		
+		// Update adjacents degrees (and map placement)
+		int ku = graph_adjacents(g, u, adj);
+		for (j=0; j < ku; j++){
+			int v = adj[j];
+			if (degree[v] > 0){ // Unprocessed vertex
+				degree[v]--;
+				
+				int prev = degree[v]+1;
+				int curr = degree[v];
+				
+				list_remove_element(map[prev], v);
+				list_insert(map[curr], v);
+			}
+		}
+	}
+	
+	free(adj);
+	free(degree);
+	for (i=0; i < kmax+1; i++){
+		delete_list(map[i]);
+	}
+	free(map);
+	
+	return k;
 }
 
 /************************ Correlation measures ********************************/

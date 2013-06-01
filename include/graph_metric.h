@@ -204,8 +204,10 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank);
  *   core is an array with dimension n.
  * Post:
  *   core[i] = k if it belongs to a k-core but not to a (k+1)-core.
+ * Return:
+ *   maximum k-core, or graph degeneracy
  * */
-void graph_kcore(const graph_t *g, int *core);
+int graph_kcore(const graph_t *g, int *core);
 
 /************************ Correlation measures ********************************/
 /* Calculates the distribution matrix of degrees (ki,kj).

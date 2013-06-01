@@ -282,10 +282,161 @@ void test_betweenness(){
 	for (i=0; i < n; i++){
 		printf("%lf ", betweenness[i]);
 	}
+	printf("\n");
 	
 	free(betweenness);
+	delete_graph(clique);
 	delete_graph(star);
 	delete_graph(g);
+}
+
+typedef struct {
+	graph_t *g;
+	int *core;
+	int k;
+} kcore_test_t;
+
+kcore_test_t small_core(){
+	int n = 5;
+	graph_t *g = new_graph(n, false, false);
+	graph_add_edge(g, 1, 2);
+	graph_add_edge(g, 2, 3);
+	graph_add_edge(g, 2, 4);
+	graph_add_edge(g, 3, 4);
+	
+	int *core = malloc(n * sizeof(*core));
+	core[0] = 0;
+	core[1] = 1;
+	core[2] = core[3] = core[4] = 2;
+	
+	kcore_test_t test = {g, core, 2};
+	return test;
+}
+
+kcore_test_t medium_core(){
+	int n = 15;
+	graph_t *g = new_graph(n, false, false);
+	
+	int d[15] = {7, 6, 6, 7, 5, 3, 3, 3, 2, 3, 3, 2, 2, 2, 2};
+	int adj[15][7] = {
+		// 3-Core
+		/*0:*/ {1, 2, 3, 4, 8, 9, 11},
+		/*1:*/ {0, 2, 3, 4, 5, 9},
+		/*2:*/ {0, 1, 3, 4, 6, 14},
+		/*3:*/ {0, 1, 2, 5, 6, 7, 10},
+		/*4:*/ {0, 1, 2, 7, 8},
+		
+		// 2-Core
+		/*5:*/ {1, 3, 12},
+		/*6:*/ {2, 3, 12},
+		/*7:*/ {3, 4, 10},
+		/*8:*/ {0, 4},
+		/*9:*/ {0, 1, 11},
+		/*10:*/ {3, 7, 13},
+		/*11:*/ {0, 9},
+		/*12:*/ {5, 6},
+		/*13:*/ {6, 10},
+		/*14:*/ {2, 12}
+	};
+	
+	int i, j;
+	for (i=0; i < n; i++){
+		for (j=0; j < d[i]; j++){
+			graph_add_edge(g, i, adj[i][j]);
+		}
+	}
+	
+	int *core = malloc(n * sizeof(*core));
+	for (i=0; i < 5; i++){ core[i] = 3; }
+	for (i=5; i < n; i++){ core[i] = 2; }
+	
+	kcore_test_t test = {g, core, 3};
+	return test;
+}
+
+kcore_test_t bigger_core(){
+	int n = 20;
+	graph_t *g = new_graph(n, false, false);
+	
+	int *core = malloc(n * sizeof(*core));
+	
+	int i, j;
+	// 4-core: (0, 1, 2, 3, 4)
+	for (i=0; i < 5; i++){
+		for (j=i+1; j < 5; j++){
+			graph_add_edge(g, i, j);
+		}
+		core[i] = 4;
+	}
+	
+	// 3-core: (5, 6, 7, 8, 9)
+	for (i=5; i < 10; i++){
+		int initial = i-5;
+		for (j=initial; j < initial+3; j++){
+			graph_add_edge(g, i, j);
+		}
+		core[i] = 3;
+	}
+	
+	// 2-core: (10, 11, 12, 13, 14)
+	for (i=10; i < 15; i++){
+		int initial = i-5;
+		for (j=initial; j < initial+2; j++){
+			graph_add_edge(g, i, j);
+		}
+		core[i] = 2;
+	}
+	
+	// 1-core: (15, 16, 17, 18, 19)
+	for (i=15; i < 20; i++){
+		graph_add_edge(g, i, i-5);
+		core[i] = 1;
+	}
+	
+	kcore_test_t test = {g, core, 4};
+	return test;
+}
+
+kcore_test_t tree(){
+	int n = 100;
+	graph_t *g = new_graph(n, false, false);
+	int *core = malloc (n * sizeof(*core));
+	int i;
+	core[0] = 1;
+	for (i=1; i < n; i++){
+		graph_add_edge(g, i, rand() % i);
+		core[i] = 1;
+	}
+	kcore_test_t test = {g, core, 1};
+	return test;
+}
+
+void test_kcore(){
+	
+	kcore_test_t test[] = {small_core(), medium_core(), bigger_core(), tree()};
+	int num_tests = sizeof(test)/sizeof(test[0]);
+	
+	int t;
+	for (t=0; t < num_tests; t++){
+		graph_t *g = test[t].g;
+		int i, n = graph_num_vertices(g);
+		
+		int *expected_core = test[t].core;
+		int expected_k = test[t].k;
+		
+		int *core = malloc(n * sizeof(*core));
+		
+		int k = graph_kcore(g, core);
+		assert(k == expected_k);
+		
+		for (i=0; i < n; i++){
+			assert(core[i] == expected_core[i]);
+		}
+		
+		free(core);
+		delete_graph(g);
+		free(expected_core);
+	}
 }
 
 int main(){
@@ -296,6 +447,7 @@ int main(){
 	test_transitivity();
 	test_distance();
 	test_betweenness();
+	test_kcore();
 	printf("success\n");
 	return 0;
 }
