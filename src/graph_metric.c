@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -260,65 +261,132 @@ double graph_transitivy(const graph_t *g){
 
 /************************ Geodesic distance metrics ***************************/
 
+void graph_geodesic_paths
+		(const graph_t *g, int s, int *distance, int *sequence, int *path_count,
+		 list_t **predecessor){
+	assert(g);
+	int i, n = graph_num_vertices(g);
+	assert(s >= 0 && s < n);
+	assert(distance);
+	
+	bool is_betweenness = false;
+	if (sequence && path_count && predecessor){
+		is_betweenness = true;
+	}
+	
+	int seq_step = 0;
+	if (is_betweenness){
+		// sequence stores the vertices in the order they were visited
+		memset(sequence, 0, n * sizeof(*sequence));
+		
+		// path_count counts the number of paths that cross each vertex
+		memset(path_count, 0, n * sizeof(*path_count));
+		path_count[s] = 1;
+		
+		for (i=0; i < n; i++){
+			list_clean(predecessor[i]);
+		}
+	}
+	
+	// distance stores the distance from each vertex to s. -1 represents infinity
+	for (i=0; i < n; i++){ distance[i] = -1; }
+	distance[s] = 0;
+		
+	// Enqueue vertices for processing
+	int *queue = malloc(n * sizeof(*queue));
+	if (!queue){ return; }
+	int head = 0, tail = 0;
+	
+	queue[tail++] = s; // Enqueue s
+	
+	// Store vertices in graph_adjacents
+	int *adj = malloc(n * sizeof(*adj));
+	if (!adj){ free(queue); return; }
+	
+	// Compute distance, path_count and predecessors
+	while (tail > head){
+		int v = queue[head++]; // Dequeue v
+		if (is_betweenness){ sequence[seq_step++] = v; }
+		
+		int kv = graph_adjacents(g, v, adj);
+		for (i=0; i < kv; i++){
+			int w = adj[i];
+			// w found for the first time?
+			if (distance[w] < 0){
+				queue[tail++] = w; // Enqueue w
+				distance[w] = distance[v] + 1;
+			}
+			// shortest path to w via v?
+			if (is_betweenness && distance[w] == distance[v]+1){
+				path_count[w] += path_count[v];
+				list_push(predecessor[w], v);
+			}
+		}
+	}
+	
+	free(adj);
+	free(queue);
+}
+
 int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 	assert(g);
-	int n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	assert(origin >= 0 && origin < n);
 	assert(dest >= 0 && dest < n);
 	
 	if (origin == dest){ return 0; }
 	
-	bool is_found = false;
-	set_t *visited  = new_set(0);
-	set_t *adjacent = new_set(0);
-	set_t *seen     = new_set(0);
-	if (!(visited && adjacent && seen)){
-		goto clean;
-	}
-	
-	// Breadth-first search
-	set_put(seen, origin);
-	int distance = 0;
-	while (!is_found && set_size(seen) > 0){
-		set_union(adjacent, seen);
-		set_clean(seen);
+	// distance stores the distance from each vertex to s. -1 represents infinity
+	int *distance = malloc(n * sizeof(*distance));
+	if (!distance){ return INT_MIN; }
+	for (i=0; i < n; i++){ distance[i] = -1; }
+	distance[origin] = 0;
 		
-		int i;
-		for (i=0; i < set_size(adjacent); i++){
-			int adj = set_get(adjacent, i);
-			graph_adjacent_set(g, adj, seen);
-			set_put(visited, adj);
-			if (adj == dest){
-				is_found = true;
+	// Enqueue vertices for processing
+	int *queue = malloc(n * sizeof(*queue));
+	if (!queue){ free(distance); return INT_MIN; }
+	int head = 0, tail = 0;
+	
+	queue[tail++] = origin; // Enqueue origin
+	
+	// Store vertices in graph_adjacents
+	int *adj = malloc(n * sizeof(*adj));
+	if (!adj){ free(distance); free(queue); return INT_MIN; }
+	
+	// Compute distance, path_count and predecessors
+	while (tail > head){
+		int v = queue[head++];
+		
+		int kv = graph_adjacents(g, v, adj);
+		for (i=0; i < kv; i++){
+			int w = adj[i];
+			// w found for the first time?
+			if (distance[w] < 0){
+				queue[tail++] = w;
+				distance[w] = distance[v] + 1;
+			}
+			if (w == dest){
 				break;
 			}
 		}
 		
-		if (!is_found){
-			set_difference(seen, visited);
-			set_clean(adjacent);
-			distance++;
-		}
+		if (distance[dest] >= 0)
+			break;
 	}
-
-clean:
-	if(visited) { delete_set(visited); }
-	if(seen)    { delete_set(seen); }
-	if(adjacent){ delete_set(adjacent); }
 	
-	if (is_found){ return distance; }
-	else         { return -1; }
+	int d = distance[dest];
+	free(distance);
+	free(adj);
+	free(queue);
+	
+	return d;
 }
 
 void graph_geodesic_vertex(const graph_t *g, int i, int *distance){
 	assert(g);
 	assert(distance);
 	
-	//TODO: Use a real algorithm to compute this.
-	int j, n = graph_num_vertices(g);
-	for (j=0; j < n; j++){
-		distance[j] = graph_geodesic_distance(g, i, j);
-	}
+	graph_geodesic_paths(g, i, distance, NULL, NULL, NULL);
 }
 
 void graph_geodesic_all(const graph_t *g, int **distance){
@@ -326,100 +394,39 @@ void graph_geodesic_all(const graph_t *g, int **distance){
 	assert(distance);
 	assert(distance[0]);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	for (i=0; i < n; i++){
-		for (j=0; j < n; j++){
-			distance[i][j] = -1;
-		}
-		distance[i][i] = 0;
+		graph_geodesic_vertex(g, i, distance[i]);
 	}
-	
-	set_t *visited  = new_set(0);
-	set_t *adjacent = new_set(0);
-	set_t *seen     = new_set(0);
-	if (!(visited && adjacent && seen)){
-		if(visited) { delete_set(visited); }
-		if(seen)    { delete_set(seen); }
-		if(adjacent){ delete_set(adjacent); }
-	}
-	
-	for (i=0; i < n; i++){
-		set_clean(visited);
-		set_put(seen, i);
-		int d = 0;
-		while (set_size(seen) > 0){
-			set_union(adjacent, seen);
-			set_clean(seen);
-		
-			for (j=0; j < set_size(adjacent); j++){
-				int adj = set_get(adjacent, j);
-				graph_adjacent_set(g, adj, seen);
-				set_put(visited, adj);
-				distance[i][adj] = d;
-			}
-			
-			set_difference(seen, visited);
-			set_clean(adjacent);
-			d++;
-		}
-	}
-	
-	delete_set(visited);
-	delete_set(adjacent);
-	delete_set(seen);
 }
 
 int *graph_geodesic_distribution(const graph_t *g, int *_diameter){
 	assert(g);
 	
 	int i, j, n = graph_num_vertices(g);
+	
 	int *distribution = malloc(n * sizeof(*distribution));
 	if (!distribution){ return NULL; }
 	memset(distribution, 0, n * sizeof(*distribution));
 	
-	set_t *visited  = new_set(0);
-	set_t *adjacent = new_set(0);
-	set_t *seen     = new_set(0);
-	if (!(visited && adjacent && seen)){
-		if(visited) { delete_set(visited); }
-		if(seen)    { delete_set(seen); }
-		if(adjacent){ delete_set(adjacent); }
-	}
+	int *distance = malloc(n * sizeof(*distance));
 	
 	int diameter = 0;
-	int reachable_paths = 0;
+	int unreachable_paths = 0;
 	
 	for (i=0; i < n; i++){
-		set_clean(visited);
-		set_put(seen, i);
-		int d = 0;
-		while (set_size(seen) > 0){
-			distribution[d] += set_size(seen);
-			reachable_paths += set_size(seen);
+		graph_geodesic_vertex(g, i, distance);
+		for (j=0; j < n; j++){
+			if (distance[j] == -1){ unreachable_paths++; } 
+			else                  { distribution[ distance[j] ]++; }
 			
-			set_union(adjacent, seen);
-			set_clean(seen);
-		
-			for (j=0; j < set_size(adjacent); j++){
-				int adj = set_get(adjacent, j);
-				graph_adjacent_set(g, adj, seen);
-				set_put(visited, adj);
-			}
-			
-			set_difference(seen, visited);
-			set_clean(adjacent);
-			d++;
+			if (distance[j] > diameter){ diameter = distance[j]; }
 		}
-		
-		if (d-1 > diameter){ diameter = d-1; }
 	}
+	free(distance);
 	
 	distribution = realloc(distribution, (diameter+1) * sizeof(*distribution));
-	distribution[diameter] = n*n - reachable_paths;
-	
-	delete_set(visited);
-	delete_set(adjacent);
-	delete_set(seen);
+	distribution[diameter] = unreachable_paths;
 	
 	if (_diameter){ *_diameter = diameter; }
 	return distribution;
@@ -446,6 +453,31 @@ double norm(double *v, int n){
 	return s;
 }
 
+void graph_inc_betweenness
+		(int s, const int *distance, const int *sequence, const int *path_count,
+		 list_t **predecessor, double *betweenness, int n){
+	
+	double *dependency = malloc(n * sizeof(*dependency));
+	if (!dependency){ return; }
+	memset(dependency, 0, n * sizeof(*dependency));
+	
+	int i, j;
+	for (i=n-1; i >= 0; i--){
+		int w = sequence[i];
+		int num_predecessor = list_size(predecessor[w]);
+		for (j=0; j < num_predecessor; j++){
+			int v = list_get(predecessor[w], j);
+			dependency[v] += 
+				(double)path_count[v]/path_count[w] + (1 + dependency[w]);
+			if (w != s){
+				betweenness[w] += dependency[w];
+			}
+		}
+	}
+	
+	free(dependency);
+}
+
 /* Extracted from "A faster algorithm for betweenness centrality", 
  * Ulrik Brandes 
  */
@@ -453,87 +485,42 @@ void graph_betweenness(const graph_t *g, double *betweenness){
 	assert(g);
 	assert(betweenness);
 	
-	int i, s, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	memset(betweenness, 0, n * sizeof(*betweenness));
 	
-	list_t *stack = new_list(0);
-	list_t *queue = new_list(0);
+	int *distance = malloc(n * sizeof(*distance));
+	int *sequence = malloc(n * sizeof(*sequence));
+	int *path_count = malloc(n * sizeof(*path_count));
+	
+	bool lists_ok = true;
 	list_t **predecessor = malloc(n * sizeof(*predecessor));
-	if (predecessor){ memset(predecessor, 0, n * sizeof(*predecessor)); }
-	int     *path_count  = malloc(n * sizeof(*path_count));
-	int     *distance    = malloc(n * sizeof(*distance));
-	int     *adj         = malloc(n * sizeof(*adj));
-	double  *dependency  = malloc(n * sizeof(*dependency));
-	
-	if (!(stack && queue && predecessor && path_count 
-	            && distance && adj && dependency)){
-		goto clean;
-	}
-	
-	for (i=0; i < n; i++){
-		predecessor[i] = new_list(0);
-		if (!predecessor[i]){ goto clean; }
-	}
-	
-	for (s=0; s < n; s++){
-		for (i=0; i < n; i++){ list_clean(predecessor[i]); }
-		
-		memset(path_count, 0, n * sizeof(*path_count)); 
-		path_count[s] = 1;
-		
-		for (i=0; i < n; i++){ distance[i] = -1; }
-		distance[s] = 0;
-		
-		list_push(queue, s);
-		
-		while (list_size(queue) > 0){
-			int v = list_remove(queue, 0);
-			list_push(stack, v);
-			
-			int num_adj = graph_adjacents(g, v, adj);
-			for (i=0; i < num_adj; i++){
-				int w = adj[i];
-				// w found for the first time?
-				if (distance[w] < 0){
-					list_push(queue, w);
-					distance[w] = distance[v] + 1;
-				}
-				// shortest path to w via v?
-				if (distance[w] == distance[v]+1){
-					path_count[w] += path_count[v];
-					list_push(predecessor[w], v);
-				}
-			}
-		}
-		
-		memset(dependency, 0, n * sizeof(*dependency));
-		while (list_size(stack) > 0){
-			int w = list_pop(stack);
-			for (i=0; i < list_size(predecessor[w]); i++){
-				int v = list_get(predecessor[w], i);
-				dependency[v] += (double)path_count[v]/path_count[w] 
-				                 + (1 + dependency[w]);
-				if (w != s){
-					betweenness[w] += dependency[w];
-				}
-			}
-		}
-	}
-	
-clean:
-	if (stack){ delete_list(stack); }
-	if (queue){ delete_list(queue); }
-	if (predecessor){ 
+	if (!predecessor){ lists_ok = false; }
+	if (lists_ok){
 		for (i=0; i < n; i++){
+			predecessor[i] = new_list(0); if (!predecessor[i]){ lists_ok = false; }
+		}
+	}
+	
+	if (distance && sequence && path_count && lists_ok) {
+		int s;
+		for (s=0; s < n; s++){
+			graph_geodesic_paths(g, s, distance, sequence, path_count, predecessor);
+			graph_inc_betweenness(s, distance, sequence, path_count, predecessor, 
+														betweenness, n);
+		}
+	}
+	
+	if (distance){ free(distance); }
+	if (sequence){ free(sequence); }
+	if (path_count){ free(path_count); }
+	if (predecessor){
+		for (i=0; i < n; i++){ 
 			if (predecessor[i]){ delete_list(predecessor[i]); }
 		}
 		free(predecessor);
 	}
-	if (path_count) { free(path_count); }
-	if (distance)   { free(distance); }
-	if (adj)        { free(adj); }
-	if (dependency) { free(dependency); }
 }
+
 
 void graph_eigenvector(const graph_t *g, double *eigen){
 	assert(g);
@@ -819,30 +806,53 @@ double *graph_knn(const graph_t *g, int *_kmax){
 double graph_assortativity(const graph_t *g){
 	assert(g);
 	
-	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
-	int *adj = malloc(n * sizeof(*adj));
-	if (!adj){ return 0.0/0.0; }
+	int i, j, n = graph_num_vertices(g);
 	
-	double prod = 0.0;
-	double sum = 0.0;
-	double sq = 0.0;
+	double *degree = malloc (n * sizeof(*degree));
+	if (!degree){ return NAN; }
+	
+	double *neighbor_avg_deg = malloc (n * sizeof(*neighbor_avg_deg));
+	if (!neighbor_avg_deg){ free(degree); return NAN; }
+	
+	int kmax = 0;
+	for (i=0; i < n; i++){
+		int ki = graph_num_adjacents(g, i);
+		degree[i] = (double)ki;
+		if (ki > kmax) { kmax = ki; }
+	}
+	
+	int *adj = malloc(n * sizeof(*adj));
+	if (!adj){ free(degree); free(neighbor_avg_deg); return NAN; }
 	
 	for (i=0; i < n; i++){
 		int ki = graph_adjacents(g, i, adj);
+		neighbor_avg_deg[i] = 0.0;
 		for (j=0; j < ki; j++){
-			int v = adj[j];
-			int kj = graph_num_adjacents(g, v);
-			if (v > i){
-				prod += (1.0/m) * (ki * kj);
-				sum += (0.5/m) * (ki + kj);
-				sq += (0.5/m) * (ki*ki + kj*kj);
-			}
+			neighbor_avg_deg[i] += degree[j] / ki;
 		}
 	}
 	
-	double r = (prod - sum*sum)/(sq - sum*sum);
+	double r = stat_pearson(degree, neighbor_avg_deg, n);
 	
 	free(adj);
+	free(degree);
+	free(neighbor_avg_deg);
 	return r;
 }
 
+void graph_closeness(const graph_t *g, double *closenness){
+	assert(g);
+	assert(closenness);
+	
+	int i, n = graph_num_vertices(g);
+	
+	int *distance = malloc(n * sizeof(*distance));
+	
+	for (i=0; i < n; i++){
+		graph_geodesic_vertex(g, i, distance);
+		int farness = stat_int_sum(distance, n);
+		closenness[i] = 1.0/farness;
+	}
+	
+	free(distance);
+}

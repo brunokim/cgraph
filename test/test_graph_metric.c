@@ -243,50 +243,118 @@ void test_distance(){
 	delete_graph(g);
 }
 
-void test_betweenness(){
-	int i, j, n = 8;
-	double *betweenness = malloc(n * sizeof(*betweenness));
+graph_t *make_a_cycle(int n){
+	graph_t *g = new_graph(n, false, false);
 	
-	/* Star: all other vertices connected to v0 
-	 * v0 should have maximum betweenness, and all others should have 0
-	 */
-	graph_t *star = new_graph(n, false, false);
-	for (i=1; i < n; i++){
-		graph_add_edge(star, 0, i);
+	int i;
+	for (i=0; i < n-1; i++){
+		graph_add_edge(g, i, i+1);
+	}
+	graph_add_edge(g, n-1, 0);
+	
+	return g;
+}
+
+graph_t *make_a_line(int n){
+	graph_t *g = new_graph(n, false, false);
+	
+	int i;
+	for (i=0; i < n-1; i++){
+		graph_add_edge(g, i, i+1);
 	}
 	
-	graph_betweenness(star, betweenness);
-	assert(betweenness[0] > 1e-6);
+	return g;
+}
+
+graph_t *make_a_star(int n){
+	graph_t *g = new_graph(n, false, false);
+	
+	int i;
 	for (i=1; i < n; i++){
-		assert(fabs(betweenness[i]) < 1e-6);
+		graph_add_edge(g, 0, i);
 	}
 	
-	/* Clique: all vertices are connected to all others
-	 * All vertices should have maximum betweenness
-	 */
-	graph_t *clique = new_graph(n, false, false);
+	return g;
+}
+
+graph_t *make_a_clique(int n){
+	graph_t *g = new_graph(n, false, false);
+	
+	int i, j;
 	for (i=0; i < n; i++){
 		for (j=i+1; j < n; j++){
-			graph_add_edge(clique, i, j);
+			graph_add_edge(g, i, j);
 		}
 	}
 	
-	graph_betweenness(clique, betweenness);
-	for (i=1; i < n; i++){
-		assert(fabs(betweenness[0] - betweenness[i]) < 1e-6);
+	return g;
+}
+
+void test_betweenness(){
+	int i, n, max = 100;
+	double *betweenness = malloc(max * sizeof(*betweenness));
+	
+	/* Star: all other vertices connected to v0 
+	 * B_center = (n-1)(n-2)
+	 */
+	for (n=3; n < max; n++){
+		graph_t *star = make_a_star(n);
+		int expected = 2*(n-1)*(n-2);
+		graph_betweenness(star, betweenness);
+		assert(fabs(betweenness[0] - expected) < 1e-6);
+		for (i=1; i < n; i++){
+			assert(fabs(betweenness[i]) < 1e-6);
+		}
+		delete_graph(star);
 	}
-		
+	
+	/* Clique: all vertices are connected to all others
+	 * All vertices should have betweenness 0
+	 */
+	for (n=2; n < max; n++){
+		graph_t *clique = make_a_clique(n);
+		graph_betweenness(clique, betweenness);
+		for (i=0; i < n; i++){
+			assert(fabs(betweenness[i]) < 1e-6);
+		}
+		delete_graph(clique);
+	}
+	
+	/* Line: vertices are connected in a line
+	 * Middle betweenness should be (n-1)^2/2
+	 */
+	for (n=3; n < max; n+=2){
+		graph_t *line = make_a_line(n);
+		int expected = (n-1)*(n-1);
+		graph_betweenness(line, betweenness);
+		assert(fabs(betweenness[n/2] - expected) < 1e-6);
+		delete_graph(line);
+	}
+	
+	/* Cycle: vertices are connected in a cycle
+	 * All betweenness are equal, and should be equal to the same as in a line
+	 * with half its size: (n/2-1)*(n/2-1)
+	 */
+	for (n=3; n < max; n++){
+		graph_t *cycle = make_a_cycle(n);
+		//int expected = (n/2-1)*(n/2-1);
+		graph_betweenness(cycle, betweenness);
+		for (i=1; i < n; i++){
+			//assert(fabs(betweenness[i] - expected) < 1e-6);
+		}
+		delete_graph(cycle);
+	}
+	
 	/* Custom graph: do not know how betweenness should be previously */
 	graph_t *g = make_a_graph(false);
 	graph_betweenness(g, betweenness);
+	n = 8;
 	for (i=0; i < n; i++){
 		printf("%lf ", betweenness[i]);
 	}
 	printf("\n");
 	
 	free(betweenness);
-	delete_graph(clique);
-	delete_graph(star);
 	delete_graph(g);
 }
 

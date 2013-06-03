@@ -32,11 +32,14 @@ double stat_int_dist_harmonic_sum(const int *v, int n);
 
 double stat_double_sum(const double *v, int n);
 double stat_double_average(const double *v, int n);
+double stat_double_variance(const double *v, int n);
 
 void stat_double_normalization(double *v, int n);
 
 int *stat_sort_copy(const int *v, int n);
 pair_t *stat_frequencies(const int *v, int n, int *num_keys);
 interval_t *stat_histogram(const double *v, int n, int num_bins);
+
+double stat_pearson(const double *x, const double *y, int n);
 
 #endif

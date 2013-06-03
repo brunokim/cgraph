@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for d in cat mac95 email powergrid astrophysics as
+for d in cat mac95 email powergrid astrophysics internet
 do
 	echo "Converting files in $d"
 	cd $d

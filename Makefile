@@ -1,15 +1,23 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
+
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 TESTS = $(patsubst %, test/test_%, $(MODULES))
+
+DATASETS = cat mac95 email powergrid astrophysics internet
+FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
+
 BIN = metrics propagation
 
-.PHONY: all doc run-tests clean-binaries clean-test clean
+.PHONY: all doc run-metrics run-tests clean-binaries clean-test clean
 
 all: $(patsubst %,bin/%, $(BIN)) $(TESTS)
 
 doc: doc/main.pdf 
 
+run-metrics: bin/metrics
+	bin/metrics $(FOLDERS)
+	
 run-tests: $(TESTS)
 	for test in $(TESTS); do echo $$test && ./$$test; done
 

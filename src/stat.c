@@ -162,6 +162,19 @@ double stat_double_average(const double *v, int n){
 	return s;
 }
 
+double stat_double_variance(const double *v, int n){
+	assert(v);
+	assert(n > 0);
+	
+	double m = stat_double_average(v, n);
+	double s = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		s += (v[i] - m)*(v[i] - m)/(n - 1);
+	}
+	return s;
+}
+
 void stat_double_normalization(double *v, int n){
 	assert(v);
 	assert(n > 0);
@@ -257,4 +270,25 @@ interval_t *stat_histogram(const double *_v, int n, int num_bins){
 	
 	free(v);
 	return interval;
+}
+
+double stat_pearson(const double *x, const double *y, int n){
+	assert(x);
+	assert(y);
+	assert(n > 0);
+	
+	double x_mean = stat_double_average(x, n);
+	double x_stddev = sqrt(stat_double_variance(x, n));
+	
+	double y_mean = stat_double_average(y, n);
+	double y_stddev = sqrt(stat_double_variance(y, n));
+	
+	double r = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		double x_score = (x[i] - x_mean)/x_stddev;
+		double y_score = (y[i] - y_mean)/y_stddev;
+		r +=  x_score * y_score / (n-1);
+	}
+	return r;
 }

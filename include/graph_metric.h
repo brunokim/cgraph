@@ -159,6 +159,7 @@ int *graph_geodesic_distribution(const graph_t *g, int *diameter);
  *   betweenness[v] = B_v
  * */
 void graph_betweenness(const graph_t *g, double *betweenness);
+
 /* List all vertices' eigenvector centrality.
  * 
  * The eigenvector centrality of a vertex is the sum of its incident's
@@ -208,6 +209,9 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank);
  *   maximum k-core, or graph degeneracy
  * */
 int graph_kcore(const graph_t *g, int *core);
+
+/* List all vertices' closenness. */
+void graph_closeness(const graph_t *g, double *closenness);
 
 /************************ Correlation measures ********************************/
 /* Calculates the distribution matrix of degrees (ki,kj).

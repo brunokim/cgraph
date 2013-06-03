@@ -158,6 +158,7 @@ void *experiment(void *args){
 		}
 	}
 	fclose(fp);
+	free(avg_degree);
 	free(knn);
 	
 	// Betweenness distribution
@@ -202,27 +203,61 @@ void *experiment(void *args){
 	fprintf(stderr, "Computing centralities in %s\n", folder);
 	double *eigenvector = malloc(n * sizeof(*eigenvector));
 	double *pagerank = malloc(n * sizeof(*pagerank));
+	double *closenness = malloc(n * sizeof(*closenness));
 	int *core = malloc(n * sizeof(*core));
 	
 	graph_eigenvector(g, eigenvector);
 	graph_pagerank(g, 0.15, pagerank);
-	graph_kcore(g, core);
+	graph_closeness(g, closenness);
+	int degeneracy = graph_kcore(g, core);
 	
 	snprintf(str, 256, "%s/centrality.dat", folder); fp = fopen(str, "wt");
-	fprintf(fp, "#vertex degree betwenness eigenvalue pagerank kcore\n");
+	fprintf(fp, "#vertex degree betwenness eigenvalue pagerank closenness kcore\n");
 	for (i=0; i < n; i++){
 		fprintf(fp, "%d ", i);
 		fprintf(fp, "%lf ", (double)degree[i]/kmax);
 		fprintf(fp, "%lf ", betweenness[i]);
 		fprintf(fp, "%lf ", eigenvector[i]);
 		fprintf(fp, "%lf ", pagerank[i]);
+		fprintf(fp, "%lf ", closenness[i]);
 		fprintf(fp, "%d ", core[i]);
 		fprintf(fp, "\n");
 	}
 	
+	fprintf(f_summary, "degeneracy = %d\n", degeneracy);
+	
+	// Centrality correlation
+	fprintf(stderr, "Computing centralities correlation in %s\n", folder);
+	double *d = malloc(n * sizeof(*d));
+	double *k = malloc(n * sizeof(*k));
+	
+	for (i=0; i < n; i++){
+		d[i] = (double)degree[i]/kmax;
+		k[i] = (double)core[i]/degeneracy;
+	}
+	
+	double *centrality[] = {d, betweenness, eigenvector, pagerank, closenness, k};
+	int num_centrality = sizeof(centrality)/sizeof(centrality[0]);
+	
+	fprintf(f_summary, "\nCentralities correlation\n");
+	for (i=0; i < num_centrality; i++){
+		for (j=0; j < num_centrality; j++){
+			if (j > i){
+				double r = stat_pearson(centrality[i], centrality[j], n);
+				fprintf(f_summary, "%+6.3lf ", r);
+			} else {
+				fprintf(f_summary, "       ");
+			}
+		}
+		fprintf(f_summary, "\n");
+	}
+	
+	free(d);
+	free(k);
 	free(degree);
 	free(betweenness);
 	free(eigenvector);
+	free(closenness);
 	free(pagerank);
 	free(core);
 	
