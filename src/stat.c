@@ -245,6 +245,7 @@ interval_t *stat_histogram(const double *_v, int n, int num_bins){
 	assert(num_bins > 0);
 	
 	double *v = malloc(n * sizeof(*v));
+	if (!v){ return NULL; }
 	memcpy(v, _v, n * sizeof(*v));
 	qsort(v, n, sizeof(*v), comp_double_asc);
 	
@@ -252,7 +253,8 @@ interval_t *stat_histogram(const double *_v, int n, int num_bins){
 	double range = max - min;
 	double delta = range/num_bins;
 	
-	interval_t *interval = malloc (num_bins * sizeof(*interval));
+	interval_t *interval = malloc ((num_bins+1) * sizeof(*interval));
+	if (!interval){ free(v); return NULL; }
 	
 	int i, pos = 0;
 	for (i=0; i < num_bins; i++){
@@ -260,13 +262,16 @@ interval_t *stat_histogram(const double *_v, int n, int num_bins){
 		interval[i].max = min + (i+1)*delta;
 		interval[i].value = 0;
 		
-		while (v[pos] < interval[i].max)
+		while (pos < n && v[pos] < interval[i].max)
 		{
 			interval[i].value++;
 			pos++;
 		}
 	}
-	interval[num_bins-1].value++;
+	
+	interval[num_bins].min = max;
+	interval[num_bins].max = +1.0/0.0;
+	interval[num_bins].value = n - pos;
 	
 	free(v);
 	return interval;

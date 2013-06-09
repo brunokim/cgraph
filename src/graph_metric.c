@@ -828,7 +828,8 @@ double graph_assortativity(const graph_t *g){
 		int ki = graph_adjacents(g, i, adj);
 		neighbor_avg_deg[i] = 0.0;
 		for (j=0; j < ki; j++){
-			neighbor_avg_deg[i] += degree[j] / ki;
+			int v = adj[j];
+			neighbor_avg_deg[i] += degree[v] / ki;
 		}
 	}
 	

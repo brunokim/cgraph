@@ -9,6 +9,23 @@
 #include "graph.h"
 #include "graph_metric.h"
 
+enum {
+	DEGREE, CLUSTERING, AVG_DEGREE, BETWEENNESS, 
+	EIGENVECTOR, PAGERANK, CLOSENNESS, K_CORE,
+	NUM_METRIC
+};
+bool is_int[NUM_METRIC] = {
+	true, false, false, false, 
+	false, false, false, true
+};
+
+#define MAX_NAME_SIZE 19
+
+const char *metrics_name[] = {
+	"degree", "clustering", "avg-neighbor-degree", "betweenness", 
+	"eigenvector", "pagerank", "closenness", "k-core"
+}; 
+
 void *experiment(void *args);
 
 int main(int argc, char *argv[]){
@@ -36,93 +53,85 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
-void *experiment(void *args){
-	const char *folder = (char *)args;
-	char str[256];
+void general_info(FILE *summary, graph_t *g){
+	fprintf(summary, "number of vertices = %d\n", graph_num_vertices(g));
+	fprintf(summary, "number of edges = %d\n", graph_num_edges(g));
+}
+
+void component_info(FILE *summary, graph_t *g){
+	int n = graph_num_vertices(g);
 	
-	int i, j;
-	snprintf(str, 256, "%s/summary.txt", folder);
-	FILE *f_summary = fopen(str, "wt");
-	
-	// General information
-	bool is_directed = false;
-	snprintf(str, 256, "%s/edges.txt", folder);
-	graph_t *complete = load_graph(str, is_directed);
-	int n = graph_num_vertices(complete);
-	int m = graph_num_edges(complete);
-	fprintf(f_summary, "number of vertices = %d\n", n);
-	fprintf(f_summary, "number of edges = %d\n", m);
-	
-	// Component information
 	int *label = malloc(n * sizeof(*label));
-	int num_comp = graph_undirected_components(complete, label);
-	fprintf(f_summary, "number of components = %d\n", num_comp);
-	fprintf(f_summary, "component sizes = (");
+	int num_comp = graph_undirected_components(g, label);
+	fprintf(summary, "number of components = %d\n", num_comp);
+	
+	fprintf(summary, "component sizes = (");
 	pair_t *component_size = stat_frequencies(label, n, &num_comp);
+	int i;
 	for (i=0; i < num_comp; i++){
 		const char *interposed = (i == num_comp-1) ? ")\n" : " ";
-		fprintf(f_summary, "%d%s", component_size[i].value, interposed);
+		fprintf(summary, "%d%s", component_size[i].value, interposed);
 	}
-	pair_t *max = search_max(component_size, num_comp, sizeof(*max), comp_value_asc);
-	fprintf(f_summary, "giant component size = %d\n", max->value);
-	fprintf(f_summary, "percent of vertices in giant component = %.2lf\n", 
+	
+	pair_t *max = 
+		search_max(component_size, num_comp, sizeof(*max), comp_value_asc);
+	fprintf(summary, "giant component size = %d\n", max->value);
+	fprintf(summary, "percent of vertices in giant component = %.2lf\n", 
 	                   (100.0*max->value)/n);
+	
 	free(component_size);
 	free(label);
+}
+
+void degree_info(FILE *summary, graph_t *g, double **metrics){
+	int n = graph_num_vertices(g);
 	
-	// Giant component extraction
-	graph_t *g = graph_giant_component(complete);
-	delete_graph(complete);
-	n = graph_num_vertices(g);
-	m = graph_num_edges(g);
-	
-	FILE *fp;
-	
-	// Degree distribution
 	int *degree = malloc(n * sizeof(*degree));
-	fprintf(stderr, "Calculating degree in %s...\n", folder);
 	graph_degree(g, degree);
 	
-	fprintf(f_summary, "degree average = %.3lf\n", stat_int_average(degree, n));
-	fprintf(f_summary, "degree variance = %.3lf\n", stat_int_variance(degree, n));
-	fprintf(f_summary, "degree stddev = %.3lf\n", sqrt(stat_int_variance(degree, n)));
-	fprintf(f_summary, "degree entropy = %.3lf\n", stat_int_entropy(degree, n));
+	int max = *(int *)search_max(degree, n, sizeof(*degree), comp_int_asc);
+	double avg = stat_int_average(degree, n);
+	double var = stat_int_variance(degree, n);
+	double entropy = stat_int_entropy(degree, n);
 	
-	int num_deg; pair_t *dist_degree = stat_frequencies(degree, n, &num_deg);
-	snprintf(str, 256, "%s/degree.dat", folder); fp = fopen(str, "wt");
-	for (i=0; i < num_deg; i++){
-		fprintf(fp, "%d %d\n", dist_degree[i].key, dist_degree[i].value);
+	fprintf(summary, "maximum degree = %d\n", max);
+	fprintf(summary, "degree average = %.3lf\n", avg);
+	fprintf(summary, "degree variance = %.3lf\n", var);
+	fprintf(summary, "degree stddev = %.3lf\n", sqrt(var));
+	fprintf(summary, "degree entropy = %.3lf\n", entropy);
+	
+	int i;
+	for (i=0; i < n; i++){
+		metrics[DEGREE][i] = (double)degree[i];
 	}
-	fclose(fp);
-	/*free(degree); */ // Still needed for centralities
-	free(dist_degree);
+	free(degree);
+}
+
+void clustering_info
+		(FILE *summary, graph_t *g, const char *folder, double **metrics){
+	int n = graph_num_vertices(g);
 	
-	// Clustering coefficient distribution
-	double *clustering = malloc(n * sizeof(*clustering));
-	fprintf(stderr, "Calculating clustering in %s...\n", folder);
+	double *clustering = metrics[CLUSTERING];
 	graph_clustering(g, clustering);
-	fprintf(f_summary, "clustering average = %.3lf\n", stat_double_average(clustering, n));
-	fprintf(f_summary, "transitivy = %.3lf\n", graph_transitivy(g));
 	
-	int num_bins = 100; 
-	interval_t *dist_cluster = stat_histogram(clustering, n, num_bins);
+	double avg = stat_double_average(clustering, n);
+	double transitivity = graph_transitivy(g);
 	
-	snprintf(str, 256, "%s/clustering.dat", folder); fp = fopen(str, "wt");
-	for (i=0; i < num_bins; i++){
-		if (dist_cluster[i].value > 0){
-			fprintf(fp, "%lf %lf %d\n", dist_cluster[i].min, dist_cluster[i].max, 
-																	dist_cluster[i].value);
-		}
-	}
-	fclose(fp);
-	free(clustering); free(dist_cluster);
+	fprintf(summary, "clustering average = %.3lf\n", avg);
+	fprintf(summary, "transitivy = %.3lf\n", transitivity);
+}
+
+void correlation_info
+		(FILE *summary, graph_t *g, const char *folder, double **metrics){
+	int i, j;;
 	
-	// Degree correlations
+	double assortativity = graph_assortativity(g);
+	fprintf(summary, "assortativity = %+.3lf\n", assortativity);
+	
+	char str[256]; 
+	FILE *fp;
+	
 	int kmax;
-	fprintf(stderr, "Calculating degree distribution in %s...\n", folder);
-	
-	fprintf(f_summary, "assortativity = %+.3lf\n", graph_assortativity(g));
-	
 	int **mat = graph_degree_matrix(g, &kmax);
 	if (mat){
 		int max_dist = 0;
@@ -130,7 +139,9 @@ void *experiment(void *args){
 			if (mat[0][i] > max_dist){ max_dist = mat[0][i]; }
 		}
 		
-		snprintf(str, 256, "%s/deg_matrix.pbm", folder); fp = fopen(str, "wt");
+		// Print cross-degree distribution in PBM format
+		snprintf(str, 256, "%s/deg_matrix.pbm", folder); 
+		fp = fopen(str, "wt");
 		fprintf(fp, "P2\n%d %d\n%d\n", kmax, kmax, max_dist);
 		for (i=0; i < kmax; i++){
 			for (j=0; j < kmax; j++){
@@ -138,129 +149,179 @@ void *experiment(void *args){
 			}
 			fprintf(fp, "\n");
 		}
-		fclose(fp); 
+		fclose(fp);
 		free(mat[0]); free(mat);
 	}
 	
-	double *avg_degree = malloc(n * sizeof(*avg_degree));
+	double *avg_degree = metrics[AVG_DEGREE];
 	graph_neighbor_degree_all(g, avg_degree);
-	snprintf(str, 256, "%s/correlation.dat", folder); fp = fopen(str, "wt");
-	for (i=0; i < n; i++){
-		fprintf(fp, "%d %.3lf\n", graph_num_adjacents(g, i), avg_degree[i]);
-	}
-	fclose(fp);
 	
 	double *knn = graph_knn(g, &kmax);
-	snprintf(str, 256, "%s/knn.dat", folder); fp = fopen(str, "wt");
+	snprintf(str, 256, "%s/knn.dat", folder); 
+	fp = fopen(str, "wt");
 	for (i=0; i < kmax; i++){
 		if (knn[i] > 0.0){
 			fprintf(fp, "%d %.3lf\n", i, knn[i]);
 		}
 	}
 	fclose(fp);
-	free(avg_degree);
 	free(knn);
-	
-	// Betweenness distribution
-	double *betweenness = malloc(n * sizeof(*betweenness));
-	fprintf(stderr, "Calculating betweenness in %s...\n", folder);
+}
+
+void betweenness_info(FILE *summary, graph_t *g, double **metrics){
+	int n = graph_num_vertices(g);
+	double *betweenness = metrics[BETWEENNESS];
 	
 	graph_betweenness(g, betweenness);
-	stat_double_normalization(betweenness, n);
-	fprintf(f_summary, "betweenness average = %+.3lg\n", stat_double_average(betweenness, n));
+	//stat_double_normalization(betweenness, n);
+	double max = 
+		*(double *)search_max(betweenness, n, sizeof(max), comp_double_asc);
+	double avg = stat_double_average(betweenness, n);
+	fprintf(summary, "maximum betweenness = %.3lf\n", max);
+	fprintf(summary, "betweenness average = %.3lf\n", avg);
 	
-	double cpd = (n - stat_double_sum(betweenness, n))/(n-1);
-	fprintf(f_summary, "central point dominance = %+.3lg\n", cpd);
-	
-	num_bins = 100; 
-	interval_t *dist_between = stat_histogram(betweenness, n, num_bins);
-	snprintf(str, 256, "%s/betweenness.dat", folder); fp = fopen(str, "wt");
-	for (i=0; i < num_bins; i++){
-		if (dist_between[i].value > 0){
-			fprintf(fp, "%lf %lf %d\n", dist_between[i].min, dist_between[i].max, 
-																	dist_between[i].value);
-		}
+	double cpd = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		cpd += (max - betweenness[i])/(n-1);
 	}
-	fclose(fp);
-	/*free(betweenness);*/ // Still needed for centralities
-	free(dist_between);
-	
-	// Distance 
+	fprintf(summary, "central point dominance = %.3lf\n", cpd);
+}
+
+void distance_info(FILE *summary, graph_t *g, const char *folder){
+	int n = graph_num_vertices(g);
 	int diameter;
 	int *distance = graph_geodesic_distribution(g, &diameter);
-	fprintf(f_summary, "distance average = %+.3lf\n", stat_int_dist_average(distance, diameter));
-	fprintf(f_summary, "efficiency = %.3lf\n", stat_int_dist_harmonic_sum(distance, diameter)/(n*(n-1)));
-	fprintf(f_summary, "diameter = %d\n", diameter);
 	
-	snprintf(str, 256, "%s/distance.dat", folder); fp = fopen(str, "wt");
+	double avg = stat_int_dist_average(distance, diameter);
+	double eff = stat_int_dist_harmonic_sum(distance, diameter)/(n*(n-1));
+	fprintf(summary, "distance average = %.3lf\n", avg);
+	fprintf(summary, "efficiency = %.3lf\n", eff);
+	fprintf(summary, "diameter = %d\n", diameter);
+	
+	char str[256]; snprintf(str, 256, "%s/distance.dat", folder); 
+	FILE *fp = fopen(str, "wt");
+	int i;
 	for (i=0; i < diameter; i++){
 		fprintf(fp, "%d %d\n", i, distance[i]);
 	}
 	fclose(fp);
 	free(distance);
+}
+
+void centrality_info
+		(FILE *summary, graph_t *g, const char *folder, double **metrics){
+	int i, j, n = graph_num_vertices(g);
 	
-	// Centralities
-	fprintf(stderr, "Computing centralities in %s\n", folder);
-	double *eigenvector = malloc(n * sizeof(*eigenvector));
-	double *pagerank = malloc(n * sizeof(*pagerank));
-	double *closenness = malloc(n * sizeof(*closenness));
-	int *core = malloc(n * sizeof(*core));
+	double *eigenvector = metrics[EIGENVECTOR];
+	double *pagerank = metrics[PAGERANK];
+	double *closenness = metrics[CLOSENNESS];
+	int *k = malloc(n * sizeof(*k));
+	double *core = metrics[K_CORE];
 	
 	graph_eigenvector(g, eigenvector);
 	graph_pagerank(g, 0.15, pagerank);
 	graph_closeness(g, closenness);
-	int degeneracy = graph_kcore(g, core);
+	int degeneracy = graph_kcore(g, k);
 	
-	snprintf(str, 256, "%s/centrality.dat", folder); fp = fopen(str, "wt");
-	fprintf(fp, "#vertex degree betwenness eigenvalue pagerank closenness kcore\n");
+	fprintf(summary, "degeneracy = %d\n", degeneracy);
+	
 	for (i=0; i < n; i++){
-		fprintf(fp, "%d ", i);
-		fprintf(fp, "%lf ", (double)degree[i]/kmax);
-		fprintf(fp, "%lf ", betweenness[i]);
-		fprintf(fp, "%lf ", eigenvector[i]);
-		fprintf(fp, "%lf ", pagerank[i]);
-		fprintf(fp, "%lf ", closenness[i]);
-		fprintf(fp, "%d ", core[i]);
+		core[i] = (double)k[i];
+	}
+	free(k);
+	
+	// Metrics correlation
+	fprintf(summary, "\nMetrics correlation\n");
+	fprintf(summary, "%*s ", MAX_NAME_SIZE, " ");
+	for (i=0; i < NUM_METRIC; i++){
+		fprintf(summary, "%*s ", MAX_NAME_SIZE, metrics_name[i]);
+	}
+	fprintf(summary, "\n");
+	
+	for (i=0; i < NUM_METRIC; i++){
+		fprintf(summary, "%*s ", MAX_NAME_SIZE, metrics_name[i]);
+		for (j=0; j < NUM_METRIC; j++){
+			double r = stat_pearson(metrics[i], metrics[j], n);
+			fprintf(summary, "%+*.6lf ", MAX_NAME_SIZE, r);
+		}
+		fprintf(summary, "\n");
+	}
+}
+
+void print_metrics(const char *folder, double **metrics, int n){
+	int i, j;
+	char str[256]; snprintf(str, 256, "%s/metrics.dat", folder);
+	FILE *fp = fopen(str, "wt");
+	
+	fprintf(fp, "%*s ", MAX_NAME_SIZE, "#vertex");
+	for (j=0; j < NUM_METRIC; j++){
+		fprintf(fp, "%*s ", MAX_NAME_SIZE, metrics_name[j]);
+	}
+	fprintf(fp, "\n");
+	
+	
+	for (i=0; i < n; i++){
+		fprintf(fp, "%*d ", MAX_NAME_SIZE, i);
+		for (j=0; j < NUM_METRIC; j++){
+			double val = metrics[j][i];
+			if (is_int[j]){ fprintf(fp, "%*.0lf ", MAX_NAME_SIZE, val); }
+			else          { fprintf(fp, "%*.6le ", MAX_NAME_SIZE, val); }
+		}
 		fprintf(fp, "\n");
 	}
+	fclose(fp);
+}
+
+void *experiment(void *args){
+	const char *folder = (char *)args;
+	char str[256];
 	
-	fprintf(f_summary, "degeneracy = %d\n", degeneracy);
+	snprintf(str, 256, "%s/summary.txt", folder);
+	FILE *f_summary = fopen(str, "wt");
 	
-	// Centrality correlation
-	fprintf(stderr, "Computing centralities correlation in %s\n", folder);
-	double *d = malloc(n * sizeof(*d));
-	double *k = malloc(n * sizeof(*k));
+	bool is_directed = false;
+	snprintf(str, 256, "%s/edges.txt", folder);
+	graph_t *complete = load_graph(str, is_directed);
 	
-	for (i=0; i < n; i++){
-		d[i] = (double)degree[i]/kmax;
-		k[i] = (double)core[i]/degeneracy;
+	general_info(f_summary, complete);
+	component_info(f_summary, complete);
+	
+	fprintf(stderr, "Extracting giant component in %s...\n", folder);
+	graph_t *g = graph_giant_component(complete);
+	int n = graph_num_vertices(g);
+	delete_graph(complete);
+	
+	// Allocate metrics matrix
+	double **metrics = malloc(NUM_METRIC * sizeof(*metrics));
+	metrics[0] = malloc(NUM_METRIC * n * sizeof(*metrics[0]));
+	int i;
+	for (i=1; i < NUM_METRIC; i++){
+		metrics[i] = metrics[0] + i*n;
 	}
 	
-	double *centrality[] = {d, betweenness, eigenvector, pagerank, closenness, k};
-	int num_centrality = sizeof(centrality)/sizeof(centrality[0]);
+	fprintf(stderr, "Calculating degree in %s...\n", folder);
+	degree_info(f_summary, g, metrics);
 	
-	fprintf(f_summary, "\nCentralities correlation\n");
-	for (i=0; i < num_centrality; i++){
-		for (j=0; j < num_centrality; j++){
-			if (j > i){
-				double r = stat_pearson(centrality[i], centrality[j], n);
-				fprintf(f_summary, "%+6.3lf ", r);
-			} else {
-				fprintf(f_summary, "       ");
-			}
-		}
-		fprintf(f_summary, "\n");
-	}
+	fprintf(stderr, "Calculating clustering in %s...\n", folder);
+	clustering_info(f_summary, g, folder, metrics);
 	
-	free(d);
-	free(k);
-	free(degree);
-	free(betweenness);
-	free(eigenvector);
-	free(closenness);
-	free(pagerank);
-	free(core);
+	fprintf(stderr, "Calculating degree correlation in %s...\n", folder);
+	correlation_info(f_summary, g, folder, metrics);
 	
+	fprintf(stderr, "Calculating betweenness in %s...\n", folder);
+	betweenness_info(f_summary, g, metrics);
+	
+	fprintf(stderr, "Calculating distance in %s...\n", folder);
+	distance_info(f_summary, g, folder);
+	
+	fprintf(stderr, "Calculating centralities in %s\n", folder);
+	centrality_info(f_summary, g, folder, metrics);
+	
+	print_metrics(folder, metrics, n);
+	
+	free(metrics);
+	free(metrics[0]);
 	delete_graph(g);
 	fclose(f_summary);
 	fprintf(stderr, "Processing in %s completed\n", folder);
