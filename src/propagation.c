@@ -260,7 +260,7 @@ void print_usage(){
 		int i;
 		for (i=0; i < NUM_NETWORK_MODEL; i++){
 		  printf("%s", network_model_code[i]);
-		  if (i == NUM_NETWORK_MODEL-1) printf("|");
+		  if (i != NUM_NETWORK_MODEL-1) printf("|");
 		}
 		printf(")\n");
 		
@@ -515,6 +515,7 @@ int main(int argc, const char *argv[]){
 			num_message += step[s].num_message;
 		}
 		
+		fprintf(outfile, "#num_step num_message num_state...\n");
 		fprintf(outfile, "%d %d ", num_step, num_message);
 		for (j=0; j < model.num_state; j++){
 			short *final_state = step[num_step-1].state;

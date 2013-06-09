@@ -273,6 +273,34 @@ void print_metrics(const char *folder, double **metrics, int n){
 	fclose(fp);
 }
 
+void print_histograms(const char *folder, double **metrics, int n){
+	int i, j;
+	
+	for (i=0; i < NUM_METRIC; i++){
+		char str[256]; snprintf(str, 256, "%s/%s.dat", folder, metrics_name[i]);
+		FILE *fp = fopen(str, "wt");
+		
+		int num_bins = 20;
+		if (is_int[i]){
+			double min = metrics[i][0], max = metrics[i][0];
+			for (j=1; j < n; j++){
+				if (metrics[i][j] < min){ min = metrics[i][j]; }
+				if (metrics[i][j] > max){ max = metrics[i][j]; }
+			}
+			num_bins = (int)(max - min);
+		}
+		interval_t *hist = stat_histogram(metrics[i], n, num_bins);
+		
+		for (j=0; j < num_bins-2; j++){
+			fprintf(fp, "%lf %d\n", (hist[j].min + hist[j].max)/2, hist[j].value);
+		}
+		fprintf(fp, "%lf %d", (hist[j].min + hist[j].max)/2, hist[j].value + hist[j+1].value);
+		
+		free(hist);
+		fclose(fp);
+	}
+}
+
 void *experiment(void *args){
 	const char *folder = (char *)args;
 	char str[256];
@@ -319,6 +347,7 @@ void *experiment(void *args){
 	centrality_info(f_summary, g, folder, metrics);
 	
 	print_metrics(folder, metrics, n);
+	print_histograms(folder, metrics, n);
 	
 	free(metrics);
 	free(metrics[0]);
