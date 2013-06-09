@@ -30,3 +30,4 @@ test/test_list
 test/test_set
 test/test_stat
 test/test_sorting
+test/test_graph_propagation
