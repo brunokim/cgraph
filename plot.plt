@@ -70,7 +70,7 @@
 ## Degree ##
   set output 'degree.svg'
   
-  if (DEGREE_LOG_X) set logscale x
+  if (DEGREE_LOG_X) set logscale x; set xrange [1:*]
   if (DEGREE_LOG_Y) set logscale y
   set xrange [1:*]
   set yrange [1:*]
