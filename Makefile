@@ -19,7 +19,20 @@ run-metrics: bin/metrics
 	bin/metrics $(FOLDERS)
 
 plot-metrics: plot.plt
-	for folder in $(FOLDERS); do echo "Plotting in $$folder" && cd $$folder && gnuplot plot.args ../../plot.plt && cd ../..; done
+	for folder in $(FOLDERS); do \
+		echo "Plotting in $$folder" && \
+		cd $$folder && \
+		gnuplot plot.args ../../plot.plt &&\
+		cd ../..; \
+	done
+
+convert-metrics:
+	for folder in $(FOLDERS); do \
+		echo "Converting in $$folder" && \
+		for img in $$folder/*.svg; do \
+			convert $$img $$folder/`basename $$img .svg`.pdf; \
+		done \
+	done
 
 run-tests: $(TESTS)
 	for test in $(TESTS); do echo $$test && ./$$test; done
