@@ -292,9 +292,11 @@ void print_histograms(const char *folder, double **metrics, int n){
 		interval_t *hist = stat_histogram(metrics[i], n, num_bins);
 		
 		for (j=0; j < num_bins-2; j++){
-			fprintf(fp, "%lf %d\n", (hist[j].min + hist[j].max)/2, hist[j].value);
+			double x = is_int[i] ? hist[j].min : (hist[j].min + hist[j].max)/2;
+			fprintf(fp, "%le %d\n", x, hist[j].value);
 		}
-		fprintf(fp, "%lf %d", (hist[j].min + hist[j].max)/2, hist[j].value + hist[j+1].value);
+		double x = is_int[i] ? hist[j].min : (hist[j].min + hist[j].max)/2;
+		fprintf(fp, "%le %d", x, hist[j].value + hist[j+1].value);
 		
 		free(hist);
 		fclose(fp);
