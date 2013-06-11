@@ -12,6 +12,10 @@
 #include "graph.h"
 #include "graph_metric.h"
 
+#ifndef CACHE_ALIGNMENT
+	#define CACHE_ALIGNMENT 64
+#endif
+
 /************** Component identification and extraction ***********************/
 int graph_undirected_components(const graph_t *g, int *label){
 	assert(g);
@@ -433,26 +437,29 @@ int *graph_geodesic_distribution(const graph_t *g, int *_diameter){
 }
 
 /************************ Centrality measures *********************************/
-// Vector distance, defined by canonical inner product
-double dist(double *u, double *v, int n){
-	double d = 0.0;
-	int i;
-	for (i=0; i < n; i++){
-		d += (u[i] - v[i])*(u[i] - v[i]);
-	}
-	return d;
-}
 
-// Vector norm, defined by canonical inner product
-double norm(double *v, int n){
-	double s = 0.0;
-	int i;
-	for (i=0; i < n; i++){
-		s += v[i]*v[i];
-	}
-	return s;
-}
+/** Betweenness 
+ * Betweenness calculation is an expensive task. For this reason, this code
+ * is organized to allow simple parallel execution.
+ * 
+ * graph_betweenness: 
+ *   Calls graph_betweenness_step with a step=1, thus calculating
+ * betweenness for all vertices.
+ * 
+ * graph_betweenness_step:
+ *   Computes betweenness properly, but only of vertices initial, initial+step,
+ * initial+2*step, ..., initial+k*step < n.
+ * 
+ * graph_parallel_betweenness:
+ *   Creates num_processors threads, each computing a subset of betweenness with
+ * graph_betweenness_step. As they complete their tasks, the value is reduced
+ * in one single vector.
+ *   This function replicates memory needs for all threads, thus its possible
+ * to exhaust memory. If a failure is detected, the function launches a single
+ * thread execution.
+ */
 
+// Increments betweenness given the result of a run starting from vertex s.
 void graph_inc_betweenness
 		(int s, const int *distance, const int *sequence, const int *path_count,
 		 list_t **predecessor, double *betweenness, int n){
@@ -478,12 +485,12 @@ void graph_inc_betweenness
 	free(dependency);
 }
 
-/* Extracted from "A faster algorithm for betweenness centrality", 
- * Ulrik Brandes 
- */
-void graph_betweenness(const graph_t *g, double *betweenness){
+void graph_betweenness_step
+		(const graph_t *g, double *betweenness, int initial, int step){
 	assert(g);
 	assert(betweenness);
+	assert(step > 0);
+	assert(initial >= 0 && initial < step);
 	
 	int i, n = graph_num_vertices(g);
 	memset(betweenness, 0, n * sizeof(*betweenness));
@@ -503,7 +510,7 @@ void graph_betweenness(const graph_t *g, double *betweenness){
 	
 	if (distance && sequence && path_count && lists_ok) {
 		int s;
-		for (s=0; s < n; s++){
+		for (s=initial; s < n; s += step){
 			graph_geodesic_paths(g, s, distance, sequence, path_count, predecessor);
 			graph_inc_betweenness(s, distance, sequence, path_count, predecessor, 
 														betweenness, n);
@@ -521,6 +528,106 @@ void graph_betweenness(const graph_t *g, double *betweenness){
 	}
 }
 
+void graph_betweenness(const graph_t *g, double *betweenness){
+	int initial=0, step=1;
+	graph_betweenness(g, betweenness, initial, step);
+}
+
+typedef struct {
+	const graph_t *graph;
+	int index, num_processors;
+	char padding[CACHE_ALIGNMENT - sizeof(const graph_t *) - 2*sizeof(int)];
+} graph_betweenness_task_params_t;
+
+void *graph_betweenness_task(void *args);
+
+void graph_parallel_betweenness
+		(const graph_t *g, double *betweenness, int num_processors){
+	assert(g);
+	assert(betweenness);
+	assert(num_processors > 1);
+	
+	int i, j, n = graph_num_vertices(g);
+	memset(betweenness, 0, n * sizeof(*betweenness));
+	bool is_failure = false;
+	
+	pthread_t *thread = malloc(num_processors * sizeof(*thread));
+	graph_betweenness_task_params_t *params;
+	params = malloc(num_processors * sizeof(*params));
+	
+	if (!(thread && params)){ is_failure = true; num_processors = 0; }
+	
+	for (i=0; i < num_processors; i++){
+		params[i].graph = g;
+		params[i].index = i;
+		params[i].num_processors = num_processors;
+		int result 
+			= pthread_create(&thread[i], NULL, graph_betweenness_task, &params[i]);
+		if (!result) break;
+	}
+	
+	for (i=0; i < num_processors; i++){
+		double *partial;
+		int result = pthread_join(thread[i], &partial);
+		if (result == 0 && partial != NULL)
+		{
+			for (j=0; j < n; j++){
+				betweenness[j] += partial[j];
+			}
+		}
+		else
+		{
+			is_failure = true;
+		}
+		
+		if (partial){ free(partial); }
+	}
+	
+	free(params);
+	free(thread);
+	
+	if (is_failure){
+		fprintf(stderr, "Failure executing parallel betweenness. "
+		                "Launching single-threaded\n");
+		graph_betweenness(g, betweenness);
+	}
+}
+
+void *graph_betweenness_task(void *args){
+	graph_betweenness_task_params_t params;
+	params = *(graph_betweenness_task_params_t*) args;
+	
+	const graph_t *g = params[i].graph;
+	int initial = params[i].index;
+	int step = params[i].num_processors;
+	
+	int n = graph_num_vertices(g);	
+	double *betweenness = malloc(n * sizeof(*betweenness);
+	if (!betweenness){ return NULL; }
+	
+	graph_betweenness_step(g, betweenness, initial, step);
+	return betweenness;
+}
+
+// Vector distance, defined by canonical inner product
+double dist(double *u, double *v, int n){
+	double d = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		d += (u[i] - v[i])*(u[i] - v[i]);
+	}
+	return d;
+}
+
+// Vector norm, defined by canonical inner product
+double norm(double *v, int n){
+	double s = 0.0;
+	int i;
+	for (i=0; i < n; i++){
+		s += v[i]*v[i];
+	}
+	return s;
+}
 
 void graph_eigenvector(const graph_t *g, double *eigen){
 	assert(g);

@@ -496,6 +496,7 @@ int main(int argc, const char *argv[]){
 	}
 	
 	FILE *outfile = filename ? fopen(filename, "wt") : stdout;
+	fprintf(outfile, "#num_step num_message num_state...\n");
 	
 	int n = graph_num_vertices(g);
 	short *state = malloc(n * sizeof(*state));
@@ -515,7 +516,6 @@ int main(int argc, const char *argv[]){
 			num_message += step[s].num_message;
 		}
 		
-		fprintf(outfile, "#num_step num_message num_state...\n");
 		fprintf(outfile, "%d %d ", num_step, num_message);
 		for (j=0; j < model.num_state; j++){
 			short *final_state = step[num_step-1].state;

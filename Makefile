@@ -4,7 +4,7 @@ CFLAGS = -Iinclude -Wall -g
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 TESTS = $(patsubst %, test/test_%, $(MODULES))
 
-DATASETS = cat mac95 netscience email powergrid astrophysics internet
+DATASETS = cat mac95 netscience email powergrid astrophysics internet baywet baydry mangwet mangdry
 FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
 
 BIN = metrics propagation
