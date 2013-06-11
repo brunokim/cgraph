@@ -7,6 +7,7 @@
 *.aux
 *.out
 *.toc
+*.swp
 
 # Raw data
 *.dat
@@ -30,4 +31,5 @@ test/test_list
 test/test_set
 test/test_stat
 test/test_sorting
+i
 test/test_graph_propagation
