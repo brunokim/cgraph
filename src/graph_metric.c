@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "sorting.h"
 #include "stat.h"
@@ -530,7 +531,7 @@ void graph_betweenness_step
 
 void graph_betweenness(const graph_t *g, double *betweenness){
 	int initial=0, step=1;
-	graph_betweenness(g, betweenness, initial, step);
+	graph_betweenness_step(g, betweenness, initial, step);
 }
 
 typedef struct {
@@ -563,12 +564,21 @@ void graph_parallel_betweenness
 		params[i].num_processors = num_processors;
 		int result 
 			= pthread_create(&thread[i], NULL, graph_betweenness_task, &params[i]);
-		if (!result) break;
+		if (result != 0)
+		{
+			is_failure = true;
+			break;
+		}
 	}
+	
+	// If a failure happened launching threads, its necessary to wait for the
+	//successful ones to complete. If no failure happened, than 
+	//i == num_processors and we wait on all threads.
+	num_processors = i;
 	
 	for (i=0; i < num_processors; i++){
 		double *partial;
-		int result = pthread_join(thread[i], &partial);
+		int result = pthread_join(thread[i], (void **)&partial);
 		if (result == 0 && partial != NULL)
 		{
 			for (j=0; j < n; j++){
@@ -597,12 +607,12 @@ void *graph_betweenness_task(void *args){
 	graph_betweenness_task_params_t params;
 	params = *(graph_betweenness_task_params_t*) args;
 	
-	const graph_t *g = params[i].graph;
-	int initial = params[i].index;
-	int step = params[i].num_processors;
+	const graph_t *g = params.graph;
+	int initial = params.index;
+	int step = params.num_processors;
 	
 	int n = graph_num_vertices(g);	
-	double *betweenness = malloc(n * sizeof(*betweenness);
+	double *betweenness = malloc(n * sizeof(*betweenness));
 	if (!betweenness){ return NULL; }
 	
 	graph_betweenness_step(g, betweenness, initial, step);

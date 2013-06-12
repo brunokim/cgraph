@@ -9,6 +9,10 @@
 #include "graph.h"
 #include "graph_metric.h"
 
+#ifndef NUM_PROCESSORS
+	#define NUM_PROCESSORS 8
+#endif
+
 enum {
 	DEGREE, CLUSTERING, AVG_DEGREE, BETWEENNESS, 
 	EIGENVECTOR, PAGERANK, CLOSENNESS, K_CORE,
@@ -172,7 +176,15 @@ void betweenness_info(FILE *summary, graph_t *g, double **metrics){
 	int n = graph_num_vertices(g);
 	double *betweenness = metrics[BETWEENNESS];
 	
-	graph_betweenness(g, betweenness);
+	if (n < 4000)
+	{
+		graph_betweenness(g, betweenness);
+	} 
+	else
+	{
+		graph_parallel_betweenness(g, betweenness, NUM_PROCESSORS);
+	}
+	
 	//stat_double_normalization(betweenness, n);
 	double max = 
 		*(double *)search_max(betweenness, n, sizeof(max), comp_double_asc);

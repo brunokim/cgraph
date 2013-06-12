@@ -159,6 +159,8 @@ int *graph_geodesic_distribution(const graph_t *g, int *diameter);
  *   betweenness[v] = B_v
  * */
 void graph_betweenness(const graph_t *g, double *betweenness);
+void graph_parallel_betweenness
+	(const graph_t *g, double *betweenness, int num_processors);
 
 /* List all vertices' eigenvector centrality.
  * 

@@ -358,6 +358,42 @@ void test_betweenness(){
 	delete_graph(g);
 }
 
+void test_parallel_betweenness(){
+	int i, j, n = 997;
+	int num_processors = 8;
+	double *single = malloc(n * sizeof(*single));
+	double *multi = malloc(n * sizeof(*multi));
+	
+	graph_t *star = make_a_star(n);
+	graph_t *line = make_a_line(n);
+	graph_t *cycle = make_a_cycle(n);
+	graph_t *erdos = new_graph(n, false, false);
+	
+	unsigned int seed = 991784611L;
+	for (i=0; i < n; i++){
+		for (j=i+1; j < n; j++){
+			double p = 10.0/n;
+			if (rand_r(&seed) < p*RAND_MAX){
+				graph_add_edge(erdos, i, j);
+			}
+		}
+	}
+	
+	graph_t *graphs[] = {star, line, cycle, erdos};
+	int num_graphs = sizeof(graphs)/sizeof(graphs[0]);
+	
+	for (i=0; i < num_graphs; i++){
+		graph_betweenness(graphs[i], single);
+		graph_parallel_betweenness(graphs[i], multi, num_processors);
+		for (j=0; j < n; j++){
+			assert(fabs(single[j] - multi[j]) < 1e-6);
+		}
+		free(graphs[i]);
+	}
+	
+	free(single); free(multi);
+}
+
 typedef struct {
 	graph_t *g;
 	int *core;
@@ -516,6 +552,7 @@ int main(){
 	test_distance();
 	test_betweenness();
 	test_kcore();
+	test_parallel_betweenness();
 	printf("success\n");
 	return 0;
 }
