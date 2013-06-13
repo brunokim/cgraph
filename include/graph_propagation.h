@@ -65,6 +65,12 @@ void graph_animate_propagation
 	(const char *folder, const graph_t *g, const coord_t *p, 
 	 int num_state,
 	 const propagation_step_t *step, int num_step);
+	 
+	 // Creates animation frames of a propagation in the given graph.
+void graph_animate_propagation_steps
+	(const char *folder, const graph_t *g, const coord_t *p, 
+	 int num_state,
+	 const propagation_step_t *step, int num_step, int steps);
 
 // Compute the number of individuals in each state at each propagation step.
 void graph_propagation_freq

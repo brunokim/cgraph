@@ -68,6 +68,10 @@ bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o o
 test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o \
  obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
+	
+test/test_graph_propagation_steps: obj/test_graph_propagation_steps.o obj/graph_propagation.o \
+ obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -96,6 +100,9 @@ test/test_sorting : obj/test_sorting.o obj/sorting.o
 ## Test objects
 
 obj/test_graph_propagation.o : test/test_graph_propagation.c include/error.h include/graph_propagation.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+	
+obj/test_graph_propagation_steps.o : test/test_graph_propagation_steps.c include/error.h include/graph_propagation.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/test_graph_model.o : test/test_graph_model.c include/error.h include/graph_model.h include/graph.h

@@ -202,6 +202,109 @@ void graph_animate_propagation
 	free(edge_style);
 }
 
+void graph_animate_propagation_steps
+		(const char *folder, const graph_t *g, const coord_t *p,
+		 int num_state,
+		 const propagation_step_t *step, int num_step, int steps){
+	assert(folder);
+	assert(g);
+	assert(p);
+	assert(num_state > 0);
+	assert(step);
+	assert(num_step > 0);
+	
+	circle_style_t *point_style = malloc(num_state * sizeof(*point_style));
+	path_style_t *edge_style = malloc((num_state+1) * sizeof(*edge_style));
+	
+	color_t black_50 = {0, 0, 0, 128};
+	color_t black_100 = {0, 0, 0, 255};
+	int radius = 5;
+	int width = 1;
+	
+	// Edge style 0: transparent black
+	edge_style[0].type = GRAPH_STRAIGHT;
+	edge_style[0].width = width;	
+	color_copy(edge_style[0].color, black_50);
+	
+	int i;
+	for (i=0; i < num_state; i++){
+		color_t hsv = {(255 * i)/num_state, 255, 255, 255};
+		color_t rgb; color_hsv_to_rgb(rgb, hsv);
+		
+		point_style[i].width = width;
+		point_style[i].radius = radius;
+		color_copy(point_style[i].fill, rgb);
+		color_copy(point_style[i].stroke, black_100);
+		
+		edge_style[i+1].type = GRAPH_STRAIGHT;
+		edge_style[i+1].width = 2*width;
+		color_copy(edge_style[i+1].color, rgb);
+	}
+	
+	int n = graph_num_vertices(g), m = graph_num_edges(g);
+	
+	int *ps = malloc(n * sizeof(*ps));
+	int *es = malloc(m * sizeof(*es));
+	
+	int *adj = malloc(n * sizeof(*adj));
+	
+	//interval
+	
+	int pulo = num_step/(steps-1);
+	//printf("\npuuulo: %d", pulo);
+	//printf("\nsteps: %d", steps);
+    int *px = (int*) malloc(steps*sizeof(int));
+
+    int valor = 0;
+    int x;
+    for(x = 0; x < steps; x++){
+        if(steps-1 == x){
+            px[x] = num_step - 1;
+        }
+        else{
+            px[x] = valor;
+            valor += pulo;
+        }
+    }
+    printf("Passos ilustrados: ");
+    for(x = 0; x < steps; x = x+1){
+        printf("%d ", px[x]);
+    }
+	
+	int s;
+	int it;
+	int tamanho = sizeof(px)/sizeof(int);
+	//printf("\ntamaaanho: %d", tamanho);
+	for (it = 0; it < steps; it++){
+	  s = px[it];
+		char filename[256];
+		sprintf(filename, "%s/frame%05d.svg", folder, s);
+		
+		for (i=0; i < step[s].n; i++){
+			ps[i] = step[s].state[i];
+		}
+		
+		memset(es, 0, m * sizeof(*es));
+		for (i=0; i < step[s].num_message; i++){
+			int orig = step[s].message[i].orig;
+			int dest = step[s].message[i].dest;
+			
+			int e = graph_find_edge(g, orig, dest);
+			es[e] = 1 + step[s].state[dest];
+		}
+		
+		graph_print_svg_some_styles(filename, 0, 0, g, p, 
+		                            ps, point_style, num_state,
+		                            es, edge_style, num_state+1);
+	}
+	
+	free(adj);
+	free(ps);
+	free(es);
+	free(point_style);
+	free(edge_style);
+}
+
 void graph_propagation_freq
 		(const propagation_step_t *step, int num_step, int **freq, int num_state){
 	int s, i;
