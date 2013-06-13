@@ -20,5 +20,7 @@ graph_t *new_watts_strogatz_r(int n, int k, double beta, unsigned int *seedp);
 // Creates a scale-free network with n vertices and average degree k.
 graph_t *new_barabasi_albert(int n, int k);
 graph_t *new_barabasi_albert_r(int n, int k, unsigned int *seedp);
+// Creates a scale-free network with modular structure and k^l vertices.
+graph_t *new_ravasz_barabasi(int l, int k);
 
 #endif

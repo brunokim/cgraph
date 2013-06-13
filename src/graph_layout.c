@@ -208,6 +208,11 @@ void graph_layout_circle_edges
 }
 
 double graph_layout_degree(const graph_t *g, int radius, coord_t *p){
+	graph_layout_degree2(g, radius, p, true);
+}
+
+double graph_layout_degree2
+		(const graph_t *g, int radius, coord_t *p, bool is_random_angle){
 	assert(g);
 	assert(radius > 0);
 	assert(p);
@@ -251,7 +256,8 @@ double graph_layout_degree(const graph_t *g, int radius, coord_t *p){
 	// Random initial angle
 	double *t0 = malloc(num_layer * sizeof(*t0));
 	for (i=0; i < num_layer; i++){
-		t0[i] = 2*M_PI*(double)rand()/RAND_MAX;
+		if (is_random_angle){ t0[i] = 2*M_PI*(double)rand()/RAND_MAX; }
+		else                { t0[i] = 0.0; }
 	}
 	
 	int *count = malloc(num_layer * sizeof(*count));

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "error.h"
 #include "stat.h"
@@ -163,5 +164,101 @@ graph_t *new_barabasi_albert_r(int n, int k, unsigned int *seedp){
 	
 	free(d);
 	free(degree);
+	return g;
+}
+
+typedef enum {
+	GRAPH_RAVASZ_CENTRAL, GRAPH_RAVASZ_INTERMEDIATE, GRAPH_RAVASZ_PERIPHERICAL
+} graph_ravasz_state_t;
+
+void graph_ravasz_fill
+		(graph_ravasz_state_t **state, int level, int initial, int k){
+	int s, i;
+	if (level == 0)
+	{
+		state[initial+0][level] = GRAPH_RAVASZ_CENTRAL;
+		for (s=1; s < k; s++){
+			state[initial+s][level] = GRAPH_RAVASZ_PERIPHERICAL;
+		}
+	}
+	else
+	{
+		int step = (int) pow(k, level);
+		for (s=0; s < k; s++){
+			// Compute state in inner level
+			graph_ravasz_fill(state, level-1, initial + s*step, k);
+			
+			// Defines current state based on previous state
+			for (i=0; i < step; i++){
+				int pos = initial + s*step + i;
+				
+				switch(state[pos][level-1]){
+					case GRAPH_RAVASZ_CENTRAL: 
+						state[pos][level] = 
+							s != 0 ? GRAPH_RAVASZ_INTERMEDIATE : 
+						           GRAPH_RAVASZ_CENTRAL;
+						break;
+					case GRAPH_RAVASZ_INTERMEDIATE:
+						state[pos][level] = GRAPH_RAVASZ_INTERMEDIATE; 
+						break;
+					case GRAPH_RAVASZ_PERIPHERICAL:
+						state[pos][level] = 
+							s != 0 ? GRAPH_RAVASZ_PERIPHERICAL : 
+							         GRAPH_RAVASZ_INTERMEDIATE;
+							break;
+				}
+			}
+		}
+	}
+}
+
+graph_t *new_ravasz_barabasi(int l, int k){
+	assert(l > 0);
+	assert(k > 2);
+	
+	int i, j, n = (int) pow(k, l);
+	graph_t *g = new_graph(n, false, false);
+	if (!g){ return NULL; }
+	
+	graph_ravasz_state_t **state = malloc(n * sizeof(*state));
+	state[0] = malloc(n * l * sizeof(*state[0]));
+	for (i=1; i < n; i++){
+		state[i] = state[0] + i*l;
+	}
+	
+	graph_ravasz_fill(state, l-1, 0, k);
+	
+	// Connect centers to peripherical nodes in each level
+	int level;
+	for (level=1; level < l; level++){
+		int center = state[0][level];
+		for (i=0; i < n; i++){
+			switch(state[i][level]){
+				case GRAPH_RAVASZ_CENTRAL:
+					center = i;
+					break;
+				case GRAPH_RAVASZ_PERIPHERICAL:
+					graph_add_edge(g, center, i);
+					break;
+				case GRAPH_RAVASZ_INTERMEDIATE:
+				default:
+					/* Do nothing */
+					break;
+			}
+		}
+	}
+	
+	// Forms level 0 cliques
+	int num_cliques = n/k;
+	int c;
+	for (c=0; c < num_cliques; c++){
+		for (i=0; i < k; i++){
+			for (j=i+1; j < k; j++){
+				graph_add_edge(g, c*k+i, c*k+j);
+			}
+		}
+	}
+	
+	free(state[0]); free(state);
 	return g;
 }

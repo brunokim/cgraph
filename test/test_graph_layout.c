@@ -277,6 +277,36 @@ void test_degree_layout(){
 	delete_graph(g);
 }
 
+void test_degree_layout2(){
+	int l = 5, k = 4;
+	int radius = 5, width=1;
+	graph_t *g = new_ravasz_barabasi(l, k);
+	int n = graph_num_vertices(g);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	graph_layout_degree2(g, width+radius, p, false);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	color_copy(edge_style.color, black);
+	
+	graph_print_svg_one_style("test/test_degree_layout2.svg", 0, 0, g, p, 
+	                          point_style, edge_style);
+	
+	free(p);
+	delete_graph(g);
+}
+
+
 void test_animation(){
 	int n = 64, k = 4;
 	int radius = 5, width=1;
@@ -324,6 +354,7 @@ int main(){
 	test_random_layout();
 	test_circle_layout();
 	test_degree_layout();
+	test_degree_layout2();
 	test_animation();
 	printf("success\n");
 	return 0;

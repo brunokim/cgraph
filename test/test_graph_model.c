@@ -16,7 +16,9 @@ void degree_dist(const graph_t *g, const char *filename){
 	
 	FILE *fp = fopen(filename, "wt");
 	for (i=0; i < n; i++){
-		fprintf(fp, "%d %d\n", i, d[i]);
+		if (d[i] > 0){
+			fprintf(fp, "%d %d\n", i, d[i]);
+		}
 	}
 	fclose(fp);
 	free(d);
@@ -54,10 +56,18 @@ void test_barabasi_albert(){
 	delete_graph(g);
 }
 
+void test_ravasz_barabasi(){
+	int k = 4, l = 5;
+	graph_t *g = new_ravasz_barabasi(l, k);
+	degree_dist(g, "test/test_ravasz_barabasi.dat");
+	delete_graph(g);
+}
+
 int main(){
 	test_erdos_renyi();
 	test_barabasi_albert();
 	test_watts_strogatz();
+	test_ravasz_barabasi();
 	
 	printf("success\n");
 	return 0;
