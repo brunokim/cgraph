@@ -213,6 +213,10 @@ void graph_animate_propagation_steps
 	assert(step);
 	assert(num_step > 0);
 	
+	if(steps < num_step) steps = 0;
+	if(steps > num_step) steps = num_step;
+	if(steps == 0) steps = num_step;
+	
 	circle_style_t *point_style = malloc(num_state * sizeof(*point_style));
 	path_style_t *edge_style = malloc((num_state+1) * sizeof(*edge_style));
 	

@@ -17,7 +17,7 @@ public class StabilityModel {
         Vector graphs;
 
         ManageFiles mf = new ManageFiles();
-        graphs = mf.readFile("testesis.txt");
+        graphs = mf.readFile((String)args[0]);
         System.out.println(graphs.size());
 
         double values = 0;
