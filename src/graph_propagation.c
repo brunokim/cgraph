@@ -128,78 +128,8 @@ propagation_step_t *graph_propagation_r
 
 void graph_animate_propagation
 		(const char *folder, const graph_t *g, const coord_t *p,
-		 int num_state,
-		 const propagation_step_t *step, int num_step){
-	assert(folder);
-	assert(g);
-	assert(p);
-	assert(num_state > 0);
-	assert(step);
-	assert(num_step > 0);
-	
-	circle_style_t *point_style = malloc(num_state * sizeof(*point_style));
-	path_style_t *edge_style = malloc((num_state+1) * sizeof(*edge_style));
-	
-	color_t black_50 = {0, 0, 0, 128};
-	color_t black_100 = {0, 0, 0, 255};
-	int radius = 5;
-	int width = 1;
-	
-	// Edge style 0: transparent black
-	edge_style[0].type = GRAPH_STRAIGHT;
-	edge_style[0].width = width;	
-	color_copy(edge_style[0].color, black_50);
-	
-	int i;
-	for (i=0; i < num_state; i++){
-		color_t hsv = {(255 * i)/num_state, 255, 255, 255};
-		color_t rgb; color_hsv_to_rgb(rgb, hsv);
-		
-		point_style[i].width = width;
-		point_style[i].radius = radius;
-		color_copy(point_style[i].fill, rgb);
-		color_copy(point_style[i].stroke, black_100);
-		
-		edge_style[i+1].type = GRAPH_STRAIGHT;
-		edge_style[i+1].width = 2*width;
-		color_copy(edge_style[i+1].color, rgb);
-	}
-	
-	int n = graph_num_vertices(g), m = graph_num_edges(g);
-	
-	int *ps = malloc(n * sizeof(*ps));
-	int *es = malloc(m * sizeof(*es));
-	
-	int *adj = malloc(n * sizeof(*adj));
-	
-	int s;
-	for (s=0; s < num_step; s++){
-		char filename[256];
-		sprintf(filename, "%s/frame%05d.svg", folder, s);
-		
-		for (i=0; i < step[s].n; i++){
-			ps[i] = step[s].state[i];
-		}
-		
-		memset(es, 0, m * sizeof(*es));
-		for (i=0; i < step[s].num_message; i++){
-			int orig = step[s].message[i].orig;
-			int dest = step[s].message[i].dest;
-			
-			int e = graph_find_edge(g, orig, dest);
-			es[e] = 1 + step[s].state[dest];
-		}
-		
-		graph_print_svg_some_styles(filename, 0, 0, g, p, 
-		                            ps, point_style, num_state,
-		                            es, edge_style, num_state+1);
-	}
-	
-	free(adj);
-	free(ps);
-	free(es);
-	free(point_style);
-	free(edge_style);
+		 int num_state, const propagation_step_t *step, int num_step){
+	graph_animate_propagation_steps(folder, g, p, num_state, step, num_step, 0);
 }
 
 void graph_animate_propagation_steps
@@ -253,27 +183,20 @@ void graph_animate_propagation_steps
 	int *adj = malloc(n * sizeof(*adj));
 	
 	//interval
-	
 	int pulo = num_step/(steps-1);
-	//printf("\npuuulo: %d", pulo);
-	//printf("\nsteps: %d", steps);
-    int *px = (int*) malloc(steps*sizeof(int));
+	int *px = (int*) malloc(steps*sizeof(int));
 
-    int valor = 0;
-    int x;
-    for(x = 0; x < steps; x++){
-        if(steps-1 == x){
-            px[x] = num_step - 1;
-        }
-        else{
-            px[x] = valor;
-            valor += pulo;
-        }
-    }
-    printf("Passos ilustrados: ");
-    for(x = 0; x < steps; x = x+1){
-        printf("%d ", px[x]);
-    }
+	int valor = 0;
+	int x;
+	for(x = 0; x < steps; x++){
+			if(steps-1 == x){
+					px[x] = num_step - 1;
+			}
+			else{
+					px[x] = valor;
+					valor += pulo;
+			}
+	}
 	
 	int s;
 	int it;
@@ -549,47 +472,39 @@ void graph_sizr_transition
 	graph_sizr_params_t *p = (graph_sizr_params_t*)params;
 	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
 	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	assert(p->delta >= 0.0 && p->delta <= 1.0);
+	assert(p->rho >= 0.0 && p->rho <= 1.0);
+	assert(p->csi >= 0.0 && p->csi <= 1.0);
+	assert(p->c >= 0.0 && p->c <= 1.0);
 	
 	int i;
+	for (i=0; i < n; i++){
+		next[i] = curr.state[i];
+	}
+	
 	double prob;
 	for (i=0; i < n; i++){
 		switch(curr.state[i]){
 			case GRAPH_SIZR_S: 
 				prob = (double) my_rand_r(seedp)/RAND_MAX;
-				if (prob < p->delta){
-					// Natural death
-					next[i] = GRAPH_SIZR_R;
-				}
+				if (prob < p->delta){ next[i] = GRAPH_SIZR_R; } // Natural death
 				break;
 			case GRAPH_SIZR_I: 
 				prob = (double) my_rand_r(seedp)/RAND_MAX;
-				if (prob < p->delta)
-				{
-					// Natural death
-					next[i] = GRAPH_SIZR_R;
-				}
+				if (prob < p->delta) {next[i] = GRAPH_SIZR_R; } // Natural death
 				else
 				{
 					prob = (double) my_rand_r(seedp)/RAND_MAX;
-					if (prob < p->csi){
-						// Zombie conversion
-						next[i] = GRAPH_SIZR_Z;
-					}
+					if (prob < p->rho){	next[i] = GRAPH_SIZR_Z; } // Zombie conversion
 				}
 				break;
 			case GRAPH_SIZR_Z:
 				prob = (double) my_rand_r(seedp)/RAND_MAX;
-				if (prob < p->c){
-					// Cure
-					next[i] = GRAPH_SIZR_S;
-				}
+				if (prob < p->c){ next[i] = GRAPH_SIZR_S; } // Cure
 				break;
 			case GRAPH_SIZR_R:
 				prob = (double) my_rand_r(seedp)/RAND_MAX;
-				if (prob < p->csi){
-					// Return from the dead
-					next[i] = GRAPH_SIZR_S;
-				}
+				if (prob < p->csi){ next[i] = GRAPH_SIZR_Z; } // Return from the dead
 				break;
 		}
 	}
@@ -599,11 +514,13 @@ void graph_sizr_transition
 		int dest = curr.message[i].dest;
 		
 		if (curr.state[dest] == GRAPH_SIZR_S){
+			// Infection
 			int r = my_rand_r(seedp); 
 			if (r < p->alpha * RAND_MAX){
 				next[dest] = GRAPH_SIZR_I;
 			}
 			
+			// Zombie removed
 			r = my_rand_r(seedp);
 			if (r < p->beta * RAND_MAX){
 				next[orig] = GRAPH_SIZR_R;

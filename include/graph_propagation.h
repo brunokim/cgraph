@@ -9,7 +9,7 @@
 /********************************* Constants **********************************/
 
 #ifndef GRAPH_PROPAGATION_K
- #define GRAPH_PROPAGATION_K 10
+ #define GRAPH_PROPAGATION_K 100
 #endif
 
 /*********************************** Types ************************************/

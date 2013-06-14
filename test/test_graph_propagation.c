@@ -28,7 +28,7 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 		graph_propagation(g, state, &num_step, model, params);
 	
 	char str[256];
-	sprintf(str, "animate_%s", model.name);	
+	sprintf(str, "test/animate_%s", model.name);	
 	
   int result_code = mkdir(str, 0777);
   if (result_code != 0){
@@ -44,7 +44,7 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 		freq[i] = freq[0] + i * model.num_state;
 	graph_propagation_freq(step, num_step, freq, model.num_state);
 	
-	sprintf(str, "animate_%s/freq.dat", model.name);
+	sprintf(str, "test/animate_%s/freq.dat", model.name);
 	FILE *fp = fopen(str, "wt");
 	for (i=0; i < num_step; i++){
 		fprintf(fp, "%d ", i);
@@ -100,15 +100,14 @@ void test_animate_dk(){
 
 void test_animate_sizr(){
 	graph_sizr_params_t params;
-	params.alpha = 1.0;
+	params.alpha = 0.95;
 	params.beta  = 0.5;
-	params.delta = 1.0;
-	params.rho  = 0.5;
-	params.csi = 1.0;
-	params.c  = 0.0;
+	params.delta = 0.01;
+	params.rho   = 0.5;
+	params.csi   = 0.01;
+	params.c     = 0.0;
 	test_animate(64, sizr, &params, 0);
 }
-
 
 int main(){
 	test_animate_si();
@@ -116,6 +115,7 @@ int main(){
 	test_animate_sir();
 	test_animate_seir();
 	test_animate_dk();
+	test_animate_sizr();
 	printf("\n\nsuccess\n");
 	return 0;
 }
