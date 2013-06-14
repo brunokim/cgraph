@@ -172,4 +172,28 @@ bool is_dk_end
 
 extern const propagation_model_t dk;
 
+/******************************** Zombie model ********************************/
+typedef struct { 
+	double alpha; // Infection
+	double beta;  // Zombie-Killing
+	double delta; // Natural death 
+	double rho;   // Zombie conversion 
+	double csi;   // Return from the dead 
+	double c;     // Cure
+} graph_sizr_params_t;
+
+typedef enum {
+	GRAPH_SIZR_S, GRAPH_SIZR_I, GRAPH_SIZR_Z, GRAPH_SIZR_R, GRAPH_SIZR_NUM_STATE
+} graph_state_sizr_t;
+
+void graph_sizr_transition
+	(short *next, const propagation_step_t curr, int n, 
+	 const void *params, unsigned int *seedp);
+
+bool is_sizr_end
+	(const short *state, int n, int num_step, const void *params);
+
+extern const propagation_model_t sizr;
+
+
 #endif

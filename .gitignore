@@ -31,5 +31,9 @@ test/test_list
 test/test_set
 test/test_stat
 test/test_sorting
-i
 test/test_graph_propagation
+
+# Java binaries
+StabilityModel/dist
+StabilityModel/build
+StabilityModel/nbproject

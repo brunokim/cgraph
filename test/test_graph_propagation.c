@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "graph.h"
 #include "graph_model.h"
@@ -12,7 +13,6 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 	int i, j, k = 4;
 	int width = 1, radius = 5;
 	unsigned int seed = 42;
-	int test;
 	
 	graph_t *g = new_barabasi_albert_r(n, k, &seed);
 	coord_t *p = malloc(n * sizeof(*p));
@@ -31,6 +31,9 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 	sprintf(str, "animate_%s", model.name);	
 	
   int result_code = mkdir(str, 0777);
+  if (result_code != 0){
+		/*Do nothing*/
+	}
 	
 	graph_animate_propagation_steps
 		(str, g, p, model.num_state, step, num_step, steps);
@@ -94,6 +97,18 @@ void test_animate_dk(){
 	params.beta  = 0.5;
 	test_animate(64, dk, &params, 5);
 }
+
+void test_animate_sizr(){
+	graph_sizr_params_t params;
+	params.alpha = 1.0;
+	params.beta  = 0.5;
+	params.delta = 1.0;
+	params.rho  = 0.5;
+	params.csi = 1.0;
+	params.c  = 0.0;
+	test_animate(64, sizr, &params, 0);
+}
+
 
 int main(){
 	test_animate_si();

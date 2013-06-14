@@ -277,8 +277,6 @@ void graph_animate_propagation_steps
 	
 	int s;
 	int it;
-	int tamanho = sizeof(px)/sizeof(int);
-	//printf("\ntamaaanho: %d", tamanho);
 	for (it = 0; it < steps; it++){
 	  s = px[it];
 		char filename[256];
@@ -542,3 +540,86 @@ bool is_dk_end
 
 const propagation_model_t dk = 
 	{"dk", GRAPH_DK_Y, graph_dk_transition, is_dk_end, GRAPH_DK_NUM_STATE};
+	
+/**************************** SIZR propagation ********************************/
+
+void graph_sizr_transition
+		(short *next, const propagation_step_t curr, int n, 
+		 const void *params, unsigned int *seedp){
+	graph_sizr_params_t *p = (graph_sizr_params_t*)params;
+	assert(p->alpha >= 0.0 && p->alpha <= 1.0);
+	assert(p->beta >= 0.0 && p->beta <= 1.0);
+	
+	int i;
+	double prob;
+	for (i=0; i < n; i++){
+		switch(curr.state[i]){
+			case GRAPH_SIZR_S: 
+				prob = (double) my_rand_r(seedp)/RAND_MAX;
+				if (prob < p->delta){
+					// Natural death
+					next[i] = GRAPH_SIZR_R;
+				}
+				break;
+			case GRAPH_SIZR_I: 
+				prob = (double) my_rand_r(seedp)/RAND_MAX;
+				if (prob < p->delta)
+				{
+					// Natural death
+					next[i] = GRAPH_SIZR_R;
+				}
+				else
+				{
+					prob = (double) my_rand_r(seedp)/RAND_MAX;
+					if (prob < p->csi){
+						// Zombie conversion
+						next[i] = GRAPH_SIZR_Z;
+					}
+				}
+				break;
+			case GRAPH_SIZR_Z:
+				prob = (double) my_rand_r(seedp)/RAND_MAX;
+				if (prob < p->c){
+					// Cure
+					next[i] = GRAPH_SIZR_S;
+				}
+				break;
+			case GRAPH_SIZR_R:
+				prob = (double) my_rand_r(seedp)/RAND_MAX;
+				if (prob < p->csi){
+					// Return from the dead
+					next[i] = GRAPH_SIZR_S;
+				}
+				break;
+		}
+	}
+	
+	for (i=0; i < curr.num_message; i++){
+		int orig = curr.message[i].orig;
+		int dest = curr.message[i].dest;
+		
+		if (curr.state[dest] == GRAPH_SIZR_S){
+			int r = my_rand_r(seedp); 
+			if (r < p->alpha * RAND_MAX){
+				next[dest] = GRAPH_SIZR_I;
+			}
+			
+			r = my_rand_r(seedp);
+			if (r < p->beta * RAND_MAX){
+				next[orig] = GRAPH_SIZR_R;
+			}
+		}
+	}
+}
+
+bool is_sizr_end
+		(const short *state, int n, int num_step, const void *params){
+	int num_susceptible = graph_count_state(GRAPH_SIZR_S, state, n);
+	int num_infectious = graph_count_state(GRAPH_SIZR_I, state, n);
+	return num_susceptible == 0 && num_infectious == 0;
+}
+
+const propagation_model_t sizr = 
+	{"sizr", GRAPH_SIZR_Z, 
+	 graph_sizr_transition, is_sizr_end, 
+	 GRAPH_SIZR_NUM_STATE};

@@ -145,9 +145,9 @@ void check_network_params(short network_model){
 
 /***************************** Dissemination Model ****************************/
 
-enum {SI, SIS, SIR, SEIR, DK, ALL, NUM_PROPAGATION_MODEL};
+enum {SI, SIS, SIR, SEIR, DK, SIZR, ALL, NUM_PROPAGATION_MODEL};
 char propagation_code[NUM_PROPAGATION_MODEL][5] = {
-	"SI", "SIS", "SIR", "SEIR", "DK", "ALL"
+	"SI", "SIS", "SIR", "SEIR", "DK", "SIZR", "ALL"
 };
 
 char propagation_model_param[NUM_PROPAGATION_MODEL][80] = {
@@ -157,9 +157,10 @@ char propagation_model_param[NUM_PROPAGATION_MODEL][80] = {
 	"alpha: double, beta: double, gamma: double",
 	"alpha: double, beta: double",
 	"alpha: double, beta: double, gamma: double, max_iter: int",
+	"alpha, beta, delta, rho, csi, c"
 };
 
-double propagation_params[4] = {NAN, NAN, NAN, NAN};
+double propagation_params[6] = {NAN, NAN, NAN, NAN, NAN, NAN};
 
 void parse_propagation_params(str_stream_t *stream, short propagation_model){
 	propagation_params[0] = parse_double(stream_next(stream), "alpha");
@@ -181,6 +182,14 @@ void parse_propagation_params(str_stream_t *stream, short propagation_model){
 	else if (propagation_model == DK)
 	{
 		propagation_params[1] = parse_double(stream_next(stream), "beta");
+	}
+	else if (propagation_model == SIZR)
+	{
+		propagation_params[1] = parse_double(stream_next(stream), "beta");
+		propagation_params[2] = parse_double(stream_next(stream), "delta");
+		propagation_params[3] = parse_double(stream_next(stream), "rho");
+		propagation_params[4] = parse_double(stream_next(stream), "csi");
+		propagation_params[5] = parse_double(stream_next(stream), "c");
 	}
 	else if (propagation_model == ALL)
 	{
@@ -493,6 +502,17 @@ int main(int argc, const char *argv[]){
 		params = malloc(sizeof(graph_dk_params_t));
 		((graph_dk_params_t *)params)->alpha = propagation_params[0];
 		((graph_dk_params_t *)params)->beta = propagation_params[1];
+	}
+	else if (propagation_model == SIZR)
+	{
+		model = sizr;
+		params = malloc(sizeof(graph_sizr_params_t));
+		((graph_sizr_params_t *)params)->alpha = propagation_params[0];
+		((graph_sizr_params_t *)params)->beta = propagation_params[1];
+		((graph_sizr_params_t *)params)->delta = propagation_params[2];
+		((graph_sizr_params_t *)params)->rho = propagation_params[3];
+		((graph_sizr_params_t *)params)->csi = propagation_params[4];
+		((graph_sizr_params_t *)params)->c = propagation_params[5];
 	}
 	
 	FILE *outfile = filename ? fopen(filename, "wt") : stdout;
