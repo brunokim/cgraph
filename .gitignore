@@ -8,6 +8,13 @@
 *.out
 *.toc
 *.swp
+*.bbl
+*.blg
+*.brf
+*.lof
+*.lot
+*.siglax
+*.symbolsx
 
 # Raw data
 *.dat
