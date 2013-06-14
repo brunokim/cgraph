@@ -15,13 +15,93 @@ A descrição quantitativa das propriedades de redes fornecem ferramentas fundamen
 redes reais e teóricas, permitindo sua representação, caracterização, classificação e modelagem 
 \cite{costa2007characterization}.
 
+Nas métricas a seguir supomos que o grafo com $N$ vértices é representado por uma matriz $A \in \mathbb{R}^{N \times N}$, 
+onde $A_{ij}$ é 1 caso exista uma aresta entre os vértices $V_i$ e $V_j$, e 0 caso contrário. Grafos não-direcionados 
+necessariamente são representados por uma matriz simétrica. Supomos também que o grafo não permite auto-adjacência, isto é, 
+$A_{ii} = 0, \forall i$. O número de arestas $M$ pode ser calculado por $\frac{1}{2} \sum A_{ij}$ para grafos 
+não-direcionados e por $\sum A_{ij}$ para grafos direcionados. 
+
+Um ponto de interesse é a análise de \emph{distribuições de métricas}, onde
+é a cada vértice é associada uma 
+medida, e analisamos o histograma destas medidas como amostras de uma distribuição aleatória. ...
+
 \subsection{Distribuição de grau}
 
+O \emph{grau} $k_i$ de um vértice $V_i$ é o número de arestas que contém tal vértice. Em grafos não-direcionados 
+calculamos o grau pela Equação \ref{eq:deg-undirected}. Em grafos direcionados podemos também medir 
+o número de arestas de entrade e de saída, representadas respectivamente por $k^{in}_i$ e $k^{out}_i$, 
+dadas pela equação \ref{eq:deg-directed}. 
 
+\begin{alignat}{4}
+ k_i &= \sum_{j} A_{ij}      &\quad          &                  &\quad           &                  &\quad \text{Grafos não-direcionados}\label{eq:deg-undirected} \\
+ k_i &= k_i^{out} + k_i^{in} &\quad k_i^{in} &= \sum_{j} A_{ji} &\quad k_i^{out} &= \sum_{j} A_{ij} &\quad \text{Grafos direcionados}\label{eq:deg-directed}
+\end{alignat}
+
+O \emph{grau médio} $\langle k \rangle$ de uma rede é a média de graus para todos os vértices, como calculado
+na equação \ref{eq:deg-average}. Tal medida é fundamental para muitos modelos.
+
+\begin{equation}
+ \langle k \rangle = \frac{1}{N} \sum_{i} k_i = \frac{M}{N}
+ \label{eq:deg-average}
+\end{equation}
+
+A análise da \emph{distribuição de graus} é uma informação importante sobre uma rede, fornecendo muita informação 
+sobre sua estrutura e o comportamento de processos sobre ela. Em específico, no processo de disseminação de informações,
+a existência de um limiar de infecção depende da presença do segundo momento da distribuição; 
+para redes com variância infinita, este limiar é zero, indicando que a disseminação não pode ser contida uma vez iniciada
+em tais redes.
+
+Uma distribuição \emph{exponencial} 
+implica que o grau médio é o grau típico da rede, sendo que a ocorrência de vértices com grau muito maior
+ou muito menor são (exponencialmente) raras. Redes regulares, com distribuição de grau do tipo Poisson 
+(Equação \ref{eq:deg-poisson}) ou Gaussiana (Equação \ref{eq:deg-gauss}) são consideradas redes exponenciais.
+
+Uma distribuição \emph{livre de escala} implica que não existe um grau típico da rede, podendo ocorrer poucos vértices 
+com grau muito acima da média. O principal tipo de distribuição é \emph{de Pareto} ou \emph{Lei de Potência}, 
+dado pela Equação \ref{eq:deg-pareto}, e redes reais possuem coeficiente $\gamma$ entre 2 e 3 \cite{costa2007characterization}. 
+Uma propriedade interessante deste tipo de distribuição é que seus momentos são definidos apenas para 
+$m < \gamma-1$. Deste modo, com $\gamma < 3$, a variância é infinita. Observe-se que isto é válido para
+a distribuição real; para redes finitas, é possível calcular $N-1$ momentos.
+
+\begin{align}
+ P(k; \langle k \rangle) &\sim \frac{{\langle k \rangle}^k e^{-\langle k \rangle}}{k!} \label{eq:deg-poisson} \\
+ P(k; \langle k \rangle, \sigma) &\sim 
+   \frac{1}{\sigma \sqrt{2 \pi}} \exp \left(-\frac{ (k - {\langle k \rangle})^2 }{2 \sigma^2} \right) \label{eq:deg-gauss} \\
+ P(k; \gamma) &\sim k^{-\gamma} \label{eq:deg-pareto}
+\end{align}
 
 \subsection{Distribuição de \textit{clustering}}
 
+Redes reais, especialmente redes sociais, possuem um número grande de laços pequenos e subconjuntos de vértices 
+altamente interconectados. Esta propriedade é chamada de \textit{clustering} (do inglês, ``aglomeração''),
+propriedade que está relacionada (mas não limitada) à ocorrência de comunidades. As métricas seguintes 
+são definidas apenas para grafos não-direcionados.
 
+A \emph{transitividade} é uma medida da densidade de triângulos (isto é, laços de comprimento 3)
+na rede, definida na Equação \ref{eq:transitivity}. $N_3$ é o número de triplas, enquanto $N_\bigtriangleup$
+é o número de triplas fechadas. Esta métrica dá um peso igual para cada triângulo, sem distinção sobre quais 
+vértices ele contém.
+
+\begin{align}
+ C &= \frac{3 N_\bigtriangleup}{N_3} \label{eq:transitivity} \\
+ N_\bigtriangleup &= \sum_{k > j > i} A_{ij} A_{jk} A_{ki} \nonumber \\
+ N_3 &= \sum_{k > j > i} (A_{ij} A_{ik} + A_{ji} A_{jk} + A_{ki} A_{kj}) \nonumber
+\end{align}
+
+O \emph{coeficiente de aglomeração local} $C_i$ mede o \textit{clustering} para cada vértice,
+considerando apenas informação dos vértices próximos. Ele é calculado pela Equação \ref{eq:local-clustering}, onde $l_i$
+é o número de arestas entre os vizinhos de $V_i$, e $k_i (k_i - 1)$ é o número de arestas
+possíveis entre os vizinhos de $V_i$. Em outras palavras, esta medida fornece o quão completo é o subgrafo 
+que contém os vizinhos de $V_i$.
+
+\begin{align}
+ C_i &= \frac{2 l_i}{k_i (k_i - 1)} \label{eq:local-clustering} \\
+ l_i &= \sum_{k > j} A_{ij} A_{jk} A_{ki} \nonumber
+\end{align}
+
+A média dos coeficientes de aglomeração locais $\langle C \rangle$ é um resumo da distribuição completa, 
+e não deve ser confundida com a transitividade $C$: a primeira dá peso igual para cada vértice, 
+enquanto a segunda dá peso igual para cada triângulo.
 
 \subsection{Assortatividade}
 
