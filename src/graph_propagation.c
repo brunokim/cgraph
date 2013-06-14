@@ -97,13 +97,15 @@ propagation_step_t *graph_propagation_r
 				step[num_step].message[m].orig = i;
 				
 				int ki = graph_adjacents(g, i, adj);
-				int v = adj[ uniform(ki, seedp) ];
-				step[num_step].message[m].dest = v;
-				
-				m++;
+				if (ki == 0){ step[num_step].num_message--; }
+				else {
+					int v = adj[ uniform(ki, seedp) ];
+					step[num_step].message[m].dest = v;
+					
+					m++;
+				}
 			}
 		}
-		assert(m == num_infected);
 		
 		// Next step creation
 		num_step++;

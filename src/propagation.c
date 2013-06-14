@@ -145,9 +145,9 @@ void check_network_params(short network_model){
 
 /***************************** Dissemination Model ****************************/
 
-enum {SI, SIS, SIR, SEIR, DK, SIZR, ALL, NUM_PROPAGATION_MODEL};
+enum {SI, SIS, SIR, SEIR, DK, SIZR, NUM_PROPAGATION_MODEL};
 char propagation_code[NUM_PROPAGATION_MODEL][5] = {
-	"SI", "SIS", "SIR", "SEIR", "DK", "SIZR", "ALL"
+	"SI", "SIS", "SIR", "SEIR", "DK", "SIZR"
 };
 
 char propagation_model_param[NUM_PROPAGATION_MODEL][80] = {
@@ -156,8 +156,7 @@ char propagation_model_param[NUM_PROPAGATION_MODEL][80] = {
 	"alpha: double, beta: double",
 	"alpha: double, beta: double, gamma: double",
 	"alpha: double, beta: double",
-	"alpha: double, beta: double, gamma: double, max_iter: int",
-	"alpha, beta, delta, rho, csi, c"
+	"alpha: double, beta: double, delta: double, rho: double, csi: double, c: double"
 };
 
 double propagation_params[6] = {NAN, NAN, NAN, NAN, NAN, NAN};
@@ -191,12 +190,6 @@ void parse_propagation_params(str_stream_t *stream, short propagation_model){
 		propagation_params[4] = parse_double(stream_next(stream), "csi");
 		propagation_params[5] = parse_double(stream_next(stream), "c");
 	}
-	else if (propagation_model == ALL)
-	{
-		propagation_params[1] = parse_double(stream_next(stream), "beta");
-		propagation_params[2] = parse_double(stream_next(stream), "gamma");
-		propagation_params[3] = parse_uint(stream_next(stream), "max_iter");
-	}
 }
 
 void check_propagation_params(short propagation_model){
@@ -210,8 +203,7 @@ void check_propagation_params(short propagation_model){
 	}
 	
 	if (propagation_model == SIS || propagation_model == SIR ||
-	    propagation_model == SEIR || propagation_model == DK ||
-	    propagation_model == ALL){
+	    propagation_model == SEIR || propagation_model == DK){
 		if (beta < 0.0 || beta > 1.0){
 			fprintf(stderr, "Propagation model: beta is not a probability\n");
 			is_failure = true;
@@ -230,20 +222,6 @@ void check_propagation_params(short propagation_model){
 		double gamma = propagation_params[2];
 		if (gamma < 0.0 || gamma > 1.0){
 			fprintf(stderr, "Propagation model: beta is not a probability\n");
-			is_failure = true;
-		}
-	}
-	
-	if (propagation_model == ALL){
-		double gamma = propagation_params[2];
-		if (gamma < 0.0 || gamma > 1.0){
-			fprintf(stderr, "Propagation model: beta is not a probability\n");
-			is_failure = true;
-		}
-		
-		int max_iter = propagation_params[3];
-		if (max_iter < 0){
-			fprintf(stderr, "Propagation model: max_iter is not positive\n");
 			is_failure = true;
 		}
 	}
@@ -543,6 +521,25 @@ int main(int argc, const char *argv[]){
 			fprintf(outfile, "%d ", graph_count_state(j, final_state, final_n));
 		}
 		fprintf(outfile, "\n");
+		
+		if (r == 1){
+			int **freq = malloc(num_step * sizeof(*freq));
+			freq[0] = malloc(num_step * model.num_state * sizeof(*freq[0]));
+			for (j=1; j < num_step; j++){
+				freq[j] = freq[0] + j*model.num_state;
+			}
+			
+			graph_propagation_freq(step, num_step, freq, model.num_state);
+			for (j=0; j < num_step; j++){
+				int k;
+				for (k=0; k < model.num_state; k++){
+					printf("%d ", freq[j][k]);
+				}
+				printf("\n");
+			}
+			
+			free(freq[0]); free(freq);
+		}
 		
 		delete_propagation_steps(step, num_step);
 	}
