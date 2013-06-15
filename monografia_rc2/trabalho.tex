@@ -8,7 +8,46 @@
 
 \subsection{Biblioteca Cgraph}
 
+ A biblioteca CGraph \cite{cesar2013cgraph} utilizada foi implementada por um dos autores (Cesar) 
+durante seu trabalho de Iniciação Científica e Mestrado, utilizando a linguagem de programação C89 ANSI 
+em ambiente POSIX. A biblioteca foi extendida por ambos os autores para análise de processos de disseminação.
 
+A estrutura de dados \texttt{graph\_t} representa um grafo por meio de lista de adjacências, armazenando 
+toda a informação necessária em memória física. Para um sistema com 4 GB de memória RAM e arquitetura de 
+64 bits, um grafo direcionado está limitado a menos de 500 milhões de arestas, e um grafo não-direcionado 
+está limitado a menos de 250 milhões de arestas.
+
+A biblioteca ainda está incompleta, mas já possui diversos algoritmos para entrada, geração, métrica e 
+simulação de grafos não-direcionados, apresentados a seguir:
+
+\begin{itemize}
+ \item Leitura de \textit{datasets}.
+ \item Inserção de arestas, extração de subgrafo.
+ \item Extração de componentes.
+ \item Métricas de centralidade: grau, intermediação, proximidade, autovetor, PageRank e $k$-core.
+ \item Cálculo de distância geodésica.
+ \item Assortatividade.
+ \item Modelos de rede: grafo completo, Erdös-Rényi, Barabási-Albert, Watts-Strogatz, Ravasz-Barabási.
+ \item Layout com saída SVG: aleatório, circular, circular ordenado por grau, definido pelo usuário.
+ \item Modelos de disseminação: SI, SIS, SIR, SEIR, Daley-Kendall, zumbi.
+\end{itemize}
+
+A simulação de uma propagação é realizada de forma abstraída: a função \texttt{graph\_propagation\_t}
+executa os passos, contando o número de indivíduos infecciosos e escolhendo uniformemente entre seus
+adjacentes quem recebe uma \emph{mensagem}. O modelo de propagação, representado na estrutura 
+\texttt{graph\_propagation\_model\_t}, é responsável por implementar dois \textit{callbacks} de
+forma semelhante à herança em linguagens que permitem orientação a objeto:
+
+\begin{description}
+ \item[\texttt{graph\_transition\_t}] 
+  Determina a transição dos indivíduos, dependendo do estado atual e das mensagens transmitidas.
+ \item[\texttt{graph\_is\_end\_t}]
+  Determina se a propagação já atingiu um estado estacionário.
+\end{description}
+
+Esta implementação de propagação não admite modelos onde mais de um indivíduo pode ser infectado a cada passo,
+como o modelo em cascata de Borge et al \cite{borge2011structural}, ou modelos síncronos, onde apenas um 
+infeccioso dissemina por turno.
 
 \subsection{Propagação em datasets e em modelos equivalentes}
 
