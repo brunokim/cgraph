@@ -105,7 +105,24 @@ enquanto a segunda dá peso igual para cada triângulo.
 
 \subsection{Assortatividade}
 
+Redes de mundo real frequentemente apresentam tipos diferentes de vértices, e a probabilidade de conexão 
+entre vértices depende destes tipos \cite{newman2003structure}. Quando nós em uma rede tendem a se
+conectar com nós semelhantes a rede é dita \emph{assortativa}; do contrário, é dita \emph{desassortativa}. 
 
+Um caso especial de análise de assortatividade é definir o tipo de um vértice com base no seu 
+grau. Seja $k_{nn}(i)$ a média do grau dos vizinhos (\textit{nearest neighbors}) do vértice $V_i$, 
+calculado pela Equação \ref{eq:deg-avg-degree}. A assortatividade $r$ de uma rede é definida como o 
+coeficiente de Pearson da distribuição das variáveis $k$ e $k_{nn}$ \cite{newman2002assortative}, 
+com valor positivo para redes assortativas e negativo para redes desassortativas. 
+A Equação \ref{eq:pearson} mostra um procedimento de cálculo de $r$, onde $\langle \cdot \rangle$ 
+denota a média e $\sigma(\cdot)$ denota o desvio padrão da distribuição.
+
+\begin{align}
+ k_{nn}(i) &= \frac{1}{k_i} \sum_j A_{ij} k_j \label{eq:deg-avg-degree} \\
+ r        &= \sum_i \left( \frac{k_i - \langle k \rangle}{\sigma(k)} \right) 
+                    \left( \frac{k_{nn}(i) - \langle k_{nn} \rangle}{\sigma(k_{nn})} \right)
+             \label{eq:pearson}
+\end{align}
 
 \subsection{K-Core}
 
