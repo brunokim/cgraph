@@ -103,6 +103,12 @@ A média dos coeficientes de aglomeração locais $\langle C \rangle$ é um resumo d
 e não deve ser confundida com a transitividade $C$: a primeira dá peso igual para cada vértice, 
 enquanto a segunda dá peso igual para cada triângulo.
 
+A aglomeração de uma rede tem impacto sobre a velocidade de disseminação de uma difusão. Dados $I$ nós
+infectados, uma primeira análise espera que existam $\langle k \rangle I$ vizinhos imediatos que podem
+ser infectados na sequência. Contudo, isto é verdade apenas com baixa aglomeração: para uma alta 
+aglomeração espera-se que muitos dos vizinhos sejam compartilhados, diminuindo a quantidade de próximos
+infectados possíveis e, por consequência, a velocidade de disseminação.
+
 \subsection{Assortatividade}
 
 Redes de mundo real frequentemente apresentam tipos diferentes de vértices, e a probabilidade de conexão 
@@ -124,8 +130,25 @@ denota a média e $\sigma(\cdot)$ denota o desvio padrão da distribuição.
              \label{eq:pearson}
 \end{align}
 
-\subsection{K-Core}
+Redes assortativas tendem a ser mais resilientes a ataques direcionados, de modo que se alguns 
+\textit{hubs} tornarem-se refratários à disseminação (por exemplo, no estado Removido do modelo
+SIR), a disseminação persiste se outros \textit{hubs} se mantiverem infecciosos. Do contrário,
+redes desassortativas tendem a se tornarem desconectadas quando alguns \textit{hubs} são 
+removidos, de modo que a infecção pode falhar em atingir todos os indivíduos.
 
+\subsection{\textit{$K$-Core}}
+
+Algumas redes tendem a se organizar em camadas, onde o núcleo consiste em um conjunto altamente interconectado
+de vértices e camadas sucessivas apresentam menor interconexão. A métrica \textit{$k$-core} determina estas 
+camadas definindo como núcleo $k$ o maior subgrafo conectado que contém apenas vértices com grau $k$
+ou maior. Um vértice no núcleo $k$ também está incluído no núcleo $k-1$, e seu valor de \textit{coreness}
+é definido como o maior núcleo ao qual ele pertence.
+
+É possível determinar um núcleo $k$ com um algoritmo $\mathcal{O}(N)$, removendo repetidamente todo vértice
+com grau menor que $k$; todos os vértices remanescentes têm \textit{coreness} $k$. Disseminações que se 
+iniciam no núcleo central da rede - isto é, em algum vértice com maior \textit{coreness} - afetam um número 
+maior de vértices do que se iniciarem em nós com grau equivalente, mas em camadas mais periféricas 
+\cite{stanley2010identification}.
 
 \section{Modelos de rede}
 
