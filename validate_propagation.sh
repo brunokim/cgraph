@@ -1,6 +1,6 @@
 #!/bin/bash
 
-n=300
+n=500
 r=50
 
 function execute-model {

@@ -53,29 +53,50 @@ execução da propagação, de forma semelhante à especialização em orientação a obj
 
 \subsection{Validação da simulação}
 
-A implementação foi testada comparando os resultados de uma simulação numérica, que consiste na solução de 
-equações diferenciais ordinárias, com 50 repetições da simulação em um grafo completo com 300 vértices.
-A 
-Foram utilizados os mesmos parâmetros para cada simulação, e tomados a média e desvio padrão. Os
-resultados estão mostrados na Tabela \ref{tab:valida-simulacao}, e indicam equivalência dos dois modelos.
+Como já discutido, modelos de disseminação podem ser compreendidos como um processo discreto ou 
+contínuo. Em um processo discreto, cada indivíduo encontra-se em um dado estado, transitando em instantes
+discretos conforme o estado dos seus vizinhos e de acordo com certas probabilidades. No processo contínuo, tais 
+probabilidades são vistas como taxas de transição entre compartimentos, e o comportamento do processo é
+obtido solucionando equações diferenciais. 
+
+Espera-se que o resultado obtido em uma solução do modelo diferencial corresponda àquele observado em um 
+grafo completo com um número infinito de vértices; na prática, bastam algumas centenas de vértices para
+obter comportamentos semelhantes. 
+
+O modelo discreto é solucionado sobre um grafo completo com $N=500$ vértices, com critério de parada de que 
+nenhum vértice esteja no estado infeccioso. Tal critério não pode ser satisfeito para o modelo SIS sem um 
+tempo de processamento muito longo, então a simulação é interrompida arbitrariamente após 90 iterações\footnotemark.
+
+\footnotetext{Este limite corresponde a um limite codificado na biblioteca de propagação, onde o número de
+iterações é limitado a $10 \log_2 N$, para evitar simulações onde a condição de parada é muito improvável ou
+mesmo impossível.}
+
+Para solucionar o modelo contínuo, empregamos um método de Runge-Kutta de ordem 2 com passo de tempo
+$h=10^{-3}$. Definimos a proporção inicial de suscetíveis em $s_0 = 1-1/N$, e a de infectados em $i_0 = 1/N$. 
+Definimos o critério de parada como satisfazer a inequação $|i - i_\infty| < 1/N$, onde $i$ é a proporção de 
+indivíduos no estado infeccioso e $i_\infty$ é a solução analítica para $t \to \infty$. 
+
+Utilizamos os parâmetros $\alpha=1$, $\beta=1/2$ e $\gamma=1$ para a solução numérica e para a
+simulação em grafo, quando apropriado. Executamos 50 repetições da simulação, e calculamos a média e 
+desvio padrão do número de passos e da proporção final de suscetíveis. Os resultados estão mostrados na 
+Tabela \ref{tab:valida-simulacao}. Os dois modelos são em geral equivalentes, exceto por incompatibilidades
+no tempo de propagação do modelo SIS e na proporção de suscetíveis do modelo Daley-Kendall. As causas 
+destas discrepâncias não foram examinadas. 
 
 \begin{table}[!hb]
  \centering
- \caption{Comparação entre modelo diferencial e simulação em grafo completo}\label{tab:valida-simulacao}
- \begin{tabular}{|l|cc|cc|}
+ \caption{Comparação entre solução diferencial e simulação em grafo completo}\label{tab:valida-simulacao}
+ \begin{tabular}{|l|c|cc|cc|}
   \hline
-  \multirow{2}{*}{Modelo} & \multicolumn{2}{c|}{Diferencial} & \multicolumn{2}{c|}{Simulação} \\ \cline{2-5}
-                          & Tempo & Suscetíveis (\%)         & Tempo        & Suscetíveis (\%) \\ \hline
-  SI                      & 11.4  & 0.33                     & 16.1$\pm$1.0 & 0.00             \\
-  SIS                     & 20.0  & 50.3                     &   -          & 50.3$\pm$3.4     \\
-  SIR                     & 29.7  & 20.3                     & 29.7$\pm$3.7 & 19.8$\pm$3.8     \\
-  SEIR                    & 40.1  & 20.4                     & 42.8$\pm$7.4 & 22.7$\pm$11.6    \\
-  Daley-Kendall           & 20.7  & 6.00                     & 22.3$\pm$2.9 & 8.5$\pm$1.8      \\ \hline
-  
+  \multirow{2}{*}{Modelo} & \multirow{2}{*}{$s_\infty$ (\%)} & \multicolumn{2}{c|}{Diferencial} & \multicolumn{2}{c|}{Simulação} \\ \cline{3-6}
+                          &                                    & Tempo & Suscetíveis (\%)         & Tempo        & Suscetíveis (\%) \\ \hline
+  SI                      &  0.0000                            & 12.4  & 0.20                     & 17.2$\pm$1.3 & 0.00             \\
+  SIS                     &  50.000                            & 22.1  & 50.2                     &   -          & 49.9$\pm$2.3     \\
+  SIR                     &  20.389                            & 32.5  & 20.4                     & 32.3$\pm$3.4 & 20.5$\pm$2.7     \\
+  SEIR                    &  20.389                            & 44.2  & 20.4                     & 47.0$\pm$5.6 & 20.2$\pm$2.9     \\
+  Daley-Kendall           &  5.8924                            & 22.5  & 5.98                     & 24.6$\pm$2.8 & 8.4$\pm$1.5      \\ \hline
  \end{tabular}
-
 \end{table}
-
 
 \subsection{Propagação em datasets e em modelos equivalentes}
 
