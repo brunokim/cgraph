@@ -311,9 +311,8 @@ void graph_sis_transition
 
 bool is_sis_end
 		(const short *state, int n, int num_step, const void *params){
-	graph_sis_params_t *p = (graph_sis_params_t*)params;
 	int num_infected = graph_count_state(GRAPH_SIS_I, state, n);
-	return num_step > p->num_iter || num_infected == 0;
+	return num_infected == 0;
 }
 
 const propagation_model_t sis = 

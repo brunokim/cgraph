@@ -151,12 +151,12 @@ char propagation_code[NUM_PROPAGATION_MODEL][5] = {
 };
 
 char propagation_model_param[NUM_PROPAGATION_MODEL][80] = {
-	"alpha: double",
-	"alpha: double, beta: double, max_iter: int",
-	"alpha: double, beta: double",
-	"alpha: double, beta: double, gamma: double",
-	"alpha: double, beta: double",
-	"alpha: double, beta: double, delta: double, rho: double, csi: double, c: double"
+	"alpha",
+	"alpha, beta",
+	"alpha, beta",
+	"alpha, beta, gamma",
+	"alpha, beta",
+	"alpha, beta, delta, rho, csi, c"
 };
 
 double propagation_params[6] = {NAN, NAN, NAN, NAN, NAN, NAN};
@@ -167,7 +167,6 @@ void parse_propagation_params(str_stream_t *stream, short propagation_model){
 	if (propagation_model == SIS)
 	{
 		propagation_params[1] = parse_double(stream_next(stream), "beta");
-		propagation_params[2] = parse_uint(stream_next(stream), "max_iter");
 	}
 	else if (propagation_model == SIR)
 	{
@@ -206,14 +205,6 @@ void check_propagation_params(short propagation_model){
 	    propagation_model == SEIR || propagation_model == DK){
 		if (beta < 0.0 || beta > 1.0){
 			fprintf(stderr, "Propagation model: beta is not a probability\n");
-			is_failure = true;
-		}
-	}
-	
-	if (propagation_model == SIS){
-		int max_iter = propagation_params[2];
-		if (max_iter < 0){
-			fprintf(stderr, "Propagation model: max_iter is not positive\n");
 			is_failure = true;
 		}
 	}
@@ -457,7 +448,6 @@ int main(int argc, const char *argv[]){
 		params = malloc(sizeof(graph_sis_params_t));
 		((graph_sis_params_t *)params)->alpha = propagation_params[0];
 		((graph_sis_params_t *)params)->beta = propagation_params[1];
-		((graph_sis_params_t *)params)->num_iter = (int)propagation_params[2];
 	}
 	else if (propagation_model == SIR)
 	{

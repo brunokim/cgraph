@@ -72,7 +72,6 @@ void test_animate_sis(){
 	graph_sis_params_t params;
 	params.alpha = 1.0;
 	params.beta  = 0.5;
-	params.num_iter = 40;
 	test_animate(64, sis, &params, 5);
 }
 

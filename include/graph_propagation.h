@@ -98,7 +98,6 @@ extern const propagation_model_t si;
 typedef struct { 
 	double alpha; // Infection probability
 	double beta;  // Cure probability
-	int num_iter; // Maximum number of iterations
 } graph_sis_params_t;
 
 typedef enum {

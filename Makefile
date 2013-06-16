@@ -7,13 +7,15 @@ TESTS = $(patsubst %, test/test_%, $(MODULES))
 DATASETS = cat mac95 netscience email powergrid astrophysics internet baywet baydry mangwet mangdry 15m
 FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
 
-BIN = metrics propagation
+BIN = metrics propagation dynamic
 
-.PHONY: all doc run-metrics run-tests clean-binaries clean-test clean
+.PHONY: all doc run-metrics run-tests clean-binaries clean-test clean validate-propagation
 
 all: $(patsubst %,bin/%, $(BIN)) $(TESTS)
 
 doc: doc/main.pdf 
+
+# Metrics
 
 run-metrics: bin/metrics
 	bin/metrics $(FOLDERS)
@@ -34,8 +36,15 @@ convert-metrics:
 		done \
 	done
 
+# Testing
+
 run-tests: $(TESTS)
 	for test in $(TESTS); do echo $$test && ./$$test; done
+
+validate-propagation: validate-propagation.sh bin/dynamic bin/propagation
+	./validate-propagation.sh
+	
+# Cleaning
 
 clean-binaries:
 	rm obj/*
@@ -62,6 +71,9 @@ bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o 
 
 bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -std=c89
+
+bin/dynamic : src/dynamic.c
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Test binaries
 
