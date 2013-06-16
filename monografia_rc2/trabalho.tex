@@ -32,22 +32,50 @@ simulação de grafos não-direcionados, apresentados a seguir:
  \item Modelos de disseminação: SI, SIS, SIR, SEIR, Daley-Kendall, zumbi.
 \end{itemize}
 
-A simulação de uma propagação é realizada de forma abstraída: a função \texttt{graph\_propagation\_t}
+Os modelos de disseminação comportam apenas o caso de \emph{disseminação síncrona}, onde a cada
+passo de tempo todos os individuos computam seu próximo estado, levando em conta seu estado atual e
+uma possível interação com um indivíduo infeccioso. Não são suportados ainda a presença de mais que
+um estado infeccioso, infecção de múltiplos indíviduos a cada passo de tempo (como no modelo em cascata
+de Borge et al \cite{borge2011structural}) ou modelos assíncronos, onde apenas um indivíduo infeccioso
+transmite por turno.
+
+A simulação é realizada de forma abstraída: a função \texttt{graph\_propagation\_t}
 executa os passos, contando o número de indivíduos infecciosos e escolhendo uniformemente entre seus
-adjacentes quem recebe uma \emph{mensagem}. O modelo de propagação, representado na estrutura 
-\texttt{graph\_propagation\_model\_t}, é responsável por implementar dois \textit{callbacks} de
-forma semelhante à herança em linguagens que permitem orientação a objeto:
+adjacentes com quem ele interage. O modelo de propagação, representado na estrutura 
+\texttt{graph\_propagation\_model\_t}, deve implementar dois \textit{callbacks} para a 
+execução da propagação, de forma semelhante à especialização em orientação a objeto:
 
-\begin{description}
- \item[\texttt{graph\_transition\_t}] 
-  Determina a transição dos indivíduos, dependendo do estado atual e das mensagens transmitidas.
- \item[\texttt{graph\_is\_end\_t}]
-  Determina se a propagação já atingiu um estado estacionário.
-\end{description}
+\begin{itemize}
+ \item \texttt{graph\_transition\_t}: Determina a transição dos indivíduos, dependendo do estado atual e 
+       das interações escolhidas.
+ \item \texttt{graph\_is\_end\_t}: Determina se a propagação já atingiu um estado estacionário.
+\end{itemize}
 
-Esta implementação de propagação não admite modelos onde mais de um indivíduo pode ser infectado a cada passo,
-como o modelo em cascata de Borge et al \cite{borge2011structural}, ou modelos síncronos, onde apenas um 
-infeccioso dissemina por turno.
+\subsection{Validação da simulação}
+
+A implementação foi testada comparando os resultados de uma simulação numérica, que consiste na solução de 
+equações diferenciais ordinárias, com 50 repetições da simulação em um grafo completo com 300 vértices.
+A 
+Foram utilizados os mesmos parâmetros para cada simulação, e tomados a média e desvio padrão. Os
+resultados estão mostrados na Tabela \ref{tab:valida-simulacao}, e indicam equivalência dos dois modelos.
+
+\begin{table}[!hb]
+ \centering
+ \caption{Comparação entre modelo diferencial e simulação em grafo completo}\label{tab:valida-simulacao}
+ \begin{tabular}{|l|cc|cc|}
+  \hline
+  \multirow{2}{*}{Modelo} & \multicolumn{2}{c|}{Diferencial} & \multicolumn{2}{c|}{Simulação} \\ \cline{2-5}
+                          & Tempo & Suscetíveis (\%)         & Tempo        & Suscetíveis (\%) \\ \hline
+  SI                      & 11.4  & 0.33                     & 16.1$\pm$1.0 & 0.00             \\
+  SIS                     & 20.0  & 50.3                     &   -          & 50.3$\pm$3.4     \\
+  SIR                     & 29.7  & 20.3                     & 29.7$\pm$3.7 & 19.8$\pm$3.8     \\
+  SEIR                    & 40.1  & 20.4                     & 42.8$\pm$7.4 & 22.7$\pm$11.6    \\
+  Daley-Kendall           & 20.7  & 6.00                     & 22.3$\pm$2.9 & 8.5$\pm$1.8      \\ \hline
+  
+ \end{tabular}
+
+\end{table}
+
 
 \subsection{Propagação em datasets e em modelos equivalentes}
 

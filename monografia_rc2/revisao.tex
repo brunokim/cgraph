@@ -51,22 +51,20 @@ a existência de um limiar de infecção depende da presença do segundo momento da 
 para redes com variância infinita, este limiar é zero, indicando que a disseminação não pode ser contida uma vez iniciada
 em tais redes.
 
-Uma distribuição \emph{exponencial} 
-implica que o grau médio é o grau típico da rede, sendo que a ocorrência de vértices com grau muito maior
-ou muito menor são (exponencialmente) raras. Redes regulares, com distribuição de grau do tipo Poisson 
-(Equação \ref{eq:deg-poisson}) ou Gaussiana (Equação \ref{eq:deg-gauss}) são consideradas redes exponenciais.
+Uma distribuição \emph{exponencial} implica que o grau médio $\langle k \rangle$ é o grau típico da rede, com a 
+ocorrência de vértices com grau muito maior ou muito menor exponencialmente raras. Redes com distribuição de grau 
+do tipo Poisson (Equação \ref{eq:deg-poisson}) são consideradas redes exponenciais.
 
 Uma distribuição \emph{livre de escala} implica que não existe um grau típico da rede, podendo ocorrer poucos vértices 
 com grau muito acima da média. O principal tipo de distribuição é \emph{de Pareto} ou \emph{Lei de Potência}, 
 dado pela Equação \ref{eq:deg-pareto}, e redes reais possuem coeficiente $\gamma$ entre 2 e 3 \cite{costa2007characterization}. 
-Uma propriedade interessante deste tipo de distribuição é que seus momentos são definidos apenas para 
-$m < \gamma-1$. Deste modo, com $\gamma < 3$, a variância é infinita. Observe-se que isto é válido para
-a distribuição real; para redes finitas, é possível calcular $N-1$ momentos.
+Uma propriedade interessante deste tipo de distribuição é que o número de momentos definidos $m$ obedece 
+$m < \gamma-1$. Deste modo, com $\gamma < 3$, a variância é infinita e apenas a média pode ser definida. 
+Observe-se que isto é válido para a distribuição teórica; os graus da rede são amostras de uma tal distribuição, 
+e sendo em número finito, permitem calcular até $N$ momentos.
 
 \begin{align}
  P(k; \langle k \rangle) &\sim \frac{{\langle k \rangle}^k e^{-\langle k \rangle}}{k!} \label{eq:deg-poisson} \\
- P(k; \langle k \rangle, \sigma) &\sim 
-   \frac{1}{\sigma \sqrt{2 \pi}} \exp \left(-\frac{ (k - {\langle k \rangle})^2 }{2 \sigma^2} \right) \label{eq:deg-gauss} \\
  P(k; \gamma) &\sim k^{-\gamma} \label{eq:deg-pareto}
 \end{align}
 
