@@ -1,84 +1,84 @@
-\chapter{Revisão Bibliográfica}
+\chapter{RevisÃ£o BibliogrÃ¡fica}
 
-\section{Considerações Iniciais}
+\section{ConsideraÃ§Ãµes Iniciais}
 
-O estudo de Redes Complexas é a base para a compreensão da complexidade, buscando explicar a emergência e 
-evolução estrutural do esqueleto de um sistema complexo \cite{barabasi2007architecture}. O estudo da rede
-muitas vezes ignora dados mais completos e se atém apenas à presença de conexões entre os nós, o que permite
-analisar a estrutura onde os processos ocorrem, fornecendo informações para explicar como comportamentos
+O estudo de Redes Complexas Ã© a base para a compreensÃ£o da complexidade, buscando explicar a emergÃªncia e 
+evoluÃ§Ã£o estrutural do esqueleto de um sistema complexo \cite{barabasi2007architecture}. O estudo da rede
+muitas vezes ignora dados mais completos e se atÃ©m apenas Ã  presenÃ§a de conexÃµes entre os nÃ³s, o que permite
+analisar a estrutura onde os processos ocorrem, fornecendo informaÃ§Ãµes para explicar como comportamentos
 emergem de partes mais simples.
 
-\section{Métricas}
+\section{MÃ©tricas}
 
-Métricas são uma maneira de sumarizar informações necessárias para caracterizar a estrutura de uma rede.
-A descrição quantitativa das propriedades de redes fornecem ferramentas fundamentais para a análise de
-redes reais e teóricas, permitindo sua representação, caracterização, classificação e modelagem 
+MÃ©tricas sÃ£o uma maneira de sumarizar informaÃ§Ãµes necessÃ¡rias para caracterizar a estrutura de uma rede.
+A descriÃ§Ã£o quantitativa das propriedades de redes fornecem ferramentas fundamentais para a anÃ¡lise de
+redes reais e teÃ³ricas, permitindo sua representaÃ§Ã£o, caracterizaÃ§Ã£o, classificaÃ§Ã£o e modelagem 
 \cite{costa2007characterization}.
 
-Nas métricas a seguir supomos que o grafo com $N$ vértices é representado por uma matriz $A \in \mathbb{R}^{N \times N}$, 
-onde $A_{ij}$ é 1 caso exista uma aresta entre os vértices $V_i$ e $V_j$, e 0 caso contrário. Grafos não-direcionados 
-necessariamente são representados por uma matriz simétrica. Supomos também que o grafo não permite auto-adjacência, isto é, 
-$A_{ii} = 0, \forall i$. O número de arestas $M$ pode ser calculado por $\frac{1}{2} \sum A_{ij}$ para grafos 
-não-direcionados e por $\sum A_{ij}$ para grafos direcionados. 
+Nas mÃ©tricas a seguir supomos que o grafo com $N$ vÃ©rtices Ã© representado por uma matriz $A \in \mathbb{R}^{N \times N}$, 
+onde $A_{ij}$ Ã© 1 caso exista uma aresta entre os vÃ©rtices $V_i$ e $V_j$, e 0 caso contrÃ¡rio. Grafos nÃ£o-direcionados 
+necessariamente sÃ£o representados por uma matriz simÃ©trica. Supomos tambÃ©m que o grafo nÃ£o permite auto-adjacÃªncia, isto Ã©, 
+$A_{ii} = 0, \forall i$. O nÃºmero de arestas $M$ pode ser calculado por $\frac{1}{2} \sum A_{ij}$ para grafos 
+nÃ£o-direcionados e por $\sum A_{ij}$ para grafos direcionados. 
 
-Um ponto de interesse é a análise de \emph{distribuições de métricas}, onde
-é a cada vértice é associada uma 
-medida, e analisamos o histograma destas medidas como amostras de uma distribuição aleatória. ...
+Um ponto de interesse Ã© a anÃ¡lise de \emph{distribuiÃ§Ãµes de mÃ©tricas}, onde
+Ã© a cada vÃ©rtice Ã© associada uma 
+medida, e analisamos o histograma destas medidas como amostras de uma distribuiÃ§Ã£o aleatÃ³ria. ...
 
-\subsection{Distribuição de grau}
+\subsection{DistribuiÃ§Ã£o de grau}
 
-O \emph{grau} $k_i$ de um vértice $V_i$ é o número de arestas que contém tal vértice. Em grafos não-direcionados 
-calculamos o grau pela Equação \ref{eq:deg-undirected}. Em grafos direcionados podemos também medir 
-o número de arestas de entrade e de saída, representadas respectivamente por $k^{in}_i$ e $k^{out}_i$, 
-dadas pela equação \ref{eq:deg-directed}. 
+O \emph{grau} $k_i$ de um vÃ©rtice $V_i$ Ã© o nÃºmero de arestas que contÃ©m tal vÃ©rtice. Em grafos nÃ£o-direcionados 
+calculamos o grau pela EquaÃ§Ã£o \ref{eq:deg-undirected}. Em grafos direcionados podemos tambÃ©m medir 
+o nÃºmero de arestas de entrade e de saÃ­da, representadas respectivamente por $k^{in}_i$ e $k^{out}_i$, 
+dadas pela equaÃ§Ã£o \ref{eq:deg-directed}. 
 
 \begin{alignat}{4}
- k_i &= \sum_{j} A_{ij}      &\quad          &                  &\quad           &                  &\quad \text{Grafos não-direcionados}\label{eq:deg-undirected} \\
+ k_i &= \sum_{j} A_{ij}      &\quad          &                  &\quad           &                  &\quad \text{Grafos nÃ£o-direcionados}\label{eq:deg-undirected} \\
  k_i &= k_i^{out} + k_i^{in} &\quad k_i^{in} &= \sum_{j} A_{ji} &\quad k_i^{out} &= \sum_{j} A_{ij} &\quad \text{Grafos direcionados}\label{eq:deg-directed}
 \end{alignat}
 
-O \emph{grau médio} $\langle k \rangle$ de uma rede é a média de graus para todos os vértices, como calculado
-na equação \ref{eq:deg-average}. Tal medida é fundamental para muitos modelos.
+O \emph{grau mÃ©dio} $\langle k \rangle$ de uma rede Ã© a mÃ©dia de graus para todos os vÃ©rtices, como calculado
+na equaÃ§Ã£o \ref{eq:deg-average}. Tal medida Ã© fundamental para muitos modelos.
 
 \begin{equation}
  \langle k \rangle = \frac{1}{N} \sum_{i} k_i = \frac{M}{N}
  \label{eq:deg-average}
 \end{equation}
 
-A análise da \emph{distribuição de graus} é uma informação importante sobre uma rede, fornecendo muita informação 
-sobre sua estrutura e o comportamento de processos sobre ela. Em específico, no processo de disseminação de informações,
-a existência de um limiar de infecção depende da presença do segundo momento da distribuição; 
-para redes com variância infinita, este limiar é zero, indicando que a disseminação não pode ser contida uma vez iniciada
+A anÃ¡lise da \emph{distribuiÃ§Ã£o de graus} Ã© uma informaÃ§Ã£o importante sobre uma rede, fornecendo muita informaÃ§Ã£o 
+sobre sua estrutura e o comportamento de processos sobre ela. Em especÃ­fico, no processo de disseminaÃ§Ã£o de informaÃ§Ãµes,
+a existÃªncia de um limiar de infecÃ§Ã£o depende da presenÃ§a do segundo momento da distribuiÃ§Ã£o; 
+para redes com variÃ¢ncia infinita, este limiar Ã© zero, indicando que a disseminaÃ§Ã£o nÃ£o pode ser contida uma vez iniciada
 em tais redes.
 
-Uma distribuição \emph{exponencial} implica que o grau médio $\langle k \rangle$ é o grau típico da rede, com a 
-ocorrência de vértices com grau muito maior ou muito menor exponencialmente raras. Redes com distribuição de grau 
-do tipo Poisson (Equação \ref{eq:deg-poisson}) são consideradas redes exponenciais.
+Uma distribuiÃ§Ã£o \emph{exponencial} implica que o grau mÃ©dio $\langle k \rangle$ Ã© o grau tÃ­pico da rede, com a 
+ocorrÃªncia de vÃ©rtices com grau muito maior ou muito menor exponencialmente raras. Redes com distribuiÃ§Ã£o de grau 
+do tipo Poisson (EquaÃ§Ã£o \ref{eq:deg-poisson}) sÃ£o consideradas redes exponenciais.
 
-Uma distribuição \emph{livre de escala} implica que não existe um grau típico da rede, podendo ocorrer poucos vértices 
-com grau muito acima da média. O principal tipo de distribuição é \emph{de Pareto} ou \emph{Lei de Potência}, 
-dado pela Equação \ref{eq:deg-pareto}, e redes reais possuem coeficiente $\gamma$ entre 2 e 3 \cite{costa2007characterization}. 
-Uma propriedade interessante deste tipo de distribuição é que o número de momentos definidos $m$ obedece 
-$m < \gamma-1$. Deste modo, com $\gamma < 3$, a variância é infinita e apenas a média pode ser definida. 
-Observe-se que isto é válido para a distribuição teórica; os graus da rede são amostras de uma tal distribuição, 
-e sendo em número finito, permitem calcular até $N$ momentos.
+Uma distribuiÃ§Ã£o \emph{livre de escala} implica que nÃ£o existe um grau tÃ­pico da rede, podendo ocorrer poucos vÃ©rtices 
+com grau muito acima da mÃ©dia. O principal tipo de distribuiÃ§Ã£o Ã© \emph{de Pareto} ou \emph{Lei de PotÃªncia}, 
+dado pela EquaÃ§Ã£o \ref{eq:deg-pareto}, e redes reais possuem coeficiente $\gamma$ entre 2 e 3 \cite{costa2007characterization}. 
+Uma propriedade interessante deste tipo de distribuiÃ§Ã£o Ã© que o nÃºmero de momentos definidos $m$ obedece 
+$m < \gamma-1$. Deste modo, com $\gamma < 3$, a variÃ¢ncia Ã© infinita e apenas a mÃ©dia pode ser definida. 
+Observe-se que isto Ã© vÃ¡lido para a distribuiÃ§Ã£o teÃ³rica; os graus da rede sÃ£o amostras de uma tal distribuiÃ§Ã£o, 
+e sendo em nÃºmero finito, permitem calcular atÃ© $N$ momentos.
 
 \begin{align}
  P(k; \langle k \rangle) &\sim \frac{{\langle k \rangle}^k e^{-\langle k \rangle}}{k!} \label{eq:deg-poisson} \\
  P(k; \gamma) &\sim k^{-\gamma} \label{eq:deg-pareto}
 \end{align}
 
-\subsection{Distribuição de \textit{clustering}}
+\subsection{DistribuiÃ§Ã£o de \textit{clustering}}
 
-Redes reais, especialmente redes sociais, possuem um número grande de laços pequenos e subconjuntos de vértices 
-altamente interconectados. Esta propriedade é chamada de \textit{clustering} (do inglês, ``aglomeração''),
-propriedade que está relacionada (mas não limitada) à ocorrência de comunidades. As métricas seguintes 
-são definidas apenas para grafos não-direcionados.
+Redes reais, especialmente redes sociais, possuem um nÃºmero grande de laÃ§os pequenos e subconjuntos de vÃ©rtices 
+altamente interconectados. Esta propriedade Ã© chamada de \textit{clustering} (do inglÃªs, ``aglomeraÃ§Ã£o''),
+propriedade que estÃ¡ relacionada (mas nÃ£o limitada) Ã  ocorrÃªncia de comunidades. As mÃ©tricas seguintes 
+sÃ£o definidas apenas para grafos nÃ£o-direcionados.
 
-A \emph{transitividade} é uma medida da densidade de triângulos (isto é, laços de comprimento 3)
-na rede, definida na Equação \ref{eq:transitivity}. $N_3$ é o número de triplas, enquanto $N_\bigtriangleup$
-é o número de triplas fechadas. Esta métrica dá um peso igual para cada triângulo, sem distinção sobre quais 
-vértices ele contém.
+A \emph{transitividade} Ã© uma medida da densidade de triÃ¢ngulos (isto Ã©, laÃ§os de comprimento 3)
+na rede, definida na EquaÃ§Ã£o \ref{eq:transitivity}. $N_3$ Ã© o nÃºmero de triplas, enquanto $N_\bigtriangleup$
+Ã© o nÃºmero de triplas fechadas. Esta mÃ©trica dÃ¡ um peso igual para cada triÃ¢ngulo, sem distinÃ§Ã£o sobre quais 
+vÃ©rtices ele contÃ©m.
 
 \begin{align}
  C &= \frac{3 N_\bigtriangleup}{N_3} \label{eq:transitivity} \\
@@ -86,40 +86,40 @@ vértices ele contém.
  N_3 &= \sum_{k > j > i} (A_{ij} A_{ik} + A_{ji} A_{jk} + A_{ki} A_{kj}) \nonumber
 \end{align}
 
-O \emph{coeficiente de aglomeração local} $C_i$ mede o \textit{clustering} para cada vértice,
-considerando apenas informação dos vértices próximos. Ele é calculado pela Equação \ref{eq:local-clustering}, onde $l_i$
-é o número de arestas entre os vizinhos de $V_i$, e $k_i (k_i - 1)$ é o número de arestas
-possíveis entre os vizinhos de $V_i$. Em outras palavras, esta medida fornece o quão completo é o subgrafo 
-que contém os vizinhos de $V_i$.
+O \emph{coeficiente de aglomeraÃ§Ã£o local} $C_i$ mede o \textit{clustering} para cada vÃ©rtice,
+considerando apenas informaÃ§Ã£o dos vÃ©rtices prÃ³ximos. Ele Ã© calculado pela EquaÃ§Ã£o \ref{eq:local-clustering}, onde $l_i$
+Ã© o nÃºmero de arestas entre os vizinhos de $V_i$, e $k_i (k_i - 1)$ Ã© o nÃºmero de arestas
+possÃ­veis entre os vizinhos de $V_i$. Em outras palavras, esta medida fornece o quÃ£o completo Ã© o subgrafo 
+que contÃ©m os vizinhos de $V_i$.
 
 \begin{align}
  C_i &= \frac{2 l_i}{k_i (k_i - 1)} \label{eq:local-clustering} \\
  l_i &= \sum_{k > j} A_{ij} A_{jk} A_{ki} \nonumber
 \end{align}
 
-A média dos coeficientes de aglomeração locais $\langle C \rangle$ é um resumo da distribuição completa, 
-e não deve ser confundida com a transitividade $C$: a primeira dá peso igual para cada vértice, 
-enquanto a segunda dá peso igual para cada triângulo.
+A mÃ©dia dos coeficientes de aglomeraÃ§Ã£o locais $\langle C \rangle$ Ã© um resumo da distribuiÃ§Ã£o completa, 
+e nÃ£o deve ser confundida com a transitividade $C$: a primeira dÃ¡ peso igual para cada vÃ©rtice, 
+enquanto a segunda dÃ¡ peso igual para cada triÃ¢ngulo.
 
-A aglomeração de uma rede tem impacto sobre a velocidade de disseminação de uma difusão. Dados $I$ nós
-infectados, uma primeira análise espera que existam $\langle k \rangle I$ vizinhos imediatos que podem
-ser infectados na sequência. Contudo, isto é verdade apenas com baixa aglomeração: para uma alta 
-aglomeração espera-se que muitos dos vizinhos sejam compartilhados, diminuindo a quantidade de próximos
-infectados possíveis e, por consequência, a velocidade de disseminação.
+A aglomeraÃ§Ã£o de uma rede tem impacto sobre a velocidade de disseminaÃ§Ã£o de uma difusÃ£o. Dados $I$ nÃ³s
+infectados, uma primeira anÃ¡lise espera que existam $\langle k \rangle I$ vizinhos imediatos que podem
+ser infectados na sequÃªncia. Contudo, isto Ã© verdade apenas com baixa aglomeraÃ§Ã£o: para uma alta 
+aglomeraÃ§Ã£o espera-se que muitos dos vizinhos sejam compartilhados, diminuindo a quantidade de prÃ³ximos
+infectados possÃ­veis e, por consequÃªncia, a velocidade de disseminaÃ§Ã£o.
 
 \subsection{Assortatividade}
 
-Redes de mundo real frequentemente apresentam tipos diferentes de vértices, e a probabilidade de conexão 
-entre vértices depende destes tipos \cite{newman2003structure}. Quando nós em uma rede tendem a se
-conectar com nós semelhantes a rede é dita \emph{assortativa}; do contrário, é dita \emph{desassortativa}. 
+Redes de mundo real frequentemente apresentam tipos diferentes de vÃ©rtices, e a probabilidade de conexÃ£o 
+entre vÃ©rtices depende destes tipos \cite{newman2003structure}. Quando nÃ³s em uma rede tendem a se
+conectar com nÃ³s semelhantes a rede Ã© dita \emph{assortativa}; do contrÃ¡rio, Ã© dita \emph{desassortativa}. 
 
-Um caso especial de análise de assortatividade é definir o tipo de um vértice com base no seu 
-grau. Seja $k_{nn}(i)$ a média do grau dos vizinhos (\textit{nearest neighbors}) do vértice $V_i$, 
-calculado pela Equação \ref{eq:deg-avg-degree}. A assortatividade $r$ de uma rede é definida como o 
-coeficiente de Pearson da distribuição das variáveis $k$ e $k_{nn}$ \cite{newman2002assortative}, 
+Um caso especial de anÃ¡lise de assortatividade Ã© definir o tipo de um vÃ©rtice com base no seu 
+grau. Seja $k_{nn}(i)$ a mÃ©dia do grau dos vizinhos (\textit{nearest neighbors}) do vÃ©rtice $V_i$, 
+calculado pela EquaÃ§Ã£o \ref{eq:deg-avg-degree}. A assortatividade $r$ de uma rede Ã© definida como o 
+coeficiente de Pearson da distribuiÃ§Ã£o das variÃ¡veis $k$ e $k_{nn}$ \cite{newman2002assortative}, 
 com valor positivo para redes assortativas e negativo para redes desassortativas. 
-A Equação \ref{eq:pearson} mostra um procedimento de cálculo de $r$, onde $\langle \cdot \rangle$ 
-denota a média e $\sigma(\cdot)$ denota o desvio padrão da distribuição.
+A EquaÃ§Ã£o \ref{eq:pearson} mostra um procedimento de cÃ¡lculo de $r$, onde $\langle \cdot \rangle$ 
+denota a mÃ©dia e $\sigma(\cdot)$ denota o desvio padrÃ£o da distribuiÃ§Ã£o.
 
 \begin{align}
  k_{nn}(i) &= \frac{1}{k_i} \sum_j A_{ij} k_j \label{eq:deg-avg-degree} \\
@@ -129,41 +129,107 @@ denota a média e $\sigma(\cdot)$ denota o desvio padrão da distribuição.
 \end{align}
 
 Redes assortativas tendem a ser mais resilientes a ataques direcionados, de modo que se alguns 
-\textit{hubs} tornarem-se refratários à disseminação (por exemplo, no estado Removido do modelo
-SIR), a disseminação persiste se outros \textit{hubs} se mantiverem infecciosos. Do contrário,
-redes desassortativas tendem a se tornarem desconectadas quando alguns \textit{hubs} são 
-removidos, de modo que a infecção pode falhar em atingir todos os indivíduos.
+\textit{hubs} tornarem-se refratÃ¡rios Ã  disseminaÃ§Ã£o (por exemplo, no estado Removido do modelo
+SIR), a disseminaÃ§Ã£o persiste se outros \textit{hubs} se mantiverem infecciosos. Do contrÃ¡rio,
+redes desassortativas tendem a se tornarem desconectadas quando alguns \textit{hubs} sÃ£o 
+removidos, de modo que a infecÃ§Ã£o pode falhar em atingir todos os indivÃ­duos.
 
 \subsection{\textit{$K$-Core}}
 
-Algumas redes tendem a se organizar em camadas, onde o núcleo consiste em um conjunto altamente interconectado
-de vértices e camadas sucessivas apresentam menor interconexão. A métrica \textit{$k$-core} determina estas 
-camadas definindo como núcleo $k$ o maior subgrafo conectado que contém apenas vértices com grau $k$
-ou maior. Um vértice no núcleo $k$ também está incluído no núcleo $k-1$, e seu valor de \textit{coreness}
-é definido como o maior núcleo ao qual ele pertence.
+Algumas redes tendem a se organizar em camadas, onde o nÃºcleo consiste em um conjunto altamente interconectado
+de vÃ©rtices e camadas sucessivas apresentam menor interconexÃ£o. A mÃ©trica \textit{$k$-core} determina estas 
+camadas definindo como nÃºcleo $k$ o maior subgrafo conectado que contÃ©m apenas vÃ©rtices com grau $k$
+ou maior. Um vÃ©rtice no nÃºcleo $k$ tambÃ©m estÃ¡ incluÃ­do no nÃºcleo $k-1$, e seu valor de \textit{coreness}
+Ã© definido como o maior nÃºcleo ao qual ele pertence.
 
-É possível determinar um núcleo $k$ com um algoritmo $\mathcal{O}(N)$, removendo repetidamente todo vértice
-com grau menor que $k$; todos os vértices remanescentes têm \textit{coreness} $k$. Disseminações que se 
-iniciam no núcleo central da rede - isto é, em algum vértice com maior \textit{coreness} - afetam um número 
-maior de vértices do que se iniciarem em nós com grau equivalente, mas em camadas mais periféricas 
+Ã‰ possÃ­vel determinar um nÃºcleo $k$ com um algoritmo $\mathcal{O}(N)$, removendo repetidamente todo vÃ©rtice
+com grau menor que $k$; todos os vÃ©rtices remanescentes tÃªm \textit{coreness} $k$. DisseminaÃ§Ãµes que se 
+iniciam no nÃºcleo central da rede - isto Ã©, em algum vÃ©rtice com maior \textit{coreness} - afetam um nÃºmero 
+maior de vÃ©rtices do que se iniciarem em nÃ³s com grau equivalente, mas em camadas mais perifÃ©ricas 
 \cite{stanley2010identification}.
 
 \section{Modelos de rede}
 \label{sec:modelos}
 
-\subsection{Modelo Erdös-Rényi}
+\subsection{Modelo ErdÃ¶s-RÃ©nyi}
 
+O modelo de redes proposto por ErdÅ‘s e RÃ©nyi \cite{erd6s1960evolution} consiste no modelo de redes aleatÃ³rias. Para a criaÃ§Ã£o de uma rede aleatÃ³ria, imaginemos $n$ vÃ©rtices, todos desconectados. A cada iteraÃ§Ã£o $m$ escolhe-se um par de vÃ©rtices aleatoriamente para serem conectados. Nota-se que quanto maior o $m$, maiores as chances de selecionar vÃ©rtices jÃ¡ conectados, portanto, mais densamente conectado se tornam determinadas Ã¡reas de uma rede, evidenciado a geraÃ§Ã£o de \textit{clusters}. Em suma, sÃ£o adicionadas $m$ arestas de forma aleatÃ³ria em um nÃºmero fixo de $n$ vÃ©rtices.   
 
+ErdÅ‘s e RÃ©nyi estudaram as mudanÃ§as na topologia de redes aleatÃ³rias em funÃ§Ã£o de $m$. Constatou-se que quanto menor o $m$, as redes tendem a se fragmentar em muitos \textit{clusters} pequenos, os quais sÃ£o chamados de componentes. Ã€ medida que $m$ aumenta, os componentes tambÃ©m aumentam, primeiramente em funÃ§Ã£o de intra-conexÃµes entre vÃ©rtices isolados de um componentes e posteriormente em funÃ§Ã£o de inter-conexÃµes entre os componentes, como Ã© apresentado na Figura \ref{graph_random}.
 
-\subsection{Modelo Barabási-Albert}
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.8]{./imagens/graph_random.png}
+\caption{Exemplo de rede aleatÃ³ria \cite{strogatz2001exploring}}
+\label{graph_random}
+\end{figure}
 
+Desde o trabalho pioneiro, redes aleatÃ³rias tÃªm sido estudadas mais profundamente sob o aspecto matemÃ¡tico\cite{bollobas2001random}. A partir deste modelo foram criadas arquiteturas idealizadas para modelos dinÃ¢micos de redes de genes, ecossistemas e a propagaÃ§Ã£o de doenÃ§as infecciosas \cite{strogatz2001exploring}. Vale ressaltar que o modelo proposto por ErdÅ‘s e RÃ©nyi abriu porta para pesquisas sobre os demais modelos apresentados nesta seÃ§Ã£o.
 
+\subsection{Modelo BarabÃ¡si-Albert}
+
+Redes regulares e aleatÃ³rias sÃ£o ambas boas idealizaÃ§Ãµes e tem suas aplicaÃ§Ãµes no campo da pesquisa \cite{strogatz2001exploring}, porÃ©m, a maioria das redes reais tem um padrÃ£o intermediÃ¡rio entre a ordem e a desordem. O modelo proposto por Watts e Strogatz \cite{watts1998collective}, denominado rede de Pequeno-Mundo, Ã© capaz de ajustar este meio-termo a partir de uma rede regular. O nome â€œPequeno-Mundoâ€, faz referÃªncia ao trabalho de \cite{milgram1967small}, no qual constatou-se que, sob o ponto de vista matemÃ¡tico, quaisquer duas pessoas nos \textbf{Estados Unidos} estÃ£o separadas por 5 conhecidos. \cite{guare1992six}, popularizou o termo â€œPequeno-Mundoâ€ como â€œSeis Graus de SeparaÃ§Ã£oâ€ em seu livro, considerando a premissa existencial de que quaisquer duas pessoas no \textbf{mundo} estÃ£o conectadas por nÃ£o mais do que 6 conhecidos.
+
+Na interpolaÃ§Ã£o entre redes regulares e randÃ´micas, Ã© considerado o processo de religaÃ§Ã£o randÃ´mica apresentado na Figura \ref{graph_world}. Considerando um rede com a estrutura em anel contendo $n$ vÃ©rtices e $k$ arestas por vÃ©rtice, percorre-se todas as arestas da rede, religando-as de forma aleatÃ³ria segundo uma probabilidade $p$. Se $p = 0$ a aresta permanecerÃ¡ intacta, pois nÃ£o existe probabilidade alguma de religaÃ§Ã£o, caso contrÃ¡rio, se $p = 1$, a aresta evidentemente serÃ¡ religada de forma aleatÃ³ria na rede, ou seja, a escolha pelo valor de $p$, de forma que $0 < p < 1$ permite variar entre uma rede aleatÃ³rio e uma rede regular.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.8]{./imagens/graph_world.png}
+\caption{Processo de obtenÃ§Ã£o de uma rede de pequeno-mundo a partir de uma rede regular}
+\label{graph_world}
+\end{figure}
+ 
+As redes de pequeno mundo apresentam duas propriedades muito importantes \cite{strogatz2001exploring}: (1) Rede altamente agrupadas â€“ Estas redes sÃ£o muito mais agrupadas do que redes aleatÃ³rias. Considerando os \textit{clusters} A, B e C, se A estÃ¡ ligado a B e B estÃ¡ ligado a C, entÃ£o existe grande probabilidade de A estar conectado a C; e (2) Caminhos geodÃ©sicos - A maiores dos vÃ©rtices estÃ£o conectados atravÃ©s de um caminho mÃ­nimo (caminho com o menor nÃºmero de arestas entre um vÃ©rtice de origem e um vÃ©rtice destino). O comportamento com relaÃ§Ã£o aos caminhos geodÃ©sicos pode ser constatado atravÃ©s da EquaÃ§Ã£o \ref{caminho}, que consiste no cÃ¡lculo do caminho mÃ­nimo mÃ©dio entre pares de vÃ©rtices em um grafo nÃ£o-direcionado, onde $d_{ij}$ Ã© a distÃ¢ncia geodÃ©sica entre o vÃ©rtice $i$ e o vÃ©rtice $j$
+
+\begin{equation}
+  L = \frac{1}{\frac{1}{2} n(n+1)} \sum_{i \geq j}d_{ij}\\
+  \label{caminho}
+\end{equation}
+
+Matematicamente, estas propriedades podem ser evidenciadas com cÃ¡lculos estatÃ­sticos. Primeiramente vale ressaltar que para que as propriedades sejam vÃ¡lidas assume-se que o grafo nÃ£o possui vÃ©rtices desconexos, isso implica em $n > k > ln(n) > 1$, no qual $k > ln(n)$ garante que um grafo aleatÃ³rio serÃ¡ conectado. Sendo $L(p)$ o caminho mÃ­nimo mÃ©dio (\ref{caminho}) e $C(p)$ o coeficiente de agrupamento mÃ©dio (\ref{clustering}), tal que $a_i$ Ã© o nÃºmero de conexÃµes entre os $k_i$ vizinhos do vÃ©rtice $i$. Nas condiÃ§Ãµes especificadas, quando $p \rightarrow 0$, $L$ TERMINAR.
+
+\begin{equation}
+  C = \frac{1}{n} \sum_{i = 1}^{n}\frac{2a_i}{k_i(k_i - 1)}\\
+  \label{clustering}
+\end{equation}
+
+Watts e Strogatz constataram que estas duas propriedades estÃ£o presentes tambÃ©m em muitas redes naturais e tecnolÃ³gicas \cite{watts1998collective}, como a rede neural da minhoca textit{Caenorhabditis Elegans}, a rede de energia do oeste do Estados Unidos e o grafo de colaboraÃ§Ã£o entre autores em filmes. AlÃ©m disso, constatou-se que sistemas dinÃ¢micos com os efeitos de pequeno-mundo apresentam aumento na velocidade de propagaÃ§Ã£o do sinal, poder computacional e sincronizaÃ§Ã£o. Em geral, os caminhos mÃ­nimos provÃªm canais de comunicaÃ§Ã£o de alta velocidade entre diferentes partes do sistema, facilitando os processos dinÃ¢micos, como sincronizaÃ§Ã£o, que requer informaÃ§Ã£o com relaÃ§Ã£o ao estado global do sistema \cite{strogatz2001exploring}. AlÃ©m disso, doenÃ§as infecciosas se espalham mais rapidamente em redes de Pequeno-Mundo.
 
 \subsection{Modelo Watts-Strogatz}
 
+Em redes reais, alguns nÃ³s sÃ£o mais conectados do que outros. No modelo proposto por Barabasi e Albert \cite{barabasi1999emergence}, denominado Livre de Escala, as redes apresentam uma ordem na dinÃ¢mica de estruturaÃ§Ã£o. As redes Livres de Escala possuem duas caracterÃ­sticas chave presentes em redes reais: (1) Incorporam crescimento; e (2) Apresentam conexÃ£o preferencial. A conexÃ£o preferencial se refere a tendÃªncia de um novo vÃ©rtice conectar-se a um vÃ©rtice de grau elevado. Estes nÃ³s altamente conectados sÃ£o chamados de \textit{hubs}.
 
+\cite{barabasi1999emergence} afirmam que, independentemente do sistema ou da identidade de seus constituintes, a probabilidade $P(k)$ de que um vÃ©rtice interaja com $k$ vÃ©rtices decai como uma Lei de PotÃªncia, sendo $P(k) \sim k^{-y}$, ou seja, decai muito mais lentamente que Poisson, distribuiÃ§Ã£o de graus prevista em uma rede aleatÃ³ria \cite{strogatz2001exploring}. Na Lei de PotÃªncia, o expoente $y$ determina a taxa de decaimento, que Ã© tipicamente medida no intervalo $2 < y < 3$. Na rede da internet, a probabilidade de $k$ documentos apontarem para uma certa pÃ¡gina da \textit{web} segue a Lei de PotÃªncia com $y = 2.1 \pm 0.1$ \cite{barabasi1995emergence}. 
 
-\subsection{Modelo Ravasz-Barabási}
+Em outras palavras, uma rede aleatÃ³ria possui grande parte dos vÃ©rtices com nÃºmero de conexÃµes prÃ³ximo da mÃ©dia da distribuiÃ§Ã£o, de forma que cada aresta estÃ¡ presente ou ausente com probabilidade igual. Diferentemente, em redes livres de escala a distribuiÃ§Ã£o do grau dos vÃ©rtices decai lentamente para a direita, formando uma "cauda", indicando que a maioria dos nÃ³s tem grau menor que a mÃ©dia da distribuiÃ§Ã£o \cite{watts2004new}, de forma que a probabilidade da existÃªncia de um vÃ©rtice com grau alto Ã© muito menor do que um vÃ©rtice com grau baixo. Este comportamento Ã© ilustrado na Figura \ref{comp_distr}.
 
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.15]{./imagens/comparisson.png}
+\caption{ComparaÃ§Ã£o entre a distribuiÃ§Ã£o de uma rede aleatÃ³ria e uma rede livre de escala cite{scott2011network}}
+\label{comp_distr}
+\end{figure}
+
+Este comportamento Ã© notado em grande parte das redes reais. No Twitter, pessoas normalmente seguem amigos e pessoas famosas que dispÃµe informaÃ§Ãµes de sua vida pessoal. Em uma rede de citaÃ§Ãµes de artigos, Ã© evidente que pesquisadores tÃªm preferÃªncia em citar trabalhos conhecidos e bem publicados. Um exemplo de uma rede Livre de Escala Ã© apresentado na Figura \ref{graph_scale}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.8]{./imagens/scale_free.png}
+\caption{Exemplo de rede Livre de Escala} \cite{strogatz2001exploring}
+\label{graph_scale}
+\end{figure}
+
+\subsection{Modelo Ravasz-BarabÃ¡si}
+
+Muitas redes reais que modelam fenÃ´menos naturais e sociais possuem duas propriedades genÃ©ricas: (1) sÃ£o livres de escala e (2) apresentam um alto grau de agrupamento. Resultados empÃ­ricos mostraram que o coeficiente de agrupamento mÃ©dio (\ref{clustering}) Ã© significamente maior para redes reais do que para redes aleatÃ³rias de mesmo tamanho. Ao mesmo tempo muitas redes cientÃ­ficas e biolÃ³gicas demonstraram ter a propriedade de serem livres de escala. Modelos propostos para descrever a topologia de redes complexas, em geral tem dificuldade em apresentar tais caracterÃ­sticas simultaneamente.
+
+Ravasz e BarabÃ¡si \cite{ravasz2003hierarchical} mostraram que estas duas propriedades ocorrem devido a presenÃ§a de uma organizaÃ§Ã£o hierÃ¡rquica. Portanto, o modelo proposto por \cite{ravasz2003hierarchical} consiste em uma rede que combina a propriedade de redes Livre de Escala e de alto grau de agrupamento.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{./imagens/graph_h.png}
+\caption{Exemplo do processo de formaÃ§Ã£o de uma rede hierÃ¡rquica \cite{ravasz2003hierarchical}} 
+\label{graph_h}
+\end{figure}
 
 

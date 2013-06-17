@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "graph.h"
 #include "graph_model.h"
@@ -490,9 +491,20 @@ int main(int argc, const char *argv[]){
 	short *state = malloc(n * sizeof(*state));
 	
 	int i, j, s;
+	clock_t tstart, tstop;
+	tstart = clock();
 	for (i=0; i < r; i++){
 		memset(state, 0, n * sizeof(*state));
 		state[0] = model.infectious_state;
+		//state[1] = model.infectious_state;
+		//state[2] = model.infectious_state;
+		//state[3] = model.infectious_state;
+		//state[4] = model.infectious_state;
+		//state[5] = model.infectious_state;
+		//state[6] = model.infectious_state;
+		//state[7] = model.infectious_state;
+		//state[8] = model.infectious_state;
+		//state[9] = model.infectious_state;
 		
 		int num_step;
 		propagation_step_t *step = 
@@ -533,7 +545,9 @@ int main(int argc, const char *argv[]){
 		
 		delete_propagation_steps(step, num_step);
 	}
-	
+	tstop = clock();
+	printf("\nTempo de execucao: %ld\n\n", (tstop-tstart)/(CLOCKS_PER_SEC/1000));
+ 
 	free(params);
 	if (outfile != stdout){
 		fclose(outfile);
