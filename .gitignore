@@ -13,6 +13,7 @@
 *.brf
 *.lof
 *.lot
+*.tcp
 *.siglax
 *.symbolsx
 
