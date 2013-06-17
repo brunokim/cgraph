@@ -131,6 +131,9 @@ void check_network_params(short network_model){
 			fprintf(stderr, "Network model: k is not positive\n");
 			is_failure = true;
 		}
+	}
+	
+	if (network_model == ER || network_model == BA || network_model == WS){
 		if (k >= n){
 			fprintf(stderr, "Network model: k is equal or bigger than n\n");
 			is_failure = true;
