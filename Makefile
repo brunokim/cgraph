@@ -4,7 +4,7 @@ CFLAGS = -Iinclude -Wall -g
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 TESTS = $(patsubst %, test/test_%, $(MODULES))
 
-DATASETS = mac95 cat mangwet mangdry baywet baydry netscience email facebook powergrid pgp astrophysics internet enron 15m
+DATASETS = mac95 cat mangwet mangdry baywet baydry netscience email facebook powergrid pgp astrophysics internet enron 15m #ER BA K WS
 FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
 
 BIN = metrics propagation dynamic
@@ -66,7 +66,7 @@ doc/main.pdf: doc/main.tex $(patsubst %,doc/%.tex, $(MODULES))
 
 # Binaries
 
-bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o obj/graph_model.o
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
 bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
