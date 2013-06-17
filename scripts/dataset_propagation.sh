@@ -1,6 +1,6 @@
 #!/bin/bash
 
-datasets="cat mac95 baydry baywet mangdry mangwet email powergrid pgp internet astrophysics 15m"
+datasets="cat mac95 baydry baywet mangdry mangwet email powergrid pgp internet astrophysics enron 15m"
 
 for dataset in $datasets
 do
