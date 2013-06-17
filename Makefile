@@ -4,7 +4,7 @@ CFLAGS = -Iinclude -Wall -g
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
 TESTS = $(patsubst %, test/test_%, $(MODULES))
 
-DATASETS = cat mac95 netscience email powergrid astrophysics internet baywet baydry mangwet mangdry 15m
+DATASETS = cat mac95 netscience email powergrid astrophysics internet baywet baydry mangwet mangdry 15m pgp
 FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
 
 BIN = metrics propagation dynamic
@@ -20,11 +20,11 @@ doc: doc/main.pdf
 run-metrics: bin/metrics
 	bin/metrics $(FOLDERS)
 
-plot-metrics: plot.plt
+plot-metrics: scripts/plot.plt
 	for folder in $(FOLDERS); do \
 		echo "Plotting in $$folder" && \
 		cd $$folder && \
-		gnuplot plot.args ../../plot.plt &&\
+		gnuplot plot.args ../../scripts/plot.plt &&\
 		cd ../..; \
 	done
 

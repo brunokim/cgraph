@@ -21,6 +21,6 @@ execute-model "DK"   "1.0 0.5"
 
 for model in SI SIS SIR SEIR DK
 do
-	./validate_propagation.r $model
+	scripts/validate_propagation.r $model
 done
 
