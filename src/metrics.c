@@ -333,15 +333,15 @@ void *experiment(void *args){
 	unsigned int ns = 1;
 	double beta = 0.4;
 
-	if(strcmp("K", folder) == 0){
+	if(strcmp("../datasets/K", folder) == 0){
 	}
-	else if(strcmp("ER", folder) == 0){
+	else if(strcmp("../datasets/ER", folder) == 0){
 		complete = new_erdos_renyi_r(nv, k, &ns);
 	}
-	else if(strcmp("BA", folder) == 0){	
+	else if(strcmp("../datasets/BA", folder) == 0){	
 		complete = new_barabasi_albert_r(nv, (int)k, &ns);
 	}
-	else if(strcmp("WS", folder) == 0){
+	else if(strcmp("../datasets/WS", folder) == 0){
 		complete = new_watts_strogatz_r(nv, (int)k, beta, &ns);
 	}
 	else {
