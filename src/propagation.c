@@ -73,36 +73,45 @@ unsigned int parse_uint(const char arg[], const char name[]){
 
 /******************************* Network Model ********************************/
 
-enum {K, ER, BA, WS, NUM_NETWORK_MODEL};
-char network_model_code[NUM_NETWORK_MODEL][3] = {"K", "ER", "BA", "WS"};
+enum {K, ER, BA, WS, RB, NUM_NETWORK_MODEL};
+char network_model_code[NUM_NETWORK_MODEL][3] = {"K", "ER", "BA", "WS", "RB"};
 char network_model_name[NUM_NETWORK_MODEL][16] = {
-	"Clique", "Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz"
+	"Clique", "Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz", "Ravasz-Barabasi"
 };
 
 char network_model_param[NUM_NETWORK_MODEL][40] = {
 	"n: int",
 	"n: int, k: double",
 	"n: int, k: int",
-	"n: int, k: int, beta: double"
+	"n: int, k: int, beta: double",
+	"l: int, k: int"
 };
 
 double network_params[3] = {NAN, NAN, NAN};
 
 void parse_network_params(str_stream_t *stream, short network_model){
-	network_params[0] = parse_uint(stream_next(stream), "n");
+	
 	
 	if (network_model == ER)
 	{
+		network_params[0] = parse_uint(stream_next(stream), "n");
 		network_params[1] = parse_double(stream_next(stream), "k");
 	}
 	else if (network_model == BA)
 	{
+		network_params[0] = parse_uint(stream_next(stream), "n");
 		network_params[1] = parse_uint(stream_next(stream), "k");
 	}
 	else if (network_model == WS)
 	{
+		network_params[0] = parse_uint(stream_next(stream), "n");
 		network_params[1] = parse_uint(stream_next(stream), "k");
 		network_params[2] = parse_double(stream_next(stream), "beta");
+	}
+	else if (network_model == RB)
+	{
+		network_params[0] = parse_uint(stream_next(stream), "l");
+		network_params[1] = parse_uint(stream_next(stream), "k");
 	}
 }
 
@@ -113,11 +122,11 @@ void check_network_params(short network_model){
 	double beta = network_params[2];
 	
 	if (n <= 0){
-		fprintf(stderr, "Network model: n is not positive\n");
+		fprintf(stderr, "Network model: %s is not positive\n", network_model != RB ? "n" : "l");
 		is_failure = true;
 	}
-	
-	if (network_model == ER || network_model == BA || network_model == WS){
+		
+	if (network_model == ER || network_model == BA || network_model == WS || network_model == RB){
 		if (k < 0){
 			fprintf(stderr, "Network model: k is not positive\n");
 			is_failure = true;
@@ -415,6 +424,7 @@ int main(int argc, const char *argv[]){
 	else
 	{
 		int    n    = (int) network_params[0];
+		int    l    = (int) network_params[0];
 		double k    = network_params[1];
 		double beta = network_params[2];
 
@@ -432,6 +442,9 @@ int main(int argc, const char *argv[]){
 				break;
 			case WS:
 				g = new_watts_strogatz_r(n, (int)k, beta, &network_seed);
+				break;
+			case RB:
+				g = new_ravasz_barabasi(l, (int)k);
 				break;
 		}
 	}
