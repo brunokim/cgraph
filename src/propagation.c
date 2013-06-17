@@ -417,6 +417,8 @@ int main(int argc, const char *argv[]){
 		int    n    = (int) network_params[0];
 		double k    = network_params[1];
 		double beta = network_params[2];
+
+	print_args();
 		
 		switch(network_model){
 			case K:

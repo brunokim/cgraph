@@ -7,6 +7,7 @@
 #include "sorting.h"
 #include "stat.h"
 #include "graph.h"
+#include "graph_model.h"
 #include "graph_metric.h"
 
 #ifndef NUM_PROCESSORS
@@ -324,7 +325,28 @@ void *experiment(void *args){
 	
 	bool is_directed = false;
 	snprintf(str, 256, "%s/edges.txt", folder);
-	graph_t *complete = load_graph(str, is_directed);
+	graph_t *complete = NULL;
+
+	//VALORES
+	int nv = 1912;
+	int k = 52;
+	unsigned int ns = 1;
+	double beta = 0.4;
+
+	if(strcmp("K", folder) == 0){
+	}
+	else if(strcmp("ER", folder) == 0){
+		complete = new_erdos_renyi_r(nv, k, &ns);
+	}
+	else if(strcmp("BA", folder) == 0){	
+		complete = new_barabasi_albert_r(nv, (int)k, &ns);
+	}
+	else if(strcmp("WS", folder) == 0){
+		complete = new_watts_strogatz_r(nv, (int)k, beta, &ns);
+	}
+	else {
+		complete = load_graph(str, is_directed);
+	}
 	
 	general_info(f_summary, complete);
 	component_info(f_summary, complete);
