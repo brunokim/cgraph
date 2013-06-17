@@ -1,26 +1,32 @@
 \chapter{Desenvolvimento do Trabalho}
 
-\section{Considerações Iniciais}
+O trabalho desenvolvido consistiu em
 
-
+ferramenta
+experimentos
+- validação
+- modelos de rede
+- datasets
+- dados reais
 
 \section{Atividades Realizadas}
 
-\subsection{Biblioteca Cgraph}
+\subsection{Biblioteca CGraph}
 
  A biblioteca CGraph \cite{cesar2013cgraph} utilizada foi implementada por um dos autores (Cesar) 
 durante seu trabalho de Iniciação Científica e Mestrado, utilizando a linguagem de programação C89 ANSI 
 em ambiente POSIX. A biblioteca foi extendida por ambos os autores para análise de processos de disseminação.
 
-A estrutura de dados \texttt{graph\_t} representa um grafo por meio de lista de adjacências, armazenando 
+A estrutura de dados para representação de grafos é por meio de lista de adjacências, armazenando 
 toda a informação necessária em memória física. Para um sistema com 4 GB de memória RAM e arquitetura de 
 64 bits, um grafo direcionado está limitado a menos de 500 milhões de arestas, e um grafo não-direcionado 
 está limitado a menos de 250 milhões de arestas.
 
-A biblioteca ainda está incompleta, mas já possui diversos algoritmos para entrada, geração, métrica e 
+A biblioteca está em desenvolvimento, e já possui diversos algoritmos para entrada, geração, métrica e 
 simulação de grafos não-direcionados, apresentados a seguir:
 
 \begin{itemize}
+ \setlength{\itemsep}{0.0\baselineskip}
  \item Leitura de \textit{datasets}.
  \item Inserção de arestas, extração de subgrafo.
  \item Extração de componentes.
@@ -29,15 +35,14 @@ simulação de grafos não-direcionados, apresentados a seguir:
  \item Assortatividade.
  \item Modelos de rede: grafo completo, Erdös-Rényi, Barabási-Albert, Watts-Strogatz, Ravasz-Barabási.
  \item Layout com saída SVG: aleatório, circular, circular ordenado por grau, definido pelo usuário.
- \item Modelos de disseminação: SI, SIS, SIR, SEIR, Daley-Kendall, zumbi.
+ \item Modelos de disseminação: SI, SIS, SIR, SEIR, Daley-Kendall, Zumbi.
 \end{itemize}
 
 Os modelos de disseminação comportam apenas o caso de \emph{disseminação síncrona}, onde a cada
 passo de tempo todos os individuos computam seu próximo estado, levando em conta seu estado atual e
-uma possível interação com um indivíduo infeccioso. Não são suportados ainda a presença de mais que
-um estado infeccioso, infecção de múltiplos indíviduos a cada passo de tempo (como no modelo em cascata
-de Borge-Holthoefer et al \cite{borge2012locating}) ou modelos assíncronos, onde apenas um indivíduo infeccioso
-transmite por turno.
+uma possível interação com um indivíduo infeccioso. Ainda não são suportados (1) mais que
+um estado infeccioso, (2) infecção múltipla a partir de um único infeccioso \cite{borge2012locating} ou 
+(3) modelos assíncronos, onde apenas um indivíduo infeccioso transmite por turno.
 
 A simulação é realizada de forma abstraída: a função \texttt{graph\_propagation\_t}
 executa os passos, contando o número de indivíduos infecciosos e escolhendo uniformemente entre seus
@@ -53,15 +58,15 @@ execução da propagação, de forma semelhante à especialização em orientação a obj
 
 \subsection{Validação da simulação}
 
-Como já discutido, modelos de disseminação podem ser compreendidos como um processo discreto ou 
+Modelos de disseminação podem ser compreendidos como um processo discreto ou 
 contínuo. Em um processo discreto, cada indivíduo encontra-se em um dado estado, transitando em instantes
 discretos conforme o estado dos seus vizinhos e de acordo com certas probabilidades. No processo contínuo, tais 
 probabilidades são vistas como taxas de transição entre compartimentos, e o comportamento do processo é
-obtido solucionando equações diferenciais. 
+obtido solucionando-se equações diferenciais. 
 
 Espera-se que o resultado obtido em uma solução do modelo diferencial corresponda àquele observado em um 
 grafo completo com um número infinito de vértices; na prática, bastam algumas centenas de vértices para
-obter comportamentos semelhantes. 
+se obter comportamentos semelhantes. 
 
 O modelo discreto é solucionado sobre um grafo completo com $N=500$ vértices, com critério de parada de que 
 nenhum vértice esteja no estado infeccioso. Tal critério não pode ser satisfeito para o modelo SIS sem um 
@@ -156,25 +161,70 @@ destas simulações estão registradas na Tabela \ref{tab:dataset-simulation}.
  \end{tabular}
 \end{table}
 
+Redes assortativas tendem a ser mais resilientes a ataques direcionados, de modo que se alguns 
+\textit{hubs} tornarem-se refratários à disseminação (por exemplo, no estado Removido do modelo
+SIR), a disseminação persiste se outros \textit{hubs} se mantiverem infecciosos. Do contrário,
+redes desassortativas tendem a se tornarem desconectadas quando alguns \textit{hubs} são 
+removidos, de modo que a infecção pode falhar em atingir todos os indivíduos.
+
 Alguns \textit{datasets} (\texttt{powergrid}, \texttt{pgp}, \texttt{internet}) apresentam propagação extremamente ineficiente, com praticamente 
-todos os indivíduos permanecendo suscetíveis. 
+todos os indivíduos permanecendo suscetíveis. As causas deste comportamento não estão claras, uma vez que as métricas estudadas não apontam para
+uma classificação comum para estas redes. Mais experimentos devem ser realizados, variando a proporção de nós infectados iniciais e suas posições
+relativas na rede.
 
-\subsection{Comparação entre modelos de propagação com $R_0$ equivalente}
+\subsection{Comparação de propagação entre modelos de rede equivalentes}
 
+Nesta etapa do trabalho foram feitos experimentos para evidenciar as características instrínscias dos modelos de rede. Foi fixado um modelo de propagação, para que os resultados obtidos através da propagação de informação em diferentes modelos pudessem ser comparados. Os resultados calculados são: (1) tempo de propagação de uma informação na rede e (2) o alcance da propagação. O alcance da propagação consiste no número de vértices que receberam a informação.
 
+Para a execução dos experimentos foi escolhido o modelo SI (Suscetível-infectado), dado que é um modelo mais determinístico. Em outros modelos como o SIR e o SIS, a propagação pode extinguir-se de forma inesperada, pois os nós infectados podem retornar ao estado suscetível ou recuperado. O número de vértices foi fixado em 10 mil nós e o grau médio dos vértice foi fixado em 6. A escolha do grau médio se deu pela condição para que um grafo aleatório não possua componentes desconexos, sendo $k > \log(n)$. Portanto, as redes possuem o mesmo tamanho. A propagação da informação nos modelos é repetida mil vezes, para que seja analisado o comportamento médio da propagação para cada modelo de rede. Os resultados da execução dos experimentos são apresentados na Tabela \ref{tab:network-model}.
 
-\subsection{Aplicação de propagação de informação em problemas reais}
+Através da análise pode perceber-se que a distribuição dos graus não segue nenhuma distribuição de probabilidade apresentada nos modelos.
 
+\section{Gripe de Hong Kong}
 
+A Gripe de Hong Kong foi a terceira pandemia de gripe do século XX. Esta gripe foi uma pandemia de categoria 2, segundo o Índice de Severidade de Pandemia (PSI), que consiste em uma classificação para reportar a severidade de uma pandemia nos Estados Unidos, de forma que a categoria 1 é mais branda, enquanto a categoria 5 indica o pior caso de severidade. Os surto ocorreu  entre 1968 e 1969 e matou aproximadamente 1 milhão de pessoas pelo mundo \cite{paul2008fundamental}.
+
+A causa desta pandemia foi o aparecimento de uma nova variação do vírus Influenza A (H3N2), que deu origem a um novo subtipo. Esta variante antigénica produziu em Hong Kong, em meados de Julho, uma epidemia de grande extensão, que se espalhou pelo mundo. Em setembro a pandemia já havia alcançado Índia, Filipinas, Austrália e Europa. Neste mesmo mês as tropas norte-americanas em missão na Guerra do Vietnam, contraíram o vírus e o levaram para os Estados Unidos.
+
+Nos EUA, os primeiros casos foram detectados na Califórnia, de onde a epidemia se propagou rapidamente, estando em Dezembro em todos os Estados. Em todos os países, com exceção dos EUA, a doença foi benigna, não estando associada a grande número de mortes. Um relatório divulgado pela Congressional Quarterly, em 1986, afirmou que quase 50 milhões de pessoas foram infectadas nos Estados Unidos e aproximadamente 33.800 morreram \footnote{Disponível em:  http://www.flu.gov/pandemic/history/}.
+
+Durante o período de infecção a população podia ser dividida em 3 categoria:
+
+\begin{itemize}
+\setlength{\itemsep}{0.0\baselineskip}
+\item Pessoas infectadas pela gripe;
+\item Pessoas que se recuperaram;
+\item Pessoas que não foram infectadas.
+\end{itemize}
+
+Sabendo-se da aplicação de disseminação de informação no contexto de propagação de epidemias, modelou-se o problema segundo o modelo epidemiológico SIR (Suscetível - infectado - recuperado). Os valores utilizados nos experimentos foram obtidos através da observação da evolução da doença na cidade de Nova Iorque, que na época contava com uma população de aproximadamente 7,9 milhões de pessoas. Os dados são os seguintes:
+
+\begin{itemize}
+\setlength{\itemsep}{0.0\baselineskip}
+\item Inicialmente têm-se 7,9 milhões de pessoas, sendo 10 infectados rferente as tropas norte-americanas voltando da guerra. 
+  \begin{itemize}
+  \item $S + I + R = N = 7.9$ milhões
+  \end{itemize}
+\item Adimensionalizado-se o sistema, tem-se $s + i + r = 1$
+  \begin{itemize}
+  \item $S(0) \cong 1$
+  \item $I(0) = 10/7.900.000 \cong 1.27*10^{-6}$
+  \item $R(0) = 0$
+  \end{itemize}
+\item Período de infecção ($p_i$): 3 dias
+  \begin{itemize}
+  \item Taxa de recuperação ($\beta$): $1/p_i = 1/3$
+  \end{itemize}
+\item Em média, uma nova pessoa é infectada cada dia
+  \begin{itemize}
+  \item Taxa de infecção ($\alpha$): $1/2$
+  \end{itemize}
+\end{itemize}
+
+Os experimentos realizados para as simulações da propagação desta pandemia em uma rede, foi feita com uma pequena parte da rede social do Facebook \cite{}. Esta rede foi escolhida devido a sua conformidade com uma rede de contato, dado que os vértices são pessoas e as arestas consistem em um relacionamente de "amizade" entre esats pessoas. Segundo Ravasz e Barabási \cite{ravasz2003hierarchical}, redes reais apresentam a coexistência de características intrínsecas de modelos de rede, como o alto grau de agrupamento e a existência de caminhos geodésicos. A rede do Facebook utilizada é não-direcionada e possui 1912 vértices e 26749 arestas. 
 
 \subsubsection{Gripe suína em Hong Kong}
 
-
-
 \subsubsection{Sobrevivência ao Apocalipse Zombie}
 
-
-
 \section{Resultados Obtidos}
-
-
