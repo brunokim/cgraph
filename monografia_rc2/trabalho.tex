@@ -88,7 +88,7 @@ Tabela \ref{tab:valida-simulacao}. Os dois modelos são em geral equivalentes, ex
 no tempo de propagação do modelo SIS e na proporção de suscetíveis do modelo Daley-Kendall. As causas 
 destas discrepâncias não foram examinadas. 
 
-\begin{table}[!hb]
+\begin{table}[!htb]
  \centering
  \caption{Comparação entre solução diferencial e simulação em grafo completo}\label{tab:valida-simulacao}
  \begin{tabular}{|l|c|cc|cc|}
@@ -107,8 +107,7 @@ destas discrepâncias não foram examinadas.
 
 O estudo de disseminação em redes reais permite visualizar o impacto das diversas propriedades estruturais no sucesso de uma propagação.
 Se por um lado redes reais possuem diversas características difíceis de serem replicadas em modelos, por outro é difícil comparar 
-o comportamento em redes distintas. Muitas características estruturais podem influenciar no sucesso de uma propagação, e utilizar redes
-reais não permite controlar cada uma em separado.
+o comportamento entre as mesmas.
 
 As redes utilizadas para uma simulação de propagação são descritas a seguir. Todas foram tratadas como não-direcionadas.
 
@@ -117,7 +116,7 @@ As redes utilizadas para uma simulação de propagação são descritas a seguir. Tod
  \item \texttt{cat}: Rede cortical e talâmica de um gato;
  \item \texttt{mangdry}, \texttt{mangwet}: Rede alimentar do Estuário Mangrove nas temporadas de seca e chuva;
  \item \texttt{baydry}, \texttt{baywet}: Rede alimentar da baía da Flórida nas temporadas de seca e chuva;
- \item \texttt{email}: Rede de contatos de e-mail de membros da University Rovira i Virgili (Tarragona);
+ \item \texttt{email}: Rede de contatos de e-mail de membros da Universitat Rovira i Virgili (Tarragona);
  \item \texttt{powergrid}: Rede de transmissão elétrica no leste dos Estados Unidos;
  \item \texttt{pgp}: Rede de confiança do esquema de criptografia PGP;
  \item \texttt{astrophysics}: Rede de colaboração na área de Astrofísica;
@@ -130,7 +129,7 @@ As redes utilizadas para uma simulação de propagação são descritas a seguir. Tod
 \begin{itemize}
  \item Número de vértices $N$. 
  \item Grau médio $\langle k \rangle$. 
- \item Coeficiente de aglomeração médio $\langle C \rangle$. 
+ \item Coeficiente de agrupamento médio $\langle C \rangle$. 
  \item Assortatividade $r$.
  \item Máximo \textit{$k$-core} $\kappa$.
 \end{itemize}
@@ -139,7 +138,7 @@ As redes utilizadas para uma simulação de propagação são descritas a seguir. Tod
 e calculamos a média e desvio padrão do tempo de propagação e da proporção final de suscetíveis. As métricas e resultados 
 destas simulações estão registradas na Tabela \ref{tab:dataset-simulation}.
 
-\begin{table}[!ht]
+\begin{table}[!htb]
  \centering
  \caption{Execução em datasets}\label{tab:dataset-simulation}
  \begin{tabular}{|l|ccccc|cc|}
@@ -174,13 +173,13 @@ relativas na rede.
 
 \subsection{Comparação de propagação entre modelos de rede equivalentes}
 
-Nesta etapa do trabalho foram feitos experimentos para evidenciar as características instrínscias dos modelos de rede. Foi fixado um modelo de propagação, para que os resultados obtidos através da propagação de informação em diferentes modelos pudessem ser comparados. Os resultados calculados são: (1) tempo de propagação de uma informação na rede e (2) o alcance da propagação. O alcance da propagação consiste no número de vértices que receberam a informação.
+Nesta etapa do trabalho foram feitos experimentos para evidenciar as características instrínsicas dos modelos de rede. Foi fixado um modelo de propagação, para que os resultados obtidos através da propagação de informação em diferentes modelos pudessem ser comparados. Os resultados calculados são: (1) tempo de propagação de uma informação na rede e (2) o alcance da propagação. O alcance da propagação consiste no número de vértices que receberam a informação.
 
-Para a execução dos experimentos foi escolhido o modelo SI (Suscetível-infectado), dado que é um modelo mais determinístico. Em outros modelos como o SIR e o SIS, a propagação pode extinguir-se de forma inesperada, pois os nós infectados podem retornar ao estado suscetível ou recuperado. O número de vértices foi fixado em 10 mil nós e o grau médio dos vértice foi fixado em 6. A escolha do grau médio se deu pela condição para que um grafo aleatório não possua componentes desconexos, sendo $k > \log(n)$. Portanto, as redes possuem o mesmo tamanho. A propagação da informação nos modelos é repetida mil vezes, para que seja analisado o comportamento médio da propagação para cada modelo de rede. Os resultados da execução dos experimentos são apresentados na Tabela \ref{tab:network-model}.
+Para a execução dos experimentos foi escolhido o modelo SI (Suscetível-infectado), dado que é um modelo mais determinístico. Em outros modelos como o SIR e o SIS, a propagação pode extinguir-se de forma inesperada, pois os nós infectados podem retornar ao estado suscetível ou recuperado. Com exceção do modelo Ravasz-Barabási, o número de vértices $N$ foi fixado em 10 mil e o grau médio $\langle k \rangle$ foi fixado em 9. A escolha do grau médio se deu pela condição para que um grafo aleatório não possua componentes desconexos, sendo $k > \log(N)$. A propagação da informação nos modelos é repetida 1000 vezes, para que seja analisado o comportamento médio da propagação para cada modelo de rede. Os resultados da execução dos experimentos são apresentados na Tabela \ref{tab:network-model}.
 
 Através da análise pode perceber-se que a distribuição dos graus não segue nenhuma distribuição de probabilidade apresentada nos modelos.
 
-\section{Gripe de Hong Kong}
+\subsection{Gripe de Hong Kong}
 
 A Gripe de Hong Kong foi a terceira pandemia de gripe do século XX. Esta gripe foi uma pandemia de categoria 2, segundo o Índice de Severidade de Pandemia (PSI), que consiste em uma classificação para reportar a severidade de uma pandemia nos Estados Unidos, de forma que a categoria 1 é mais branda, enquanto a categoria 5 indica o pior caso de severidade. Os surto ocorreu  entre 1968 e 1969 e matou aproximadamente 1 milhão de pessoas pelo mundo \cite{paul2008fundamental}.
 
@@ -223,8 +222,6 @@ Sabendo-se da aplicação de disseminação de informação no contexto de propagação 
 
 Os experimentos realizados para as simulações da propagação desta pandemia em uma rede, foi feita com uma pequena parte da rede social do Facebook \cite{}. Esta rede foi escolhida devido a sua conformidade com uma rede de contato, dado que os vértices são pessoas e as arestas consistem em um relacionamente de "amizade" entre esats pessoas. Segundo Ravasz e Barabási \cite{ravasz2003hierarchical}, redes reais apresentam a coexistência de características intrínsecas de modelos de rede, como o alto grau de agrupamento e a existência de caminhos geodésicos. A rede do Facebook utilizada é não-direcionada e possui 1912 vértices e 26749 arestas. 
 
-\subsubsection{Gripe suína em Hong Kong}
-
-\subsubsection{Sobrevivência ao Apocalipse Zombie}
+\subsection{Sobrevivência ao Apocalipse Zumbi}
 
 \section{Resultados Obtidos}
