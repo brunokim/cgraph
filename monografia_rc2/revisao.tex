@@ -138,6 +138,8 @@ maior de vértices do que se iniciarem em nós com grau equivalente, mas em camada
 \section{Modelos de rede}
 \label{sec:modelos}
 
+No estudo de redes complexas, um aspecto importante a ser analisado consiste nas características da rede. Os modelos de rede possuem características genéricas presentes em diferentes sistemas e fenômenos do mundo real. Os modelos permitem, portanto, analisar e modelar soluções para o mundo real baseado em propriedades que são úteis, como é o caso de controle de doenças e sincronização em sistemas dinâmicos . Os principais modelos de rede são apresentados na subseções a seguir.
+
 \subsection{Modelo Erdös-Rényi}
 
 O modelo de redes proposto por Erdos e Rényi \cite{erd6s1960evolution} consiste no modelo de redes aleatórias. A criação de uma rede aleatória se inicia com $N$ vértices desconectados. A cada iteração escolhe-se um par de vértices aleatoriamente para serem conectados. Nota-se que quanto maior o número de iterações $M$, maiores as chances de selecionar vértices que já possuam uma conexão, portanto, mais densamente conectado se tornam determinadas áreas de uma rede, evidenciando a geração de \textit{clusters}. Em suma, são adicionadas $M$ arestas de forma aleatória em um número fixo de $N$ vértices.
@@ -213,3 +215,5 @@ Ravasz e Barabási \cite{ravasz2003hierarchical} mostraram que estas duas proprie
 \caption{Exemplo do processo de formação de uma rede hierárquica \cite{ravasz2003hierarchical}} 
 \label{graph_h}
 \end{figure}
+
+Para a geração de uma rede hierárquica, como apresentado na Figura \ref{graph_h}, inicia-se com um pequeno \textit{cluster} de $N$ nós densamente conectados. O próximo passo consiste na geração de $z$ réplicas do módulo criado, conectando-se os vértices periféricos dos novos \textit{clusters} ao nó central do antigo \textit{cluster}. Recursivamente, são geradas novas réplicas, as quais são conectadas ao nó central do nível anterior. O número de níveis $l$ de hierarquia é a variável que delimita o processo de geração da rede.

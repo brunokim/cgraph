@@ -22,7 +22,17 @@ abordagem mais promissora é simplesmente implementar o processo sobre uma rede q
 Deste modo, o modelo de mistura completa torna-se um caso especial, onde a rede é um grafo completo. Deste modo,
 abandonam-se análises contínuas em favor da simulação discreta, onde a rede oferece a topologia das interações.
 
-Contudo, com isso adiciona-se uma nova camada de complexidade à análise, pois os efeitos da disseminação também dependem da 
-estrutura da rede sobre a qual ela é executada. A pesquisa sobre esse tipo de processo dinâmico ainda é 
+Com isso, adiciona-se uma nova camada de complexidade à análise, pois os efeitos da disseminação também dependem da 
+estrutura da rede sobre a qual ela é executada. A análise da estrutura de redes complexas é um tópico ainda em constante 
+evolução, e não está claro os múltiplos papeis que desempenha para os muitos modelos de propagação. 
 
-Linkar trabalho anterior, Impacto dos modelos ded rede na propagação; Métricas estruturais da rede como medida comparativa.  trabalho analisa propagação em diferentes aspectos: modelos de redes e redes reais;
+Neste trabalho, buscamos utilizar algumas métricas de caracterização de redes e analisar sua influência sobre dois 
+parâmetros-chave para a medida do sucesso de uma propagação: o número total de afetados e o tempo até atingir um estado
+estacionário. Para isso foram analisadas redes reais, que possuem estrutura mais intrincada mas limita a possibilidade
+de comparações cruzadas, e modelos de redes, que possuem estrutura mais simples mas permitem controle paramétrico sobre
+sua estrutura.
+
+No Capítulo 2 discutimos as principais métricas estruturais que acredita-se influenciar no sucesso de uma propagação, e
+os modelos de rede utilizados para a simulação. No Capítulo 3 apresentamos a biblioteca CGraph onde as simulações foram
+implementadas, os casos analisados para validação e exploração do problema, e a comparação com um exemplo real, a epidemia
+de gripe de Hong Kong de 1968. No Capítulo 4 avaliamos as contribuições destas simulações e os trabalhos futuros.
