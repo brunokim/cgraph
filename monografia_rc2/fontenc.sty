@@ -1,0 +1,85 @@
+%%
+%% This is file `fontenc.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% ltoutenc.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright 1993 1994 1995 1996 1997 1998 1999
+%% The LaTeX3 Project and any individual authors listed elsewhere
+%% in this file.
+%% 
+%% This file is part of the LaTeX2e system.
+%% ----------------------------------------
+%% 
+%% It may be distributed under the terms of the LaTeX Project Public
+%% License, as described in lppl.txt in the base LaTeX distribution.
+%% Either version 1.0 or, at your option, any later version.
+%%% From File: ltoutenc.dtx
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{fontenc}
+ [1999/02/24 v1.9t
+                 Standard LaTeX package]
+\def\update@uclc@with@cyrillic{%
+ \expandafter\def\expandafter\@uclclist\expandafter
+  {\@uclclist
+  \cyra\CYRA\cyrabhch\CYRABHCH\cyrabhchdsc\CYRABHCHDSC\cyrabhdze
+  \CYRABHDZE\cyrabhha\CYRABHHA\cyrae\CYRAE\cyrb\CYRB\cyrbyus
+  \CYRBYUS\cyrc\CYRC\cyrch\CYRCH\cyrchldsc\CYRCHLDSC\cyrchrdsc
+  \CYRCHRDSC\cyrchvcrs\CYRCHVCRS\cyrd\CYRD\cyrdelta\CYRDELTA
+  \cyrdje\CYRDJE\cyrdze\CYRDZE\cyrdzhe\CYRDZHE\cyre\CYRE\cyreps
+  \CYREPS\cyrerev\CYREREV\cyrery\CYRERY\cyrf\CYRF\cyrfita
+  \CYRFITA\cyrg\CYRG\cyrgdsc\CYRGDSC\cyrgdschcrs\CYRGDSCHCRS
+  \cyrghcrs\CYRGHCRS\cyrghk\CYRGHK\cyrgup\CYRGUP\cyrh\CYRH
+  \cyrhdsc\CYRHDSC\cyrhhcrs\CYRHHCRS\cyrhhk\CYRHHK\cyrhrdsn
+  \CYRHRDSN\cyri\CYRI\cyrie\CYRIE\cyrii\CYRII\cyrishrt\CYRISHRT
+  \cyrishrtdsc\CYRISHRTDSC\cyrizh\CYRIZH\cyrje\CYRJE\cyrk\CYRK
+  \cyrkbeak\CYRKBEAK\cyrkdsc\CYRKDSC\cyrkhcrs\CYRKHCRS\cyrkhk
+  \CYRKHK\cyrkvcrs\CYRKVCRS\cyrl\CYRL\cyrldsc\CYRLDSC\cyrlhk
+  \CYRLHK\cyrlje\CYRLJE\cyrm\CYRM\cyrmdsc\CYRMDSC\cyrmhk\CYRMHK
+  \cyrn\CYRN\cyrndsc\CYRNDSC\cyrng\CYRNG\cyrnhk\CYRNHK\cyrnje
+  \CYRNJE\cyrnlhk\CYRNLHK\cyro\CYRO\cyrotld\CYROTLD\cyrp\CYRP
+  \cyrphk\CYRPHK\cyrq\CYRQ\cyrr\CYRR\cyrrdsc\CYRRDSC\cyrrhook
+  \CYRRHOOK\cyrrtick\CYRRTICK\cyrs\CYRS\cyrsacrs\CYRSACRS
+  \cyrschwa\CYRSCHWA\cyrsdsc\CYRSDSC\cyrsemisftsn\CYRSEMISFTSN
+  \cyrsftsn\CYRSFTSN\cyrsh\CYRSH\cyrshch\CYRSHCH\cyrshha\CYRSHHA
+  \cyrt\CYRT\cyrtdsc\CYRTDSC\cyrtetse\CYRTETSE\cyrtshe\CYRTSHE
+  \cyru\CYRU\cyrushrt\CYRUSHRT\cyrv\CYRV\cyrw\CYRW\cyry\CYRY
+  \cyrya\CYRYA\cyryat\CYRYAT\cyryhcrs\CYRYHCRS\cyryi\CYRYI\cyryo
+  \CYRYO\cyryu\CYRYU\cyrz\CYRZ\cyrzdsc\CYRZDSC\cyrzh\CYRZH
+  \cyrzhdsc\CYRZHDSC}%
+ \let\update@uclc@with@cyrillic\relax
+}
+\DeclareOption*{%
+   \let\encodingdefault\CurrentOption
+   \edef\reserved@f{%
+     \lowercase{\def\noexpand\reserved@f{\CurrentOption enc.def}}}%
+   \reserved@f
+   \InputIfFileExists\reserved@f
+        {}{\PackageError{fontenc}%
+         {Encoding file `\reserved@f' not found.%
+          \MessageBreak
+           You might have misspelt the name of the encoding}%
+         {Necessary code for this encoding was not
+          loaded.\MessageBreak
+          Thus calling the encoding later on will
+          produce further error messages.}}%
+  \let\reserved@f\relax
+  \expandafter\in@\expandafter{\CurrentOption}%
+                              {T2A,T2B,T2C,X2,LCY,OT2}%
+  \ifin@
+     \update@uclc@with@cyrillic
+  \fi
+}
+\ProcessOptions*
+\fontencoding\encodingdefault\selectfont
+\let\update@uclc@with@cyrillic\relax
+\global\expandafter\let\csname ver@fontenc.sty\endcsname\relax
+\global\let\@ifl@ter@@\@ifl@ter
+\def\@ifl@ter#1#2#3#4#5{\global\let\@ifl@ter\@ifl@ter@@}
+\endinput
+%%
+%% End of file `fontenc.sty'.

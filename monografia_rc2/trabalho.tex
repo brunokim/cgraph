@@ -177,7 +177,36 @@ Nesta etapa do trabalho foram feitos experimentos para evidenciar as característ
 
 Para a execução dos experimentos foi escolhido o modelo SI (Suscetível-infectado), dado que é um modelo mais determinístico. Em outros modelos como o SIR e o SIS, a propagação pode extinguir-se de forma inesperada, pois os nós infectados podem retornar ao estado suscetível ou recuperado. Com exceção do modelo Ravasz-Barabási, o número de vértices $N$ foi fixado em 10 mil e o grau médio $\langle k \rangle$ foi fixado em 9. A escolha do grau médio se deu pela condição para que um grafo aleatório não possua componentes desconexos, sendo $k > \log(N)$. A propagação da informação nos modelos é repetida 1000 vezes, para que seja analisado o comportamento médio da propagação para cada modelo de rede. Os resultados da execução dos experimentos são apresentados na Tabela \ref{tab:network-model}.
 
-Através da análise pode perceber-se que a distribuição dos graus não segue nenhuma distribuição de probabilidade apresentada nos modelos.
+\begin{table}[h]
+ \label{tab:network-model}
+ \caption{Métricas das redes para os modelos apresentados}
+ \centering
+  \begin{tabular}{lcccc}
+   \hline
+	&	ER	&	WS	&	BA	&	RB	\\ \hline
+Tempo de propagação(ms)	&	136,3	&	36,7	&	81,3	&	65,2	\\
+Média de infectados	&	9999,0	&	10000,0	&	10000,0	&	6726,2	\\
+Desvio Padrão de infectados	&	0,1	&	0,0	&	0,0	&	203,0	\\
+Média de suscetivos	&	1,0	&	0,0	&	0,0	&	1049,8	\\
+Desvio Padrão de suscetivos	&	0,1	&	0,0	&	0,0	&	203,0	\\
+Média de mensagens	&	1053834,9	&	251095,4	&	451380,0	&	465174,9	\\
+Desvio Padrão de mensagens	&	19588,1	&	35222,9	&	82172,8	&	28969,0	\\
+Média de iterações	&	134,0	&	55,3	&	73,1	&	131,0	\\
+Desvio Padrão de iterações	&	0,0	&	4,0	&	8,5	&	0,0	\\
+Agrupamento médio	&	0	&	0,133	&	0,008	&	0,825	\\
+Caminho mínimo médio	&	5,33	&	5,938	&	3,474	&	3,776	\\
+Diâmetro	&	10	&	9	&	5	&	10	\\ \hline
+
+  \end{tabular}
+ \end{table}
+
+Através da análise do tempo de propagação, percebe-se o modelo de WS teve uma propagação muito mais rápida que os demais modelos. Isto se deve as propridades de \textit{small world}. Este modelo propagou a informação para toda a rede com o menor número de passos e o menor número de mensagens. O segundo modelo que propagou a informação mais rapidamente foi o BA, o qual possui a propriedade de redes livres de escala. Um fato importante em redes livres de escala é que estas também têm a propriedade \textit{small world} \cite{watts1999small}. A proprieade \textit{small world} é notada em livres de escala dado que o diâmetro de uma rede $d$ cresce em escala logarítmica em relação ao número de nós $N$ \cite{kosmidis2007propagation}.
+
+Ao contrário dos dois primeiros modelos analisados, os modelos ER e RB tiveram o número de passos limitado pelo critério de parada. O critério de parada consiste em $K \log_2(N)$. A lógica é que uma propagação "perfeita" necessita de $\log_2(N)$ passos. Através desta função a progressão de infectados teria ordem quadrática, totalizando $\log_2(N)$ passos. O $k$ consiste em um parâmetro de segurança. Portanto, nota-se que RB possui um tempo de propagação menor que BA, porém, cerca de 14\% da rede não recebeu a informação. Analisando-se o diâmetro da rede, fica claro que as modelos ER e RB, que atingiram o limite de passos, possuem um diâmetro de rede maior.
+
+Em geral, a principal propriedade da rede WS consiste no comportamente médio entre redes aleatórias e regulares. Isto permite que a rede seja altamente agrupada (como em redes regulares) e manter a característica de caminhos mínimos. Estas características, combinadas a um diâmetro menor, mostram que as características de uma rede \textit{small eorld} são muito favoráveis a propagação de informação. Vale notar também que, sem o limite de execução pelo número de passos, o modelo RB tem um comportament próximo de BA. 
+
+Analisando-se RB, Ravasz e Barabási \cite{ravasz2003hierarchical} afirmam que as principais características deste modelo consiste no alto grau de agrupamento e comportamento livre de escala. Wang et al \cite{fu2007information} realizaram diversos experimentos de propagação de informação com o modelo SIR em redes hierárquicas. Os resultados demonstraram que o alcance da propagação depende da localização do indivíduo que inicia a mesma. Wang et al constataram que o alcance é máximo ocorre quando o vértice escolhido inicialmente está em uma camada intermediária. Os resultados das simulações indicaram que a melhor estratégia para propagar uma informação consiste em fazer com que indivíduos em camadas intermediárias recebam a informação e espalhem esta ao seus vizinhos. Portanto, o comportamento verificado nos experimentos realizados neste não é anormal.
 
 \subsection{Gripe de Hong Kong}
 
@@ -220,7 +249,29 @@ Sabendo-se da aplicação de disseminação de informação no contexto de propagação 
   \end{itemize}
 \end{itemize}
 
-Os experimentos realizados para as simulações da propagação desta pandemia em uma rede, foi feita com uma pequena parte da rede social do Facebook \cite{}. Esta rede foi escolhida devido a sua conformidade com uma rede de contato, dado que os vértices são pessoas e as arestas consistem em um relacionamente de "amizade" entre esats pessoas. Segundo Ravasz e Barabási \cite{ravasz2003hierarchical}, redes reais apresentam a coexistência de características intrínsecas de modelos de rede, como o alto grau de agrupamento e a existência de caminhos geodésicos. A rede do Facebook utilizada é não-direcionada e possui 1912 vértices e 26749 arestas. 
+Os experimentos realizados para as simulações da propagação desta pandemia em uma rede, foi feita com uma pequena parte da rede social do Facebook \cite{}. Esta rede foi escolhida devido a sua conformidade com uma rede de contato, dado que os vértices são pessoas e as arestas consistem em um relacionamente de "amizade" entre esats pessoas. Segundo Ravasz e Barabási \cite{ravasz2003hierarchical}, redes reais apresentam a coexistência de características intrínsecas de modelos de rede, como o alto grau de agrupamento e a existência de caminhos geodésicos. A rede do Facebook utilizada é não-direcionada e possui 1912 vértices e 26749 arestas. Dimensionalizando-se o problema para esta simulação, $S(o)$ foi 1, dado que $s$ é muito pequeno e 1 é o valor mínimo necessário para se iniciar uma disseminação de doença infecciosa. A Tabela \ref{tab:facebook}
+
+ \begin{table}[h]
+ \label{tab:facebook}
+ \caption{Informações sobre a propagação da Gripe de Hing Kong na rede do Facebook}
+ \centering
+  \begin{tabular}{lcccc}
+   \hline
+   	&	&Número de iterações	\\ \hline
+	&	100	&	1000	&	10000	\\ \hline
+Média de infectados	&	9,3	&	9,0	&	9,0	\\
+Desvio Padrão de infectados	&	1,2	&	0,0	&	0,0	\\
+Média de suscetivos	&	1817,4	&	1842,0	&	1842,0	\\
+Desvio Padrão de suscetivos	&	135,1	&	125,6	&	125,6	\\
+Média de recuperados	&	85,3	&	61,0	&	61,0	\\
+Desvio Padrão de recuperados	&	134,6	&	125,6	&	125,6	\\
+Média do total de infecções	&	254,1	&	183,7	&	183,7	\\
+Desvio padrão do total de infecções	&	408,2	&	383,7	&	383,7	\\ \hline
+  \end{tabular}
+ \end{table}
+
+Através da simulação com os parâmetros acerca da infecção, percebe-se que a epidemia nos Estados Unidos, de fato, não foi tão severa como outras pandemias como a gripe Espanhola. Percebe-se que a epidemia se estabiliza com um número baixo de infectados, ou seja, dadas as tentativas de infecção, grande maioria se recupera, ou há infecção em pessoas já contaminadas. A grande aplicação de disseminação de epidemias para a área da saúde consiste no cálculo de vacinação em massa para controle de epidemias
+
 
 \subsection{Sobrevivência ao Apocalipse Zumbi}
 

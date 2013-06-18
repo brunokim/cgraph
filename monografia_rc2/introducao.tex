@@ -1,2 +1,28 @@
 \chapter{Introdução}
 
+Processos de disseminação de informação são encontrados em muitas áreas do conhecimento, como na dispersão de rumores,
+propagação de vírus digitais e biológicos, atualização de estado em sistemas distribuídos, e mesmo em processos 
+físicos de dispersão. O elemento comum entre todos estes fenômenos é a ocorrência de uma atividade descentralizada,
+onde cada agente interage com seus pares para alterar o estado global do sistema. A disseminação então emerge
+como um comportamento complexo com origem na interação entre agentes simples.
+
+No primeiro trabalho da disciplina, examinamos diferentes modelos de disseminação de informação, 
+provenientes das áreas de epidemiologia e sociologia. Tais modelos consistem na identificação de compartimentos
+que correspondem a diferentes estágios de uma epidemia, e o estabelecimento de regras para transição entre 
+compartimentos, dependente ou não da interação entre indivíduos. 
+
+Tal abordagem provê uma equação diferencial que pode ser solucionada por métodos de integração numérica, correspondendo
+ao modelo idealizado de uma população muito grande onde os indivíduos se encontram aleatoriamente ao acaso. Tal abordagem
+contínua permite um estudo analítico profundo das condições e resultados da disseminação, mas se baseia em um modelo de
+interação - mistura completa - que não tem sentido em muitos processos reais.
+
+O modelo de mistura completa assume que os indivíduos possuem igual capacidade para interagir com quaisquer outros 
+indivíduos. É possível implementar estratificações \textit{ad-hoc} adicionando mais compartimentos ao sistema, mas uma
+abordagem mais promissora é simplesmente implementar o processo sobre uma rede que mapeia todas as relações possíveis.
+Deste modo, o modelo de mistura completa torna-se um caso especial, onde a rede é um grafo completo. Deste modo,
+abandonam-se análises contínuas em favor da simulação discreta, onde a rede oferece a topologia das interações.
+
+Contudo, com isso adiciona-se uma nova camada de complexidade à análise, pois os efeitos da disseminação também dependem da 
+estrutura da rede sobre a qual ela é executada. A pesquisa sobre esse tipo de processo dinâmico ainda é 
+
+Linkar trabalho anterior, Impacto dos modelos ded rede na propagação; Métricas estruturais da rede como medida comparativa.  trabalho analisa propagação em diferentes aspectos: modelos de redes e redes reais;
