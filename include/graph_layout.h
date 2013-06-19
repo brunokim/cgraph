@@ -53,10 +53,17 @@ void graph_layout_circle_edges
 		(const graph_t *g, double size, int width, const color_t color, 
 		 int *es, path_style_t edge_style[]);
 
-// Place points in concentric shells, with highest degrees near the center
-double graph_layout_degree(const graph_t *g, int radius, coord_t *p);
-double graph_layout_degree2
-	(const graph_t *g, int radius, coord_t *p, bool is_random_angle);
+// Place points in concentric shells
+double graph_layout_shell
+	(const graph_t *g, int radius, int *shell, 
+	 bool is_inverse, bool is_random_angle, 
+	 coord_t *p);
+
+double graph_layout_degree_shell
+	(const graph_t *g, int radius, bool is_random_angle, coord_t *p);
+double graph_layout_core_shell
+	(const graph_t *g, int radius, bool is_random_angle, coord_t *p);
+
 /******************************* Printing *************************************/
 
 // Prints graph as SVG to file, using vertex coordinates given in p and

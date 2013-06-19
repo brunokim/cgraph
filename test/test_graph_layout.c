@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "graph.h"
+#include "graph_metric.h"
 #include "graph_layout.h"
 #include "graph_model.h"
 
@@ -255,7 +256,7 @@ void test_degree_layout(){
 	graph_t *g = new_barabasi_albert(n, k);
 	
 	coord_t *p = malloc(n * sizeof(*p));
-	graph_layout_degree(g, width+radius, p);
+	graph_layout_degree_shell(g, width+radius, true, p);
 	
 	color_t solid_red = {255, 0, 0, 255};
 	color_t black     = {0,   0, 0, 255};
@@ -284,7 +285,7 @@ void test_degree_layout2(){
 	int n = graph_num_vertices(g);
 	
 	coord_t *p = malloc(n * sizeof(*p));
-	graph_layout_degree2(g, width+radius, p, false);
+	graph_layout_degree_shell(g, width+radius, false, p);
 	
 	color_t solid_red = {255, 0, 0, 255};
 	color_t black     = {0,   0, 0, 255};
@@ -306,6 +307,65 @@ void test_degree_layout2(){
 	delete_graph(g);
 }
 
+void test_core_layout(){
+	int radius = 5, width=1;
+	graph_t *g = load_graph("datasets/email/edges.txt", false);
+	int n = graph_num_vertices(g);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	graph_layout_core_shell(g, width+radius, true, p);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	color_copy(edge_style.color, black);
+	
+	graph_print_svg_one_style("test/test_core_layout.svg", 0, 0, g, p, 
+	                          point_style, edge_style);
+	
+	free(p);
+	delete_graph(g);
+}
+
+void test_distance_layout(){
+	int l = 5, k = 4;
+	int radius = 5, width=1;
+	graph_t *g = new_ravasz_barabasi(l, k);
+	int n = graph_num_vertices(g);
+	
+	int *distance = malloc(n * sizeof(*distance));
+	graph_geodesic_vertex(g, 0, distance);
+	
+	coord_t *p = malloc(n * sizeof(*p));
+	graph_layout_shell(g, width+radius, distance, false, false, p);
+	
+	color_t solid_red = {255, 0, 0, 255};
+	color_t black     = {0,   0, 0, 255};
+	
+	circle_style_t point_style;
+	point_style.radius = radius;
+	point_style.width = width;
+	color_copy(point_style.fill, solid_red);
+	color_copy(point_style.stroke, black);
+	
+	path_style_t edge_style;
+	edge_style.width = width;
+	color_copy(edge_style.color, black);
+	
+	graph_print_svg_one_style("test/test_distance_layout.svg", 0, 0, g, p, 
+	                          point_style, edge_style);
+	
+	free(p);
+	delete_graph(g);
+}
 
 void test_animation(){
 	int n = 64, k = 4;
@@ -315,7 +375,7 @@ void test_animation(){
 	graph_t *g = new_barabasi_albert_r(n, k, &state);
 	
 	coord_t *p = malloc(n * sizeof(*p));
-	double size = graph_layout_degree(g, width+radius, p);
+	double size = graph_layout_degree_shell(g, width+radius, true, p);
 	delete_graph(g);
 	
 	color_t solid_red = {255, 0, 0, 255};
@@ -355,6 +415,8 @@ int main(){
 	test_circle_layout();
 	test_degree_layout();
 	test_degree_layout2();
+	test_core_layout();
+	test_distance_layout();
 	test_animation();
 	printf("success\n");
 	return 0;

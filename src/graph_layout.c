@@ -5,7 +5,9 @@
 #include <string.h>
 
 #include "sorting.h"
+#include "stat.h"
 #include "graph.h"
+#include "graph_metric.h"
 #include "graph_layout.h"
 
 /***************************** Color functions ********************************/
@@ -207,83 +209,96 @@ void graph_layout_circle_edges
 	free(adj);
 }
 
-double graph_layout_degree(const graph_t *g, int radius, coord_t *p){
-	graph_layout_degree2(g, radius, p, true);
-}
-
-double graph_layout_degree2
-		(const graph_t *g, int radius, coord_t *p, bool is_random_angle){
+// Places vertices in concentric shells in inverse direction to its shell[i]
+//value
+double graph_layout_shell
+		(const graph_t *g, int radius, int *shell, 
+		 bool is_inverse, bool is_random_angle,
+		 coord_t *p){
 	assert(g);
 	assert(radius > 0);
+	assert(shell);
 	assert(p);
 	
-	int i, j, k, n = graph_num_vertices(g);
-	int *degree = malloc(n * sizeof(*degree));
-	memset(degree, 0, n*sizeof(*degree));
+	int i, j, n = graph_num_vertices(g);
+	int num_shell;
+	pair_t *freq = stat_frequencies(shell, n, &num_shell);
 	
-	int kmax = 0;
-	int num_layer = 0;
-	for (i=0; i < n; i++){
-		k = graph_num_adjacents(g, i);
-		
-		if (degree[k] == 0){ num_layer++; }
-		degree[k]++;
-		kmax = k > kmax ? k : kmax;
+	// Calculates minimum dr so that at each shell the circles do not overlap
+	double dr_min = 0.0;
+	for (i=0; i < num_shell; i++){
+		int index = !is_inverse ? i : (num_shell - i-1);
+		double shell_perimeter = 2 * M_PI * (1+index);
+		double dr = (2*radius) * freq[i].value / shell_perimeter;
+		dr_min = dr < dr_min ? dr_min : dr;
 	}
 	
-	int *freq = malloc(num_layer * sizeof(*freq));
-	int *layer = malloc(num_layer * sizeof(*layer));
-	double drmin = 0.0;
-	j = 0;
-	for (k=kmax; k >= 0; k--){
-		if (degree[k] > 0){
-			layer[j] = k;
-			freq[j] = degree[k];
-			
-			double dr = (2*radius)*freq[j]/(2*M_PI*(1+j));
-			drmin = dr < drmin ? drmin : dr;
-			
-			j++;
-		}
-	}
-	assert(j == num_layer);
-	free(degree);
-	
+	// Calculates minimum dr so that consecutive shells do not overlap as well
 	double dR = 1.25*(2*radius);
-	dR = dR < drmin ? drmin : dR;
-	double R = dR*num_layer;
+	dR = dR < dr_min ? dr_min : dR;
+	double R = dR*num_shell;
 	
 	// Random initial angle
-	double *t0 = malloc(num_layer * sizeof(*t0));
-	for (i=0; i < num_layer; i++){
+	double *t0 = malloc(num_shell * sizeof(*t0));
+	for (i=0; i < num_shell; i++){
 		if (is_random_angle){ t0[i] = 2*M_PI*(double)rand()/RAND_MAX; }
 		else                { t0[i] = 0.0; }
 	}
 	
-	int *count = malloc(num_layer * sizeof(*count));
-	memset(count, 0, num_layer * sizeof(*count));
+	// Counts how many vertices were already placed at each shell
+	int *count = malloc(num_shell * sizeof(*count));
+	memset(count, 0, num_shell * sizeof(*count));
 	
+	// Place the vertices
 	for (i=0; i < n; i++){
-		k = graph_num_adjacents(g, i);
-		for (j=0; j < num_layer; j++){
-			if (layer[j] == k){
+		// Linear search
+		for (j=0; j < num_shell; j++){
+			if (freq[j].key == shell[i]){
 				break;
 			}
 		}
+		int index = !is_inverse ? j : (num_shell - j-1);
 		
-		double theta = t0[j] + (2 * M_PI * count[j]) / freq[j];
-		count[j]++;
+		double theta = t0[index] + (2 * M_PI * count[index]) / freq[j].value;
+		count[index]++;
 		
-		p[i].x = R+radius + dR*(1+j) * cos(theta);
-		p[i].y = R+radius + dR*(1+j) * sin(theta);
+		p[i].x = R+radius + dR*(1+index) * cos(theta);
+		p[i].y = R+radius + dR*(1+index) * sin(theta);
 	}
 	
+	free(count);
 	free(t0);
 	free(freq);
-	free(layer);
-	free(count);
 	
 	return 2*R + 2*radius;
+}
+
+double graph_layout_degree_shell
+		(const graph_t *g, int radius, bool is_random_angle, coord_t *p){
+	assert(g);
+	int n = graph_num_vertices(g);
+	int *degree = malloc(n * sizeof(*degree));
+	
+	graph_degree(g, degree);
+	double boxsize;
+	boxsize = graph_layout_shell(g, radius, degree, true, is_random_angle, p);
+	
+	free(degree);
+	return boxsize;
+}
+
+double graph_layout_core_shell
+		(const graph_t *g, int radius, bool is_random_angle, coord_t *p){
+	assert(g);
+	int n = graph_num_vertices(g);
+	int *core = malloc(n * sizeof(*core));
+	
+	graph_kcore(g, core);
+	double boxsize;
+	boxsize = graph_layout_shell(g, radius, core, true, is_random_angle, p);
+	
+	free(core);
+	return boxsize;
 }
 
 /******************************* Printing *************************************/

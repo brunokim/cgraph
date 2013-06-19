@@ -98,7 +98,7 @@ void graph_check(const graph_t *g, int i, int j){
 error_t graph_add_edge(graph_t *g, int i, int j){
 	graph_check(g, i, j);
 	
-	if (!set_contains(g->adjacencies[i], j)){
+	if (!set_contains(g->adjacencies[i], j) && i != j){
 		error_t error_ij = 0, error_ji = 0;
 		
 		if (g->is_directed)

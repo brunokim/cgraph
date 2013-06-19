@@ -78,18 +78,14 @@ bin/dynamic : src/dynamic.c
 # Test binaries
 
 test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o \
- obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm
-	
-test/test_graph_propagation_steps: obj/test_graph_propagation_steps.o obj/graph_propagation.o \
- obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+ obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
 test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-test/test_graph_layout: obj/test_graph_layout.o obj/graph_model.o obj/graph_layout.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+test/test_graph_layout: obj/test_graph_layout.o obj/graph_model.o obj/graph_layout.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
 test/test_graph_metric: obj/test_graph_metric.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread

@@ -1,17 +1,10 @@
 \chapter{Desenvolvimento do Trabalho}
 
-O trabalho desenvolvido consistiu em
+ O desenvolvimento deste trabalho consistiu em diversas etapas. Primeiramente, constatou-se a necessidade da implementação de métodos relacionados a propagação de informação, tanto para rodar os experimentos, quanto para fazer a análise dos resultados obtidos, portanto, houve a extensão de um ferramenta voltada para os propósitos estipulados neste trabalho. Com a ferramenta foram feitos diversos experimentos com redes reais e modelos de rede genéricos.
 
-ferramenta
-experimentos
-- validação
-- modelos de rede
-- datasets
-- dados reais
+A partir da geração dos experimentos foram feitas validações e análise dos resultados. Em geral, foram feitas comparações entre diferentes \textit{datasets} e diferentes modelos de rede, tanto sob o aspecto de propagação de informação quanto sob o aspecto das métricas da rede, buscando correlação entre ambas. Por fim, houve a simulação de um problema real, de forma que foram apresentadas as aplicações que a simulação de modelos epidemiológicos em redes podem oferecer.
 
-\section{Atividades Realizadas}
-
-\subsection{Biblioteca CGraph}
+\section{Biblioteca CGraph}
 
  A biblioteca CGraph \cite{cesar2013cgraph} utilizada foi implementada por um dos autores (Cesar) 
 durante seu trabalho de Iniciação Científica e Mestrado, utilizando a linguagem de programação C89 ANSI 
@@ -56,7 +49,7 @@ execução da propagação, de forma semelhante à especialização em orientação a obj
  \item \texttt{graph\_is\_end\_t}: Determina se a propagação já atingiu um estado estacionário.
 \end{itemize}
 
-\subsection{Validação da simulação}
+\section{Validação da simulação}
 
 Modelos de disseminação podem ser compreendidos como um processo discreto ou 
 contínuo. Em um processo discreto, cada indivíduo encontra-se em um dado estado, transitando em instantes
@@ -103,7 +96,7 @@ destas discrepâncias não foram examinadas.
  \end{tabular}
 \end{table}
 
-\subsection{Propagação em \textit{datasets}}
+\section{Propagação em \textit{datasets}}
 
 O estudo de disseminação em redes reais permite visualizar o impacto das diversas propriedades estruturais no sucesso de uma propagação.
 Se por um lado redes reais possuem diversas características difíceis de serem replicadas em modelos, por outro é difícil comparar 
@@ -171,7 +164,7 @@ todos os indivíduos permanecendo suscetíveis. As causas deste comportamento não 
 uma classificação comum para estas redes. Mais experimentos devem ser realizados, variando a proporção de nós infectados iniciais e suas posições
 relativas na rede.
 
-\subsection{Comparação de propagação entre modelos de rede equivalentes}
+\section{Comparação de propagação entre modelos de rede equivalentes}
 
 Nesta etapa do trabalho foram feitos experimentos para evidenciar as características instrínsicas dos modelos de rede. Foi fixado um modelo de propagação, para que os resultados obtidos através da propagação de informação em diferentes modelos pudessem ser comparados. Os resultados calculados são: (1) tempo de propagação de uma informação na rede e (2) o alcance da propagação. O alcance da propagação consiste no número de vértices que receberam a informação.
 
@@ -208,7 +201,7 @@ Em geral, a principal propriedade da rede WS consiste no comportamente médio ent
 
 Analisando-se RB, Ravasz e Barabási \cite{ravasz2003hierarchical} afirmam que as principais características deste modelo consiste no alto grau de agrupamento e comportamento livre de escala. Wang et al \cite{fu2007information} realizaram diversos experimentos de propagação de informação com o modelo SIR em redes hierárquicas. Os resultados demonstraram que o alcance da propagação depende da localização do indivíduo que inicia a mesma. Wang et al constataram que o alcance é máximo ocorre quando o vértice escolhido inicialmente está em uma camada intermediária. Os resultados das simulações indicaram que a melhor estratégia para propagar uma informação consiste em fazer com que indivíduos em camadas intermediárias recebam a informação e espalhem esta ao seus vizinhos. Portanto, o comportamento verificado nos experimentos realizados neste não é anormal.
 
-\subsection{Gripe de Hong Kong}
+\section{Gripe de Hong Kong}
 
 A Gripe de Hong Kong foi a terceira pandemia de gripe do século XX. Esta gripe foi uma pandemia de categoria 2, segundo o Índice de Severidade de Pandemia (PSI), que consiste em uma classificação para reportar a severidade de uma pandemia nos Estados Unidos, de forma que a categoria 1 é mais branda, enquanto a categoria 5 indica o pior caso de severidade. Os surto ocorreu  entre 1968 e 1969 e matou aproximadamente 1 milhão de pessoas pelo mundo \cite{paul2008fundamental}.
 
