@@ -40,6 +40,7 @@ test/test_set
 test/test_stat
 test/test_sorting
 test/test_graph_propagation
+test/test_graph_game
 
 # Java binaries
 StabilityModel/dist

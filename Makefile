@@ -1,7 +1,7 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
 
-MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation
+MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation graph_game
 TESTS = $(patsubst %, test/test_%, $(MODULES))
 
 DATASETS = mac95 cat mangwet mangdry baywet baydry netscience email facebook powergrid pgp astrophysics internet enron 15m #ER BA K WS
@@ -69,8 +69,8 @@ doc/main.pdf: doc/main.tex $(patsubst %,doc/%.tex, $(MODULES))
 bin/metrics : obj/metrics.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o obj/graph_model.o
 	$(CC) $(CFLAGS) -o $@ $^ -pthread -lm -std=c89
 
-bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm -std=c89
+bin/propagation : obj/propagation.o obj/graph_propagation.o obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm -std=c89 -pthread
 
 bin/dynamic : src/dynamic.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -79,6 +79,9 @@ bin/dynamic : src/dynamic.c
 
 test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o \
  obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
+
+test/test_graph_game: obj/test_graph_game.o obj/graph_game.o obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
 test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
@@ -107,12 +110,12 @@ test/test_sorting : obj/test_sorting.o obj/sorting.o
 
 ## Test objects
 
+obj/test_graph_game.o : test/test_graph_game.c include/error.h include/graph_game.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 obj/test_graph_propagation.o : test/test_graph_propagation.c include/error.h include/graph_propagation.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 	
-obj/test_graph_propagation_steps.o : test/test_graph_propagation_steps.c include/error.h include/graph_propagation.h include/graph.h
-	$(CC) $(CFLAGS) -o $@ -c $<
-
 obj/test_graph_model.o : test/test_graph_model.c include/error.h include/graph_model.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -145,6 +148,9 @@ obj/propagation.o : src/propagation.c include/graph_propagation.h include/graph.
 obj/metrics.o   : src/metrics.c include/graph_metric.h include/graph.h include/set.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+obj/graph_game.o : src/graph_game.c include/graph_game.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+	
 obj/graph_propagation.o : src/graph_propagation.c include/graph_propagation.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
