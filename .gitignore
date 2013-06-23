@@ -29,6 +29,11 @@ summary.txt
 *.pbm
 *.pdf
 
+# Videos
+*.mov
+*.flv
+*.avi
+
 # Binaries
 bin/
 obj/
