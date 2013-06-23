@@ -126,10 +126,10 @@ void graph_animate_game
 	assert(step);
 	assert(num_steps > 0);
 	
-	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
+	int i, j, t, n = graph_num_vertices(g), m = graph_num_edges(g);
 	
-	color_t red       = {255, 0,   0,   255};
-	color_t blue      = {0,   0,   255, 255};
+	color_t red_75    = {255, 0,   0,   192};
+	color_t blue_75   = {0,   0,   255, 192};
 	color_t black_25  = {0,   0,   0,   64};
 	color_t black_100 = {0,   0,   0,   255};
 	
@@ -138,7 +138,19 @@ void graph_animate_game
 	
 	int *adj = malloc(n * sizeof(*adj));
 	
-	int t;
+	box_t bbox = {{0.0f,0.0f},{0.0f,0.0f}};
+	for (i=0; i < n; i++){
+		for (t=0; t < num_steps; t++){
+			float r = 1.0f + step[t].payoff[i];
+			if (bbox.sw.x > p[i].x - r){ bbox.sw.x = p[i].x - r; }
+			if (bbox.sw.y > p[i].y - r){ bbox.sw.y = p[i].y - r; }
+			if (bbox.ne.x < p[i].x + r){ bbox.ne.x = p[i].x + r; }
+			if (bbox.ne.y < p[i].y + r){ bbox.ne.y = p[i].y + r; }
+		}
+	}
+	int width  = (int) ceilf(bbox.ne.x - bbox.sw.x);
+	int height = (int) ceilf(bbox.ne.y - bbox.sw.y);
+	
 	for (t=0; t < num_steps; t++){
 	  char filename[256];
 		sprintf(filename, "%s/frame%05d.svg", folder, t);
@@ -150,7 +162,7 @@ void graph_animate_game
 			color_copy(point_style[i].stroke, black_100);
 			color_copy(
 				point_style[i].fill, 
-				step[t].state[i] == GRAPH_GAME_COOP ? red : blue);
+				step[t].state[i] == GRAPH_GAME_COOP ? red_75 : blue_75);
 			
 			int ki = graph_adjacents(g, i, adj);
 			for (j=0; j < ki; j++){
@@ -166,7 +178,7 @@ void graph_animate_game
 			}
 		}
 		
-		graph_print_svg(filename, 800, 800, g, p, point_style, edge_style);
+		graph_print_svg(filename, width+1, height+1, g, p, point_style, edge_style);
 	}
 	
 	free(adj);
