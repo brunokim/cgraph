@@ -14,7 +14,13 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 	int width = 1, radius = 5;
 	unsigned int seed = 42;
 	
-	graph_t *g = new_barabasi_albert_r(n, k, &seed);
+	//graph_t *g = new_barabasi_albert_r(n, k, &seed);
+
+	char folder[256] = "datasets/email";
+	char strx[256];
+	sprintf(strx, "%s/edges.txt", folder);
+	graph_t *g = load_graph(strx, false);
+
 	coord_t *p = malloc(n * sizeof(*p));
 	srand(42);
 	graph_layout_degree_shell(g, radius+width, true, p);
