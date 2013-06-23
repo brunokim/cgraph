@@ -16,6 +16,9 @@
 *.tcp
 *.siglax
 *.symbolsx
+*.nav
+*.run.xml
+*.snm
 
 # Raw data
 *.dat

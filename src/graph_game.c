@@ -130,9 +130,7 @@ void graph_animate_game
 	
 	color_t red       = {255, 0,   0,   255};
 	color_t blue      = {0,   0,   255, 255};
-	color_t black_00  = {0,   0,   0,   0};
 	color_t black_25  = {0,   0,   0,   64};
-	color_t black_50  = {0,   0,   0,   128};
 	color_t black_100 = {0,   0,   0,   255};
 	
 	path_style_t *edge_style = malloc(m * sizeof(*edge_style));
@@ -168,7 +166,7 @@ void graph_animate_game
 			}
 		}
 		
-		graph_print_svg(filename, 0, 0, g, p, point_style, edge_style);
+		graph_print_svg(filename, 800, 800, g, p, point_style, edge_style);
 	}
 	
 	free(adj);
