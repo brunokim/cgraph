@@ -20,7 +20,8 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 	char strx[256];
 	sprintf(strx, "%s/edges.txt", folder);
 	graph_t *g = load_graph(strx, false);
-
+	n = graph_num_vertices(g);
+	
 	coord_t *p = malloc(n * sizeof(*p));
 	srand(42);
 	graph_layout_degree_shell(g, radius+width, true, p);
