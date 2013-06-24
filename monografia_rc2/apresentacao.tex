@@ -42,6 +42,7 @@
 
   \frame{\titlepage}
   
+  \small
   \section{Métricas}
   \begin{frame}
    \frametitle{Distribuição de Grau}
@@ -56,7 +57,7 @@
       \item Distribuição de grau evidencia como as conexões se distribuem entre os vértices.
       \item Constante de tempo: $\tau \sim \langle k \rangle$.
       \item Limiar de propagação: $\lambda \sim 1/\langle k^2 \rangle$.
-      \item Redes livre de escala possuem $\langle k^2 \rangle \to \infty$.
+      \item Redes livre de escala possuem $\langle k^2 \rangle \to \infty$, logo $\lambda \to 0$.
      \end{itemize}
    \end{columns}
   \end{frame}
@@ -71,7 +72,10 @@
      \end{figure}
     \column{.5\textwidth}
      \begin{itemize}
-      \item
+      \item Medidas de aglomeração medem a ocorrência de laços pequenos na rede.
+      \item Em geral, $C_i \sim k_i^{-1}$.
+      \item Constante de tempo: $\tau \sim 1/C_i$.
+      \item Número reprodutivo: $R_0 \sim 1/C_i$.
      \end{itemize}
    \end{columns}
   \end{frame}
@@ -86,7 +90,9 @@
      \end{figure}
     \column{.5\textwidth}
      \begin{itemize}
-      \item
+      \item Correlação de grau $r$ informa o quanto vértices se conectam a outros similares.
+      \item Redes assortativas são resistentes à remoção de \textit{hubs}.
+      \item Disseminações com estado removido devem possuir maior cobertura em redes assortativas.
      \end{itemize}
    \end{columns}
   \end{frame}
@@ -94,14 +100,17 @@
   \begin{frame}
    \frametitle{\textit{$k$-core}}
    \begin{columns}[c]
-    \column{.5\textwidth}
+    \column{.4\textwidth}
      \begin{figure}
       \includegraphics[width=\textwidth]{k-core.pdf}
       \caption{Distribuição de \textit{coreness} da rede 15m\cite{borge2011structural}}
      \end{figure}
-    \column{.5\textwidth}
+    \column{.6\textwidth}
      \begin{itemize}
-      \item
+      \item Redes se organizam em camadas, onde o núcleo interno está altamente interconectado.
+      \item Pode-se obter o \textit{$k$-core} removendo repetidamente todos os vértices com grau menor que $k$.
+      \item O \textit{coreness} de um vértice é o núcleo com maior $k$ ao qual ele pertence.
+      \item Disseminações que se iniciam no núcleo mais interno possuem maior sucesso\cite{kitsak2010identification}.
      \end{itemize}
    \end{columns}
   \end{frame}
@@ -111,12 +120,12 @@
   \begin{frame}
    \frametitle{Modelo de Erdös-Renyi}
    \begin{columns}
-    \column{0.4\textwidth}
+    \column{0.5\textwidth}
     \begin{figure}
      \includegraphics[width=\textwidth]{er.pdf}
     \end{figure}
     
-    \column{0.6\textwidth}
+    \column{0.5\textwidth}
     Parâmetros:
     \begin{itemize}
      \item $n$: número de vértices

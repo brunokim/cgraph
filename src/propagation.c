@@ -431,7 +431,7 @@ int main(int argc, const char *argv[]){
 		double k    = network_params[1];
 		double beta = network_params[2];
 
-	print_args();
+		//print_args();
 		
 		switch(network_model){
 			case K:
@@ -564,7 +564,7 @@ int main(int argc, const char *argv[]){
 		delete_propagation_steps(step, num_step);
 	}
 	tstop = clock();
-	printf("\nTempo de execucao: %ld\n\n", (tstop-tstart)/(CLOCKS_PER_SEC/1000));
+	//printf("\nTempo de execucao: %ld\n\n", (tstop-tstart)/(CLOCKS_PER_SEC/1000));
  
 	free(params);
 	if (outfile != stdout){
