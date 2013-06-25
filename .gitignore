@@ -1,5 +1,3 @@
-*.o
-
 # Auxiliaries
 *~
 *.log
@@ -28,6 +26,7 @@ summary.txt
 *.svg
 *.pbm
 *.pdf
+*.png
 
 # Videos
 *.mov
@@ -38,19 +37,3 @@ summary.txt
 bin/
 obj/
 
-# Test binaries
-test/test_graph
-test/test_graph_layout
-test/test_graph_metric
-test/test_graph_model
-test/test_list
-test/test_set
-test/test_stat
-test/test_sorting
-test/test_graph_propagation
-test/test_graph_game
-
-# Java binaries
-StabilityModel/dist
-StabilityModel/build
-StabilityModel/nbproject

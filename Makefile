@@ -2,7 +2,7 @@ CC     = gcc
 CFLAGS = -Iinclude -Wall -g
 
 MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation graph_game
-TESTS = $(patsubst %, test/test_%, $(MODULES))
+TESTS = $(patsubst %, bin/test_%, $(MODULES))
 
 DATASETS = mac95 cat mangwet mangdry baywet baydry netscience email facebook powergrid pgp astrophysics internet enron 15m #ER BA K WS
 FOLDERS = $(patsubst %, datasets/%, $(DATASETS))
@@ -48,7 +48,6 @@ validate-propagation: validate-propagation.sh bin/dynamic bin/propagation
 
 clean-binaries:
 	rm obj/*
-	rm $(TESTS)
 	rm bin/*
 
 clean-test:
@@ -77,35 +76,35 @@ bin/dynamic : src/dynamic.c
 
 # Test binaries
 
-test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o \
+bin/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.o \
  obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
-test/test_graph_game: obj/test_graph_game.o obj/graph_game.o obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/test_graph_game: obj/test_graph_game.o obj/graph_game.o obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
-test/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/test_graph_model: obj/test_graph_model.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-test/test_graph_layout: obj/test_graph_layout.o obj/graph_model.o obj/graph_layout.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/test_graph_layout: obj/test_graph_layout.o obj/graph_model.o obj/graph_layout.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
-test/test_graph_metric: obj/test_graph_metric.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+bin/test_graph_metric: obj/test_graph_metric.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
-test/test_graph : obj/test_graph.o obj/graph.o obj/set.o obj/list.o obj/sorting.o
+bin/test_graph : obj/test_graph.o obj/graph.o obj/set.o obj/list.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-test/test_set : obj/test_set.o obj/set.o obj/list.o obj/sorting.o
+bin/test_set : obj/test_set.o obj/set.o obj/list.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm 
 
-test/test_stat : obj/test_stat.o obj/stat.o obj/sorting.o
+bin/test_stat : obj/test_stat.o obj/stat.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-test/test_list : obj/test_list.o obj/list.o obj/sorting.o
+bin/test_list : obj/test_list.o obj/list.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ 
 
-test/test_sorting : obj/test_sorting.o obj/sorting.o
+bin/test_sorting : obj/test_sorting.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 ## Test objects
