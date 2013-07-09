@@ -1,7 +1,7 @@
 CC     = gcc
 CFLAGS = -Iinclude -Wall -g
 
-MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation graph_game
+MODULES = sorting stat list set graph graph_metric graph_layout graph_model graph_propagation graph_game graph_community
 TESTS = $(patsubst %, test/test_%, $(MODULES))
 
 DATASETS = mac95 cat mangwet mangdry baywet baydry netscience email facebook powergrid pgp astrophysics internet enron 15m #ER BA K WS
@@ -81,6 +81,9 @@ test/test_graph_propagation: obj/test_graph_propagation.o obj/graph_propagation.
  obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
+test/test_graph_community: obj/test_graph_community.o obj/graph_community.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
 test/test_graph_game: obj/test_graph_game.o obj/graph_game.o obj/graph_layout.o obj/graph_metric.o obj/graph_model.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
@@ -111,6 +114,9 @@ test/test_sorting : obj/test_sorting.o obj/sorting.o
 ## Test objects
 
 obj/test_graph_game.o : test/test_graph_game.c include/error.h include/graph_game.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/test_graph_community.o : test/test_graph_community.c include/error.h include/graph_community.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/test_graph_propagation.o : test/test_graph_propagation.c include/error.h include/graph_propagation.h include/graph.h
@@ -149,6 +155,9 @@ obj/metrics.o   : src/metrics.c include/graph_metric.h include/graph.h include/s
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 obj/graph_game.o : src/graph_game.c include/graph_game.h include/graph.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/graph_community.o : src/graph_community.c include/graph_community.h include/graph.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 	
 obj/graph_propagation.o : src/graph_propagation.c include/graph_propagation.h include/graph.h
