@@ -83,12 +83,75 @@ double graph_modularity(graph_t *g, int *community){
 	return modularity;
 }
 
+typedef struct {
+	graph_t *community;
+	int *inner;
+	set_t **vertices;
+} graph_newman_step_t;
+
+graph_newman_step_t new_graph_newman_step(int n){
+	graph_newman_step_t step;
+	
+	bool is_weighted = true;
+	bool is_directed = false;
+	step.community = new_graph(n, is_weighted, is_directed);
+	
+	step.inner = malloc(n * sizeof(*step.inner));
+	memset(step.inner, 0, n * sizeof(*step.inner));
+	
+	step.vertices = malloc(n * sizeof(*step.vertices));
+	int i;
+	for (i=0; i < n; i++){
+		step.vertices[i] = new_set(1);
+	}
+	
+	return step;
+}
+
 void graph_fast_newman(graph_t *g, int *community){
 	assert(g);
 	assert(community);
 	
-	int i, n = graph_num_vertices(g);
+	int i, j, n = graph_num_vertices(g), m = graph_num_edges(g);
+	int *adj = malloc(n * sizeof(*adj));
+	
 	int t = 0;
+	graph_newman_step_t *step = malloc((n-1) * sizeof(*step));
+	step[t] = new_graph_newman_step(n);
+	for (i=0; i < n; i++){
+		int ki = graph_adjacents(g, i, adj);
+		for (j=0; j < ki; j++){
+			int v = adj[j];
+			graph_add_weighted_edge(step[t].community[i], i, v, 1.0);
+		}
+		
+		step[t].inner[i] = 0;
+		set_put(step[t].vertices[i], i);
+	}
 	
-	
+	for (t=1; t < n; t++){
+		int num_comm = graph_num_vertices(step[t-1].community);
+		double max_increment = -1.0/0.0;
+		int merged[2];
+		for (i=0; i < num_comm; i++){
+			int ki = graph_adjacents(step[t-1].community, i, adj);
+			for (j=0; j < ki; j++){
+				int v = adj[j];
+				int kv = graph_num_adjacents(step[t-1].community, v);
+				
+				double M = (double) m;
+				double between = graph_get(step[t-1].community, i, v)/M;
+				double increment = between - (ki/M)*(kv/M);
+				
+				if (increment > max_increment){
+					max_increment = increment;
+					merged[0] = i; merged[1] = v;
+				}
+			}
+			
+		}
+		
+		
+		step[t] = new_graph_newman_step(num_comm-1);
+	}
 }

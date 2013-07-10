@@ -14,7 +14,6 @@
 typedef struct {
 	int from;
 	int to;
-	double weight;
 } edge_t;
 
 int comp_edge_asc(const void *p_e1, const void *p_e2){
@@ -28,13 +27,20 @@ int comp_edge_asc(const void *p_e1, const void *p_e2){
 	return 0;
 }
 
+typedef enum {
+	GRAPH_WEIGHT    = 1 << 0,
+	GRAPH_DIRECTION = 1 << 1,
+	GRAPH_PSEUDO    = 1 << 2,
+	GRAPH_LOOP      = 1 << 3
+} graph_flag_t;
+
 struct graph_t {
-	bool is_weighted;
-	bool is_directed;
+	unsigned int flags;
 	
 	int n, m;
 	
 	set_t **adjacencies;
+	set_t **incidencies;
 	
 	int size_edge;
 	bool is_edges_sorted;

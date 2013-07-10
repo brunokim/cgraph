@@ -1,1 +1,155 @@
 \section{\texttt{graph}}
+
+The \texttt{graph} module has the basic algorithms and data structures to manipulate graphs. All modules starting with \texttt{graph\_*} depends on this module.
+
+The basic data structure is \texttt{graph\_t}, which uses adjacencies lists to store edges. All storage is done in-memory, which means the graph size is limited to 
+what will fit with your RAM requirements. Also, as everything is indexed by native \texttt{int}s, storage may increase whether it is stored in a 32-bit or 64-bit system.
+Also, in 32-bit systems the maximum number of edges and vertices is $2^{31} \approx 2.2 \times 10^9$.
+
+Several types of graphs are supported, although more complex types require more memory. The basic traits which can be combined are listed below. Simple graphs 
+(undirected, unweighted and unlooped, true graph) need approximately $4N+16M$ bytes in 32-bit and $8N + 32M$ bytes in 64-bit systems.
+
+\begin{description}
+ \item[Directed] Directed graphs consider edges to be ordered sets, i.e., where order matters. An edge between vertices $V_1$ and $V_2$ is different from an edge between
+ vertices $V_2$ and $V_1$. Directed graphs need approximately $4N + 24M$ bytes in 32-bit and $8N + 48M$ bytes in 64-bit systems. 
+  Creation flag is \texttt{GRAPH\_DIRECTION}.
+ 
+ \item[Weighted] Weighted graphs attach weights to edges, stored in \texttt{float}s (standardized to be 32-bits). Weighted graphs need additionaly $4M$ bytes of storage.
+ Creation flag is \texttt{GRAPH\_WEIGHT}.
+ 
+ \item[Pseudo] Pseudo graphs allow multiple edges between the same vertices, which can be directed or weighted. Pseudo graphs don't need additional storage.
+ Creation flag is \texttt{GRAPH\_PSEUDO}.
+ 
+ \item[Looped] Looped graphs allow self-loops, or edges from a vertex to itself. Looped graphs need additional $4N$ bytes in 32-bit and $8N$ bytes in 64-bit systems.
+ Creation flag is \texttt{GRAPH\_LOOP}.
+ 
+ \item[Multi] Multigraphs allow that edges store multiple vertices. This is useful to represent bipartite graphs, where edges may represent one set of elements. 
+ The storage of this kind of graph fluctuates according to how many vertices each edge stores. Creation flag is \texttt{GRAPH\_MULTI}.
+\end{description}
+
+Graphs can be converted between types, from a more complex to a simpler. This will be discussed in subsection \ref{sec:graph-conversion}.
+
+\subsection{Allocation and deallocation}
+\label{sec:graph-allocation}
+
+\subsubsection{Creation}
+
+\begin{lstlisting}[language=C,frame=single]
+graph_t *new_simple_graph();
+graph_t *new_graph(unsigned int flags);
+\end{lstlisting}
+
+Graphs are created using one of the functions above. \texttt{new\_simple\_graph} creates a simple graph, which is equivalent to \texttt{new\_graph(0)}. To
+create more complex graphs its needed to pass flags bitwise OR'ed together. For example, to create a directed, looped, weighted graph you should call
+\texttt{new\_graph(GRAPH\_DIRECTION | GRAPH\_LOOP | GRAPH\_WEIGHT)}.
+
+If there isn't enough memory, or if illegal flags are passed, both function return \texttt{NULL}.
+
+\subsubsection{Deallocation}
+
+\begin{lstlisting}[language=C,frame=single]
+void *delete_graph(graph_t *graph);
+\end{lstlisting}
+
+\subsection{Conversion}
+\label{sec:graph-conversion}
+
+These functions convert from a type of graph to a simpler one. For implementation safety, all functions return a new graph, thus possibly creating duplicates in memory.
+
+\subsubsection{Threshold}
+
+\begin{lstlisting}[language=C,frame=single]
+graph_t *graph_threshold
+ (const graph_t *original, double threshold, 
+  bool keep_weights);
+\end{lstlisting}
+
+  Removes every edge with weight smaller than the specified threshold. If \texttt{keep\_weights} is false, the resulting graph is unweighted.
+  Otherwise, the new graph keeps all weights equal to or bigger than the threshold from the input graph.
+  
+  To keep all edges removing weights, use \lstinline!graph_threshold(original_graph, -1.0/0.0, false)! (threshold $= -\infty$).
+  
+  If \lstinline!original! is not weighted, or if memory was exhausted, the function returns \NULL.
+
+\subsubsection{Simmetry}
+
+\begin{lstlisting}[language=C,frame=single]
+graph_t *graph_dual(const graph_t *original);
+graph_t *graph_simmetry
+  (const graph_t *original, bool keep_directed);
+graph_t *graph_direct
+  (graph_t *original, bool split_weights);
+\end{lstlisting}
+
+  The dual graph of a directed graph is the graph with all its edges reversed. The symmetric graph is the union of a graph with its dual, thus 
+  converting a directed graph into an undirected one. 
+  
+  \lstinline!graph_dual! receives a directed graph and returns its directed dual. 
+  
+  \lstinline!graph_simmetry! receives a directed graph and returns its dual. If \lstinline!keep_directed! is true, the resulting graph is directed, and
+  dual edges keep their weights; otherwise, the resulting graph is undirected, and the weights of dual edges are summed together.
+  
+  \lstinline!graph_direct! receives an undirected graph and returns its directed equivalent, where an edge $E_{ij}$ is split into $E_{i\to j}$ and $E_{j \to i}$.
+  If \lstinline!split_weights! is true, its weight is split evenly between the new edges; otherwise, both edges receive the same weight.
+  
+  If \lstinline!original! isn't of the specified type, or if memory was exhausted, the function returns \NULL.
+
+\subsubsection{Remove self loops}
+
+\begin{lstlisting}[language=C,frame=single]
+  graph_t *graph_remove_self_loops(const graph_t *original);
+\end{lstlisting}
+
+  Remove self loops from the original unlooped graph, returning an unlooped graph.
+  
+  If \lstinline!original! isn't unlooped, or if memory was exhausted, the function returns \NULL.
+
+\subsubsection{Coalesce}
+
+\begin{lstlisting}[language=C,frame=single]
+  graph_t *graph_coalesce(const graph_t *original);
+\end{lstlisting}
+
+  Coalesce multiple edges in a pseudo-graph in a single one, returning a weighted true graph (i.e., \lstinline!graph_is_pseudo()! returns false).
+  If \lstinline!original! is unweighted, the weight of the edge $E_{ij}$ is the number of edges between $V_i$ and $V_j$ in \lstinline!original!.
+  If \lstinline!original! is weighted, the weight of the edge $E_{ij}$ is the sum of weights between $V_i$ and $V_j$ in \lstinline!original!.
+  
+  If \lstinline!original! isn't a pseudo-graph, or if memory was exhausted, the function returns \NULL.
+
+\subsubsection{Split edges}
+
+\begin{lstlisting}[language=C,frame=single]
+graph_t *graph_split_edges
+  (const graph_t *original, bool split_weights);
+\end{lstlisting}
+
+  Split multiedges in a multigraph into separate single edges, returning a regular pseudo-graph (i.e., \lstinline!graph_is_multi()! returns false).
+  Each edge $E_i = (V_{i1}, \dots, V_{il}$ is split into simple edges such that every vertex $V_{ik}$ has an edge to vertices $V_{i,k+1}, \dots, V_{il}$. This
+  means that splitting does not include a self-loop if the graph is looped, and that if it is directed a vertex does not have edges to its predecessor in a 
+  multiedge.
+  
+  If \lstinline!split_weights! is true, a multiedge weight is splitted evenly among all its resulting edges; otherwise all resulting edges receive the original 
+  weight.
+  
+  If \lstinline!original! is not a multigraph, or if memory was exhausted, the function returns \NULL.
+
+\subsection{Input/Output}
+\label{sec:graph-io}
+
+\subsection{Insertion}
+\label{sec:graph-insertion}
+
+\subsection{Retrieval}
+\label{sec:graph-retrieval}
+
+\subsection{Removal}
+\label{sec:graph-removal}
+
+\subsection{Query}
+\label{sec:graph-query}
+
+\subsection{Adjacencies}
+\label{sec:graph-adjacencies}
+
+\subsection{Copying}
+\label{sec:graph-copying}

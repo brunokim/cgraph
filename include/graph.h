@@ -1,45 +1,78 @@
 #ifndef _GRAPH_H
 #define _GRAPH_H
 
-#include "error.h"
-#include "set.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include "error.h"
 
+typedef enum {
+	GRAPH_WEIGHT    = 1 << 1, // Store weight in edges
+	GRAPH_DIRECTION = 1 << 2, // Edges are directed
+	GRAPH_LOOP      = 1 << 3, // Allows loops with length 1 (self-loops)
+	GRAPH_PSEUDO    = 1 << 4, // Allows multiple edges between same vertices
+	GRAPH_MULTI     = 1 << 5  // Allows edges between multiple vertices
+} graph_flag_t;
+
+typedef enum {
+	GRAPH_MATRIX_TEXTUAL,
+	GRAPH_MATRIX_BINARY,
+	GRAPH_EDGELIST_TEXTUAL,
+	GRAPH_EDGELIST_BINARY,
+	GRAPH_PAJEK
+} graph_format_t;
+
+typedef struct {int from, to;} edge_t;
 typedef struct graph_t graph_t;
 
 // Allocation and deallocation
-graph_t * new_graph(int n, bool is_weighted, bool is_directed);
+graph_t *new_simple_graph();
+graph_t *new_graph(unsigned int flags);
 void delete_graph(graph_t *graph);
 
-// Data input
-graph_t * load_graph(char *file_name, bool is_directed);
+// Graph conversion
+graph_t *graph_threshold(const graph_t *original, double threshold, bool keep_weights);
+graph_t *graph_dual(const graph_t *original);
+graph_t *graph_simmetry(const graph_t *original, bool keep_directed);
+graph_t *graph_direct(graph_t *original, bool split_weights);
+graph_t *graph_remove_self_loops(const graph_t *original);
+graph_t *graph_coalesce(const graph_t *original);
+graph_t *graph_split_edges(const graph_t *original, bool is_split_weight);
+
+// Input/Output
+error_t store_graph(FILE *fp, graph_format_t format);
+graph_t *load_graph(FILE *fp);
 
 // Insertion
-error_t graph_add_edge(graph_t *g, int i, int j);
-error_t graph_add_weighted_edge(graph_t *g, int i, int j, double w);
+void graph_add_vertex(graph_t *g, int v);
+int  graph_add_edge(graph_t *g, int i, int j);
+int  graph_add_weighted_edge(graph_t *g, int from, int to, double w);
+int  graph_add_multi_edge(graph_t *g, const int *vertices);
+int  graph_add_multi_weighted_edge(graph_t *g, const int *vertices, double w);
 
-// Sorting
-void graph_sort_edges(graph_t *g);
+// Removal
+void graph_remove_vertex(graph_t *g, int v);
+void graph_remove_edge(graph_t *g, int from, int to);
+void graph_remove_multi_edge(graph_t *g, int *vertices);
+void graph_remove_edge_id(graph_t *g, int edge_id);
 
 // Retrieval
 bool graph_is_adjacent(const graph_t *g, int i, int j);
-double graph_get(const graph_t *g, int i, int j);
+edge_t graph_get_edge(const graph_t *g, int edge_id);
+double graph_get_weight(const graph_t *g, int i, int j);
+double graph_get_weight_id(const graph_t *g, int edge_id);
 
 // Query
 int graph_num_vertices(const graph_t *g);
 int graph_num_edges(const graph_t *g);
-bool graph_is_directed(const graph_t *g);
 bool graph_is_weighted(const graph_t *g);
+bool graph_is_directed(const graph_t *g);
+bool graph_is_looped(const graph_t *g);
+bool graph_is_pseudo(const graph_t *g);
+bool graph_is_multi(const graph_t *g);
 
 // Adjacencies
 int graph_num_adjacents(const graph_t *g, int i);
 int graph_adjacents(const graph_t *g, int i, int *adj);
-error_t graph_adjacent_set(const graph_t *g, int i, set_t *adj);
-
-// Printing
-void graph_print(const graph_t *graph);
-void graph_fprint(FILE *stream, const graph_t *graph);
 
 // Copying
 graph_t *graph_copy(const graph_t *graph);
