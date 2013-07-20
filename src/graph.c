@@ -11,40 +11,16 @@
 #include "list.h"
 #include "graph.h"
 
-typedef struct {
-	int from;
-	int to;
-} edge_t;
-
-int comp_edge_asc(const void *p_e1, const void *p_e2){
-	edge_t e1 = *(edge_t *)p_e1;
-	edge_t e2 = *(edge_t *)p_e2;
-	
-	if (e1.from < e2.from){ return -1; }
-	if (e1.from > e2.from){ return +1; }
-	if (e1.to   < e2.to)  { return -1; }
-	if (e1.to   > e2.to)  { return +1; }
-	return 0;
-}
-
-typedef enum {
-	GRAPH_WEIGHT    = 1 << 0,
-	GRAPH_DIRECTION = 1 << 1,
-	GRAPH_PSEUDO    = 1 << 2,
-	GRAPH_LOOP      = 1 << 3
-} graph_flag_t;
-
 struct graph_t {
 	unsigned int flags;
 	
 	int n, m;
 	
-	set_t **adjacencies;
-	set_t **incidencies;
-	
 	int size_edge;
-	bool is_edges_sorted;
-	edge_t *edge;
+	void *edge_table;
+	
+	set_t **adjacencies;
+	set_t **incidences;
 };
 
 /****************** Allocation and deallocation ***********************/

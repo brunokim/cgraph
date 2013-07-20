@@ -10,7 +10,6 @@ typedef enum {
 	GRAPH_DIRECTION = 1 << 2, // Edges are directed
 	GRAPH_LOOP      = 1 << 3, // Allows loops with length 1 (self-loops)
 	GRAPH_PSEUDO    = 1 << 4, // Allows multiple edges between same vertices
-	GRAPH_MULTI     = 1 << 5  // Allows edges between multiple vertices
 } graph_flag_t;
 
 typedef enum {
@@ -21,7 +20,15 @@ typedef enum {
 	GRAPH_PAJEK
 } graph_format_t;
 
-typedef struct {int from, to;} edge_t;
+typedef struct {
+	int from, to;
+} edge_t;
+
+typedef struct {
+	int from, to; 
+	float weight; 
+} weighted_edge_t;
+
 typedef struct graph_t graph_t;
 
 // Allocation and deallocation
@@ -36,7 +43,6 @@ graph_t *graph_simmetry(const graph_t *original, bool keep_directed);
 graph_t *graph_direct(graph_t *original, bool split_weights);
 graph_t *graph_remove_self_loops(const graph_t *original);
 graph_t *graph_coalesce(const graph_t *original);
-graph_t *graph_split_edges(const graph_t *original, bool is_split_weight);
 
 // Input/Output
 error_t store_graph(FILE *fp, graph_format_t format);
@@ -57,6 +63,7 @@ void graph_remove_edge_id(graph_t *g, int edge_id);
 
 // Retrieval
 bool graph_is_adjacent(const graph_t *g, int i, int j);
+int     graph_get_id(const graph_t *g, int i, int j);
 edge_t graph_get_edge(const graph_t *g, int edge_id);
 double graph_get_weight(const graph_t *g, int i, int j);
 double graph_get_weight_id(const graph_t *g, int edge_id);

@@ -22,9 +22,6 @@ Several types of graphs are supported, although more complex types require more 
  
  \item[Looped] Looped graphs allow self-loops, or edges from a vertex to itself. Looped graphs need additional $4N$ bytes in 32-bit and $8N$ bytes in 64-bit systems.
  Creation flag is \texttt{GRAPH\_LOOP}.
- 
- \item[Multi] Multigraphs allow that edges store multiple vertices. This is useful to represent bipartite graphs, where edges may represent one set of elements. 
- The storage of this kind of graph fluctuates according to how many vertices each edge stores. Creation flag is \texttt{GRAPH\_MULTI}.
 \end{description}
 
 Graphs can be converted between types, from a more complex to a simpler. This will be discussed in subsection \ref{sec:graph-conversion}.
@@ -100,9 +97,9 @@ graph_t *graph_direct
   graph_t *graph_remove_self_loops(const graph_t *original);
 \end{lstlisting}
 
-  Remove self loops from the original unlooped graph, returning an unlooped graph.
+  Remove self loops from the original looped graph, returning an unlooped graph.
   
-  If \lstinline!original! isn't unlooped, or if memory was exhausted, the function returns \NULL.
+  If \lstinline!original! isn't looped, or if memory was exhausted, the function returns \NULL.
 
 \subsubsection{Coalesce}
 
@@ -115,23 +112,6 @@ graph_t *graph_direct
   If \lstinline!original! is weighted, the weight of the edge $E_{ij}$ is the sum of weights between $V_i$ and $V_j$ in \lstinline!original!.
   
   If \lstinline!original! isn't a pseudo-graph, or if memory was exhausted, the function returns \NULL.
-
-\subsubsection{Split edges}
-
-\begin{lstlisting}[language=C,frame=single]
-graph_t *graph_split_edges
-  (const graph_t *original, bool split_weights);
-\end{lstlisting}
-
-  Split multiedges in a multigraph into separate single edges, returning a regular pseudo-graph (i.e., \lstinline!graph_is_multi()! returns false).
-  Each edge $E_i = (V_{i1}, \dots, V_{il}$ is split into simple edges such that every vertex $V_{ik}$ has an edge to vertices $V_{i,k+1}, \dots, V_{il}$. This
-  means that splitting does not include a self-loop if the graph is looped, and that if it is directed a vertex does not have edges to its predecessor in a 
-  multiedge.
-  
-  If \lstinline!split_weights! is true, a multiedge weight is splitted evenly among all its resulting edges; otherwise all resulting edges receive the original 
-  weight.
-  
-  If \lstinline!original! is not a multigraph, or if memory was exhausted, the function returns \NULL.
 
 \subsection{Input/Output}
 \label{sec:graph-io}
