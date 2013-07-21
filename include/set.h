@@ -5,6 +5,13 @@
 #include <stdbool.h>
 #include "error.h"
 
+typedef struct set_entry_t set_entry_t;
+struct set_entry_t{
+	int key;
+	void *data;
+	set_entry_t *next;
+};
+
 typedef struct set_t set_t;
 
 /**** Allocation and deallocation ****/
@@ -13,6 +20,7 @@ void delete_set(set_t *set);
 
 /**** Insertion and retrieval ****/
 error_t set_put(set_t *set, int v);
+error_t set_put_data(set_t *set, int key, void *data);
 bool set_contains(const set_t *set, int v);
 bool set_remove(set_t *set, int v);
 void set_clean(set_t *set);
@@ -26,6 +34,10 @@ error_t set_intersection(set_t *dest, const set_t *other);
 int set_get(const set_t *set, int pos);
 int set_index(const set_t *set, int v);
 int set_size(const set_t *set);
+
+set_entry_t *set_head(const set_t *set);
+int set_get_random(const set_t *set);
+int set_get_random_r(const set_t *set, unsigned int *seedp);
 
 /**** Printing ****/
 void set_print(const set_t *set);

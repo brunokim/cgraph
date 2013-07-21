@@ -36,18 +36,42 @@ void test_set_operations(){
 	set_intersection(even2, odd);
 	assert(set_size(even2) == 0);
 	
-	// set_print(even1); printf("\n");
-	// set_print(even2); printf("\n");
-	// set_print(odd); printf("\n");
+	set_print(even1); printf("\n");
+	set_print(even2); printf("\n");
+	set_print(odd); printf("\n");
 	
 	delete_set(even1);
 	delete_set(even2);
 	delete_set(odd);
 }
 
+void test_picking(){
+	int n = 10000;
+	set_t *set = new_set(n);
+	int i;
+	for (i=0; i < n; i++){
+		set_put(set, i);
+	}
+	assert(set_size(set) == n);
+	
+	set_entry_t *p = set_head(set);
+	for (i=0; i < n; i++){
+		assert(p->key == i);
+		p = p->next;
+	}
+	
+	for (i=0; i < 3*n; i++){
+		int v = set_get_random(set);
+		assert(v < n);
+	}
+	
+	delete_set(set);
+}
+
 int main(){
 	test_basic();
 	test_set_operations();
+	test_picking();
 	printf("success\n");
 	return 0;
 }
