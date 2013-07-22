@@ -5,9 +5,9 @@
 #include <assert.h>
 #include <string.h>	
 
-#include "set.h"
 #include "error.h"
 #include "sorting.h"
+#include "set.h"
 #include "list.h"
 #include "graph.h"
 
@@ -251,9 +251,14 @@ graph_t * load_graph(char *file_name, bool is_directed){
 		}
 	}
 	free(data);
+	
 	if (is_weighted){
 		graph_sort_edges(graph);
 		free(w); 
+	}
+	
+	for (i=0; i < n; i++){
+		set_optimize_pointers(graph->adjacencies[i]);
 	}
 	
 	return graph;
@@ -295,6 +300,12 @@ int graph_adjacents(const graph_t *g, int i, int *adj){
 	return set_size(g->adjacencies[i]);
 }
 
+set_entry_t *graph_adjacent_head(const graph_t *g, int i){
+	assert(g);
+	assert(i >= 0 && i < g->n);
+	return set_head(g->adjacencies[i]);
+}
+
 error_t graph_adjacent_set(const graph_t *g, int i, set_t *adj){
 	assert(g);
 	assert(i >= 0 && i < g->n);
@@ -334,7 +345,7 @@ void graph_print(const graph_t *graph){
 	graph_fprint(stdout, graph);
 }
 
-int log_10(int i){
+int graph_log_10(int i){
 	int l;
 	for (l=-1; i > 0; l++){
 		i /= 10;
@@ -347,7 +358,7 @@ void graph_fprint(FILE *stream, const graph_t *graph){
 	
 	int i, n = graph_num_vertices(graph);
 	
-	int log_n = log_10(n);
+	int log_n = graph_log_10(n);
 	
 	for (i=0; i < n; i++){
 		fprintf(stream, "%*d: ", log_n, i);
@@ -365,69 +376,60 @@ graph_t *graph_copy(const graph_t *graph){
 	graph_t *copy = new_graph(n, is_weighted, is_directed);
 	if (!copy){ return NULL; }
 	
-	int *adj = malloc (n * sizeof(*adj)); 
-	if (!adj){ delete_graph(copy); return NULL; }
-	
-	int i, j;
+	int i;
 	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(graph, i, adj);
-		for (j=0; j < num_adj; j++){
+		set_entry_t *adj = graph_adjacent_head(graph, i);
+		for (; adj != NULL; adj = adj->next){
 			if (is_weighted)
 			{
-				double w = graph_get(graph, i, adj[j]);
-				error_t error = graph_add_weighted_edge(copy, i, adj[j], w);
-				if (error){ free(adj); delete_graph(copy); return NULL; }
+				double w = graph_get(graph, i, adj->key);
+				error_t error = graph_add_weighted_edge(copy, i, adj->key, w);
+				if (error){ delete_graph(copy); return NULL; }
 			} 
 			else 
 			{
-				error_t error = graph_add_edge(copy, i, adj[j]);
-				if (error){ free(adj); delete_graph(copy); return NULL; }
+				error_t error = graph_add_edge(copy, i, adj->key);
+				if (error){ delete_graph(copy); return NULL; }
 			}
 		}
 	}
-	free(adj);
 	
 	return copy;
 }
 
-graph_t *graph_subset(const graph_t *graph, const set_t *vertices){
+graph_t *graph_subset(const graph_t *graph, const list_t *vertices){
 	assert(graph);
 	assert(vertices);
 	
-	int n = graph_num_vertices(graph);
-	int n_sub = set_size(vertices);
+	int n_sub = list_size(vertices);
 	bool is_directed = graph_is_directed(graph);
 	bool is_weighted = graph_is_weighted(graph);
 	
 	graph_t *sub = new_graph(n_sub, is_weighted, is_directed);
 	if (!sub){ return NULL; }
 	
-	int *adj = malloc (n * sizeof(*adj));
-	if (!adj){ delete_graph(sub); return NULL; }
-	
-	int i, v;
+	int i, j;
 	for (i=0; i < n_sub; i++){
-		int origin = set_get(vertices, i);
-		int num_adj = graph_adjacents(graph, origin, adj);
-		for (v=0; v < num_adj; v++){
-			int dest = adj[v];
-			if (set_contains(vertices, dest)){
-				int j = set_index(vertices, dest);
+		int origin = list_get(vertices, i);
+		set_entry_t *adj = graph_adjacent_head(graph, origin);
+		for (; adj != NULL; adj = adj->next){
+			int dest = adj->key; 
+			j = list_find(vertices, dest);
+			if (j >= 0){
 				if (is_weighted)
 				{
 					double w = graph_get(graph, origin, dest);
 					error_t error = graph_add_weighted_edge(sub, i, j, w);
-					if (error){ free(adj); delete_graph(sub); return NULL; }
+					if (error){ delete_graph(sub); return NULL; }
 				}
 				else
 				{
 					error_t error = graph_add_edge(sub, i, j);
-					if (error){ free(adj); delete_graph(sub); return NULL; }
+					if (error){ delete_graph(sub); return NULL; }
 				}
 			}
 		}
 	}
 	
-	free(adj);
 	return sub;
 }

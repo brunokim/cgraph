@@ -132,11 +132,13 @@ error_t set_put_data(set_t *set, int key, void *data){
 	int pos = set_locate(set, key);
 	set_entry_t *addr = &set->entry[pos];
 	
-	if (set->n == 0){
+	if (set->n == 0)
+	{
 		set->head = set->tail = addr;
+		set->n++;
 	}
-	
-	if (addr->key < 0){
+	else if (addr->key < 0)
+	{
 		set->tail->next = addr;
 		set->tail = addr;
 		set->n++;
@@ -325,6 +327,30 @@ int set_get_random_r(const set_t *set, unsigned int *seedp){
 	
 	// List traversal
 	return set_get(set, uniform(set->n, seedp));
+}
+
+/**** Optimize linked list ****/
+
+// Organize links to point to next element in succession at the entry table,
+//hopefully improving memory locality
+void set_optimize_pointers(set_t *set){
+	assert(set);
+	if (set->n < 2){ return; }
+	
+	set_entry_t *curr = set->entry, *prev = NULL;
+	while(curr->key < 0){ curr++; }
+	set->head = prev = curr;
+	curr++;
+	
+	int i;
+	for (i=1; i < set->n; i++){
+		while(curr->key < 0){ curr++; }
+		prev->next = curr;
+		prev = curr;
+		curr++;
+	}
+	prev->next = NULL;
+	set->tail = prev;
 }
 
 /**** Printing ****/

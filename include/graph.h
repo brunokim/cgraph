@@ -3,6 +3,7 @@
 
 #include "error.h"
 #include "set.h"
+#include "list.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -35,6 +36,7 @@ bool graph_is_weighted(const graph_t *g);
 // Adjacencies
 int graph_num_adjacents(const graph_t *g, int i);
 int graph_adjacents(const graph_t *g, int i, int *adj);
+set_entry_t *graph_adjacent_head(const graph_t *g, int i);
 error_t graph_adjacent_set(const graph_t *g, int i, set_t *adj);
 
 // Printing
@@ -43,6 +45,6 @@ void graph_fprint(FILE *stream, const graph_t *graph);
 
 // Copying
 graph_t *graph_copy(const graph_t *graph);
-graph_t *graph_subset(const graph_t *graph, const set_t *vertices);
+graph_t *graph_subset(const graph_t *graph, const list_t *vertices);
 
 #endif

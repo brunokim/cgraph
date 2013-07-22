@@ -39,6 +39,9 @@ set_entry_t *set_head(const set_t *set);
 int set_get_random(const set_t *set);
 int set_get_random_r(const set_t *set, unsigned int *seedp);
 
+/**** Optimize linked list ****/
+void set_optimize_pointers(set_t *set);
+
 /**** Printing ****/
 void set_print(const set_t *set);
 void set_fprint(FILE *stream, const set_t *set);

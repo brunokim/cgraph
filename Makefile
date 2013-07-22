@@ -93,7 +93,7 @@ test/test_graph_layout: obj/test_graph_layout.o obj/graph_model.o obj/graph_layo
 test/test_graph_metric: obj/test_graph_metric.o obj/graph_metric.o obj/graph.o obj/set.o obj/list.o obj/sorting.o obj/stat.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 
-test/test_graph : obj/test_graph.o obj/graph.o obj/set.o obj/stat.o obj/sorting.o
+test/test_graph : obj/test_graph.o obj/graph.o obj/set.o obj/list.o obj/stat.o obj/sorting.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 test/test_set : obj/test_set.o obj/set.o obj/stat.o obj/sorting.o

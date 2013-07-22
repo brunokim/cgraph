@@ -37,6 +37,9 @@ void test_set_operations(){
 	assert(set_size(even2) == 0);
 	
 	set_print(even1); printf("\n");
+	set_optimize_pointers(even1);
+	set_print(even1); printf("\n");
+	
 	set_print(even2); printf("\n");
 	set_print(odd); printf("\n");
 	
@@ -47,7 +50,7 @@ void test_set_operations(){
 
 void test_picking(){
 	int n = 10000;
-	set_t *set = new_set(n);
+	set_t *set = new_set(0);
 	int i;
 	for (i=0; i < n; i++){
 		set_put(set, i);
@@ -68,10 +71,29 @@ void test_picking(){
 	delete_set(set);
 }
 
+void test_removing(){
+	set_t *set = new_set(0);
+	
+	int i;
+	for (i=0; i < 1000; i++){ set_put(set, i); }
+	assert(set_size(set) == 1000);
+	
+	set_optimize_pointers(set);
+	
+	for (i=0; i < 1000; i += 2){ set_remove(set, i); }
+	assert(set_size(set) == 500);
+	
+	for (i=0; i < 1000; i += 2){ set_put(set, i); }
+	assert(set_size(set) == 1000);
+	
+	delete_set(set);
+}
+
 int main(){
 	test_basic();
 	test_set_operations();
 	test_picking();
+	test_removing();
 	printf("success\n");
 	return 0;
 }

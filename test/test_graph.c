@@ -113,14 +113,14 @@ void test_subset(){
 	graph_add_edge(g, 8, 9);
 	
 	int n = 7;
-	set_t *vertices = new_set(n);
-	set_put(vertices, 0);
-	set_put(vertices, 2);
-	set_put(vertices, 3);
-	set_put(vertices, 6);
-	set_put(vertices, 7);
-	set_put(vertices, 8);
-	set_put(vertices, 9);
+	list_t *vertices = new_list(n);
+	list_push(vertices, 0);
+	list_push(vertices, 2);
+	list_push(vertices, 3);
+	list_push(vertices, 6);
+	list_push(vertices, 7);
+	list_push(vertices, 8);
+	list_push(vertices, 9);
 	
 	graph_t *subgraph = graph_subset(g, vertices);
 	bool adj[7][7] = {
@@ -140,7 +140,7 @@ void test_subset(){
 		}
 	}
 	
-	delete_set(vertices);
+	delete_list(vertices);
 	delete_graph(g);
 	delete_graph(subgraph);
 }

@@ -27,42 +27,42 @@ int graph_undirected_components(const graph_t *g, int *label){
 		label[i] = -1;
 	}
 	
-	set_t *unvisited = new_set(0);
-	set_t *visited   = new_set(0);
-	set_t *seen      = new_set(0);
-	for (i=0; i < n; i++){
-		set_put(unvisited, i);
-	}
+	int *queue = malloc(n * sizeof(*queue));
+	int head = 0, tail = 0;
+	if (!queue){ return -1; }
 	
-	int curr_label = 0;
-	while (set_size(unvisited) > 0){
-		int v = set_get(unvisited, 0);
-		set_remove(unvisited, v);
-		
-		set_put(visited, v);
-		label[v] = curr_label;
-		
-		graph_adjacent_set(g, v, seen);
+	bool *is_visited = malloc(n * sizeof(*is_visited));
+	if (!is_visited){ free(queue);  return -1; }
+	memset(is_visited, 0, n * sizeof(*is_visited));
+	
+	queue[tail++] = 0;
+	
+	int count, smallest=0;
+	for (count=0; smallest < n;count++){
+		while (tail > head){
+			int u = queue[head++];
+			is_visited[u] = true;
+			label[u] = count;
 			
-		while (set_size(seen) > 0)
-		{
-			int v = set_get(seen, 0);
-			set_remove(unvisited, v);
-			
-			set_put(visited, v);
-			label[v] = curr_label;
-			
-			graph_adjacent_set(g, v, seen);
-			set_difference(seen, visited);
+			set_entry_t *adj = graph_adjacent_head(g, u);
+			for (;adj != NULL; adj = adj->next){
+				int v = adj->key;
+				if (!is_visited[v]){
+					queue[tail++] = v;
+				}
+			}
 		}
-		curr_label++;
+		
+		while(smallest < n && is_visited[smallest]){
+			smallest++;
+		}
+		head = tail = 0;
+		queue[tail++] = smallest;
 	}
 	
-	delete_set(unvisited);
-	delete_set(visited);
-	delete_set(seen);
-	
-	return curr_label;
+	free(is_visited);
+	free(queue);
+	return count;
 }
 
 int graph_directed_components(const graph_t *g, int *label){
@@ -121,22 +121,26 @@ graph_t * graph_giant_component(const graph_t *g){
 	pair_t *freq = stat_frequencies(label, n, NULL);
 	if (!freq){ free(label); return NULL; }
 	
-	pair_t *max = search_max(freq, num_comp, sizeof(*freq), comp_value_asc);
-	int max_comp = max->key;
-	int max_size = max->value;
+	int max_comp = freq[0].key, max_size = freq[0].value;
+	for (i=1; i < num_comp; i++){
+		if (freq[i].value > max_size){
+			max_comp = freq[i].key;
+			max_size = freq[i].value;
+		}
+	}
 	free(freq);
 	
-	set_t *vertices = new_set(max_size);
+	list_t *vertices = new_list(max_size);
 	if (!vertices){ free(label); return NULL; }
 	for (i=0; i < n; i++){
 		if (label[i] == max_comp){
-			set_put(vertices, i);
+			list_push(vertices, i);
 		}
 	}
 	free(label);
 	
 	graph_t *giant = graph_subset(g, vertices);
-	delete_set(vertices);
+	delete_list(vertices);
 	
 	return giant;
 }
@@ -147,19 +151,17 @@ void graph_degree(const graph_t *g, int *degree){
 	assert(g);
 	assert(degree);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	for (i=0; i < n; i++){
 		degree[i] = graph_num_adjacents(g, i);
 	}
 	if (graph_is_directed(g)){
-		int *adj = malloc(n * sizeof(*adj));
 		for (i=0; i < n; i++){
-			int num_adj = graph_adjacents(g, i, adj);
-			for (j=0; j < num_adj; j++){
-				degree[ adj[j] ]++;
+			set_entry_t *adj = graph_adjacent_head(g, i);
+			for (; adj != NULL; adj = adj->next){
+				degree[ adj->key ]++;
 			}
 		}
-		free(adj);
 	}
 }
 
@@ -169,19 +171,17 @@ void graph_directed_degree(const graph_t *g, int *in_degree, int *out_degree){
 	assert(out_degree);
 	assert(graph_is_directed(g));
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	memset(in_degree, 0, n * sizeof(*in_degree));
 	memset(out_degree, 0, n * sizeof(*out_degree));
 	
-	int *adj = malloc(n * sizeof(*adj));
 	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(g, i, adj);
-		out_degree[i] = num_adj;
-		for (j=0; j < num_adj; j++){
-			in_degree[ adj[j] ]++;
+		out_degree[i] = graph_num_adjacents(g, i);
+		set_entry_t *adj = graph_adjacent_head(g, i);
+		for (; adj != NULL; adj = adj->next){
+			in_degree[ adj->key ]++;
 		}
 	}
-	free(adj);
 }
 
 /***************************** Clustering metrics *****************************/
@@ -191,31 +191,28 @@ void graph_clustering(const graph_t *g, double *clustering){
 	assert(clustering);
 	assert(!graph_is_directed(g));
 	
-	int i, j, k, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	memset(clustering, 0, n * sizeof(*clustering));
 	
-	int *adj = malloc(n * sizeof(*adj));
-	
 	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(g, i, adj);
-		if (num_adj <= 1)
+		int ki = graph_num_adjacents(g, i);
+		if (ki <= 1)
 		{ 
 			clustering[i] = 0.0; 
 		}
 		else
 		{
-			for (j=0; j < num_adj; j++){
-				for (k=j+1; k < num_adj; k++){
-					if (graph_is_adjacent(g, adj[j], adj[k])){
+			set_entry_t *p = graph_adjacent_head(g, i), *q;
+			for (; p != NULL; p = p->next){
+				for (q=p->next; q != NULL; q = q->next){
+					if (graph_is_adjacent(g, p->key, q->key)){
 						clustering[i] += 2.0;
 					}
 				}
 			}
-			clustering[i] /= num_adj * (num_adj - 1);
+			clustering[i] /= ki * (ki - 1);
 		}
 	}
-	
-	free(adj);
 }
 
 void graph_num_triplets
@@ -224,35 +221,26 @@ void graph_num_triplets
 	assert(!graph_is_directed(g));
 	assert(_num_triplet || _num_triangle);
 	
-	int i, j, k, n = graph_num_vertices(g);
-	
-	int *adj = malloc(n * sizeof(*adj));
-	int *second = malloc(n * sizeof(*second));
-	
-	if (!(adj && second)){
-		if (adj){ free(adj); }
-		if (second){ free(second); }
-		return;
-	}
+	int i, n = graph_num_vertices(g);
 	
 	int num_triplet = 0;
 	int num_closed = 0;
 	
 	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(g, i, adj);
-		for (j=0; j < num_adj; j++){
-			int num_second = graph_adjacents(g, adj[j], second);
+		set_entry_t *adj = graph_adjacent_head(g, i);
+		for (; adj != NULL; adj = adj->next){
+			int num_second = graph_num_adjacents(g, adj->key);
 			num_triplet += num_second - 1;
-			for (k=0; k < num_second; k++){
-				if (second[k] != i && graph_is_adjacent(g, i, second[k])){
+			
+			set_entry_t *sec = graph_adjacent_head(g, adj->key);
+			for (; sec != NULL; sec = sec->next){
+				if (sec->key != i && graph_is_adjacent(g, i, sec->key)){
 					num_closed++;
 				}
 			}
 		}
 	}
 	
-	free(adj);
-	free(second);
 	if(_num_triplet){ *_num_triplet = num_triplet; }
 	if(_num_triangle){ *_num_triangle = num_closed/6; }
 }
@@ -304,18 +292,14 @@ void graph_geodesic_paths
 	
 	queue[tail++] = s; // Enqueue s
 	
-	// Store vertices in graph_adjacents
-	int *adj = malloc(n * sizeof(*adj));
-	if (!adj){ free(queue); return; }
-	
 	// Compute distance, path_count and predecessors
 	while (tail > head){
 		int v = queue[head++]; // Dequeue v
 		if (is_betweenness){ sequence[seq_step++] = v; }
 		
-		int kv = graph_adjacents(g, v, adj);
-		for (i=0; i < kv; i++){
-			int w = adj[i];
+		set_entry_t *adj = graph_adjacent_head(g, v);
+		for (; adj != NULL; adj = adj->next){
+			int w = adj->key;
 			// w found for the first time?
 			if (distance[w] < 0){
 				queue[tail++] = w; // Enqueue w
@@ -329,7 +313,6 @@ void graph_geodesic_paths
 		}
 	}
 	
-	free(adj);
 	free(queue);
 }
 
@@ -354,17 +337,13 @@ int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 	
 	queue[tail++] = origin; // Enqueue origin
 	
-	// Store vertices in graph_adjacents
-	int *adj = malloc(n * sizeof(*adj));
-	if (!adj){ free(distance); free(queue); return INT_MIN; }
-	
-	// Compute distance, path_count and predecessors
+	// Compute distance
 	while (tail > head){
 		int v = queue[head++];
 		
-		int kv = graph_adjacents(g, v, adj);
-		for (i=0; i < kv; i++){
-			int w = adj[i];
+		set_entry_t *adj = graph_adjacent_head(g, v);
+		for (; adj != NULL; adj = adj->next){
+			int w = adj->key;
 			// w found for the first time?
 			if (distance[w] < 0){
 				queue[tail++] = w;
@@ -381,7 +360,6 @@ int graph_geodesic_distance(const graph_t *g, int origin, int dest){
 	
 	int d = distance[dest];
 	free(distance);
-	free(adj);
 	free(queue);
 	
 	return d;
@@ -643,13 +621,10 @@ void graph_eigenvector(const graph_t *g, double *eigen){
 	assert(g);
 	assert(eigen);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	
 	double *temp = malloc(n * sizeof(*temp)); 
 	if (!temp){ return; }
-	
-	int *adj = malloc(n * sizeof(*adj));	
-	if (!adj){ free(temp); return; }
 	
 	double *curr = eigen, *next = temp;
 	for (i=0; i < n; i++){
@@ -665,9 +640,9 @@ void graph_eigenvector(const graph_t *g, double *eigen){
 		memset(next, 0, n * sizeof(*next));
 		
 		for (i=0; i < n; i++){
-			int ki = graph_adjacents(g, i, adj);
-			for (j=0; j < ki; j++){
-				int v = adj[j];
+			set_entry_t *adj = graph_adjacent_head(g, i);
+			for (; adj != NULL; adj = adj->next){
+				int v = adj->key;
 				next[v] += curr[i];
 			}
 		}
@@ -684,20 +659,16 @@ void graph_eigenvector(const graph_t *g, double *eigen){
 	}
 	
 	free(temp);
-	free(adj);
 }
 
 void graph_pagerank(const graph_t *g, double alpha, double *rank){
 	assert(g);
 	assert(rank);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	
 	double *temp = malloc(n * sizeof(*temp)); 
 	if (!temp){ return; }
-	
-	int *adj = malloc(n * sizeof(*adj));	
-	if (!adj){ free(temp); return; }
 	
 	double *curr = rank, *next = temp;
 	for (i=0; i < n; i++){
@@ -713,9 +684,10 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank){
 		memset(next, 0, n * sizeof(*next));
 		
 		for (i=0; i < n; i++){
-			int ki = graph_adjacents(g, i, adj);
-			for (j=0; j < ki; j++){
-				int v = adj[j];
+			int ki = graph_num_adjacents(g, i);
+			set_entry_t *adj = graph_adjacent_head(g, i);
+			for (; adj != NULL; adj = adj->next){
+				int v = adj->key;
 				next[v] += (1-alpha)/n + alpha * curr[i]/ki;
 			}
 		}
@@ -727,7 +699,6 @@ void graph_pagerank(const graph_t *g, double alpha, double *rank){
 	}
 	
 	free(temp);
-	free(adj);
 }
 
 int graph_kcore(const graph_t *g, int *core){
@@ -735,7 +706,7 @@ int graph_kcore(const graph_t *g, int *core){
 	assert(!graph_is_directed(g));
 	assert(core);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	
 	memset(core, 0, n * sizeof(*core));
 	
@@ -760,11 +731,8 @@ int graph_kcore(const graph_t *g, int *core){
 		list_insert(map[ki], i);
 	}
 	
-	int *adj = malloc(kmax * sizeof(*adj));
-	
 	int k = 0; // core count
 	for (i=0; i < n; i++){
-		
 		// Finds minimum degree with unprocessed vertices
 		int d;
 		for (d=0; d < kmax+1; d++){
@@ -781,9 +749,9 @@ int graph_kcore(const graph_t *g, int *core){
 		core[u] = k;
 		
 		// Update adjacents degrees (and map placement)
-		int ku = graph_adjacents(g, u, adj);
-		for (j=0; j < ku; j++){
-			int v = adj[j];
+		set_entry_t *adj = graph_adjacent_head(g, u);
+		for (; adj != NULL; adj = adj->next){
+			int v = adj->key;
 			if (degree[v] > 0){ // Unprocessed vertex
 				degree[v]--;
 				
@@ -796,7 +764,6 @@ int graph_kcore(const graph_t *g, int *core){
 		}
 	}
 	
-	free(adj);
 	free(degree);
 	for (i=0; i < kmax+1; i++){
 		delete_list(map[i]);
@@ -831,17 +798,15 @@ int **graph_degree_matrix(const graph_t *g, int *_kmax){
 	
 	memset(mat[0], 0, (kmax+1) * (kmax+1) * sizeof(*mat[0]));
 	
-	int *adj = malloc(kmax * sizeof(*adj));
-	if (!adj){ free(mat[0]); free(mat); }
-	
 	for (i=0; i < n; i++){
-		int ki = graph_adjacents(g, i, adj);
+		int ki = graph_num_adjacents(g, i);
+		set_entry_t *adj = graph_adjacent_head(g, i);
 		for (j=0; j < ki; j++){
-			int kj = graph_num_adjacents(g, adj[j]);
+			int kj = graph_num_adjacents(g, adj->key);
+			adj = adj->next;
 			mat[ki][kj]++;
 		}
 	}
-	free(adj);
 	
 	if (_kmax){ *_kmax = kmax+1; }
 	return mat;
@@ -853,17 +818,14 @@ double graph_neighbor_degree_vertex(const graph_t *g, int i){
 	assert(0 <= i && i < n);
 	
 	int ki = graph_num_adjacents(g, i);
-	int *adj = malloc(ki * sizeof(*adj));
-	graph_adjacents(g, i, adj);
+	set_entry_t *adj = graph_adjacent_head(g, i);
 	
 	double knn = 0.0;
-	int j;
-	for (j=0; j < ki; j++){
-		int v = adj[j];
-		knn += graph_num_adjacents(g, v) / ki;
+	for (; adj != NULL; adj = adj->next){
+		int v = adj->key;
+		knn += (double) graph_num_adjacents(g, v) / ki;
 	}
 	
-	free(adj);
 	return knn;
 }
 
@@ -871,20 +833,21 @@ int graph_neighbor_degree_all(const graph_t *g, double *avg_degree){
 	assert(g);
 	assert(avg_degree);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	int kmax = 0;
 	
-	int *adj = malloc (n * sizeof(*adj));
 	for (i=0; i < n; i++){
-		int num_adj = graph_adjacents(g, i, adj);
-		if (num_adj > kmax){ kmax = num_adj; }
+		int ki = graph_num_adjacents(g, i);
+		if (ki > kmax){ kmax = ki; }
 		
 		avg_degree[i] = 0.0;
-		for (j=0; j < num_adj; j++){
-			avg_degree[i] += (double)graph_num_adjacents(g, adj[j])/num_adj;
+		set_entry_t *adj = graph_adjacent_head(g, i);
+		for (; adj != NULL; adj = adj->next){
+			int v = adj->key;
+			avg_degree[i] += (double)graph_num_adjacents(g, v) / ki;
 		}
 	}
-	free(adj);
+	
 	return kmax;
 }
 
@@ -923,7 +886,7 @@ double *graph_knn(const graph_t *g, int *_kmax){
 double graph_assortativity(const graph_t *g){
 	assert(g);
 	
-	int i, j, n = graph_num_vertices(g);
+	int i, n = graph_num_vertices(g);
 	
 	double *degree = malloc (n * sizeof(*degree));
 	if (!degree){ return NAN; }
@@ -938,21 +901,18 @@ double graph_assortativity(const graph_t *g){
 		if (ki > kmax) { kmax = ki; }
 	}
 	
-	int *adj = malloc(n * sizeof(*adj));
-	if (!adj){ free(degree); free(neighbor_avg_deg); return NAN; }
-	
 	for (i=0; i < n; i++){
-		int ki = graph_adjacents(g, i, adj);
+		int ki = graph_num_adjacents(g, i);
 		neighbor_avg_deg[i] = 0.0;
-		for (j=0; j < ki; j++){
-			int v = adj[j];
+		set_entry_t *adj = graph_adjacent_head(g, i);
+		for (; adj != NULL; adj = adj->next){
+			int v = adj->key;
 			neighbor_avg_deg[i] += degree[v] / ki;
 		}
 	}
 	
 	double r = stat_pearson(degree, neighbor_avg_deg, n);
 	
-	free(adj);
 	free(degree);
 	free(neighbor_avg_deg);
 	return r;
