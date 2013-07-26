@@ -37,7 +37,7 @@ void test_set_operations(){
 	assert(set_size(even2) == 0);
 	
 	set_print(even1); printf("\n");
-	set_optimize_pointers(even1);
+	set_optimize(even1);
 	set_print(even1); printf("\n");
 	
 	set_print(even2); printf("\n");
@@ -78,7 +78,7 @@ void test_removing(){
 	for (i=0; i < 1000; i++){ set_put(set, i); }
 	assert(set_size(set) == 1000);
 	
-	set_optimize_pointers(set);
+	set_optimize(set);
 	
 	for (i=0; i < 1000; i += 2){ set_remove(set, i); }
 	assert(set_size(set) == 500);

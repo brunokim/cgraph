@@ -91,7 +91,7 @@ error_t set_realloc(set_t *set){
 		
 		set_entry_t *p;
 		for (p = set->head; p != NULL; p = p->next){
-			set_put_data(other, p->key, p->data);
+			set_put(other, p->key);
 		}
 		
 		free(set->entry);
@@ -120,12 +120,8 @@ int set_locate(const set_t *set, int key){
 	}
 	return pos;
 }
-
-error_t set_put(set_t *set, int v){
-	return set_put_data(set, v, NULL);
-}
 	
-error_t set_put_data(set_t *set, int key, void *data){
+error_t set_put(set_t *set, int key){
 	assert(set);
 	assert(key >= 0);
 	
@@ -145,7 +141,6 @@ error_t set_put_data(set_t *set, int key, void *data){
 	}
 	
 	set->entry[pos].key = key;
-	set->entry[pos].data = data;
 	
 	return set_realloc(set);
 }
@@ -192,7 +187,6 @@ void set_clean(set_t *set){
 	uint64_t i, size = set_primes[set->size_idx];
 	for (i=0; i < size; i++){
 		set->entry[i].key = -1;
-		set->entry[i].data = NULL;
 		set->entry[i].next = NULL;
 	}
 	set->head = set->tail = NULL;
@@ -223,31 +217,40 @@ void set_difference(set_t *dest, const set_t *other){
 	}
 }
 
-error_t set_intersection(set_t *dest, const set_t *other){
+void set_intersection(set_t *dest, const set_t *other){
 	assert(dest);
 	assert(other);
 	
-	int idx1 = dest->size_idx, idx2 = other->size_idx;
-	int min_idx = idx1 < idx2 ? idx1 : idx2;
-	set_t *intersection = new_set(set_primes[min_idx]);
-	
+	// Iterates over all elements in dest, except the head, checking if they
+	//are present in other
 	set_entry_t *p;
-	for (p=dest->head; p != NULL; p = p->next){
-		if (set_contains(other, p->key)){
-			error_t error = set_put(intersection, p->key);
-			if (error){ return error; } 
+	for (p=dest->head; p->next != NULL;){
+		if (!set_contains(other, p->next->key))
+		{
+			set_entry_t *q = p->next;
+			p->next = q->next;
+			q->key = -1;
+			q->next = NULL;
+			dest->n--;
+		}
+		else
+		{
+			p = p->next;
 		}
 	}
+	dest->tail = p;
 	
-	free(dest->entry);
-	dest->size_idx = intersection->size_idx;
-	dest->n        = intersection->n;
-	dest->entry    = intersection->entry;
-	dest->head     = intersection->head;
-	dest->tail     = intersection->tail;
-	free(intersection);
-	
-	return ERROR_SUCCESS;
+	// Treat the head case
+	if (!set_contains(other, dest->head->key)){
+		set_entry_t *p = dest->head;
+		dest->head = p->next;
+		p->key = -1;
+		p->next = NULL;
+		dest->n--;
+		if (dest->n == 0){
+			dest->tail = NULL;
+		}
+	}
 }
 
 /**** Data structure querying ****/
@@ -268,6 +271,11 @@ int set_get(const set_t *set, int pos){
 int set_size(const set_t *set){
 	assert(set);
 	return set->n;
+}
+
+int set_table_size(const set_t *set){
+	assert(set);
+	return set_primes[set->size_idx];
 }
 
 int set_index(const set_t *set, int key){
@@ -333,7 +341,7 @@ int set_get_random_r(const set_t *set, unsigned int *seedp){
 
 // Organize links to point to next element in succession at the entry table,
 //hopefully improving memory locality
-void set_optimize_pointers(set_t *set){
+void set_optimize(set_t *set){
 	assert(set);
 	if (set->n < 2){ return; }
 	
@@ -374,6 +382,21 @@ void set_fprint(FILE *stream, const set_t *set){
 }
 
 /**** Copying ****/
+set_t *set_copy(const set_t *set){
+	assert(set);
+	
+	set_t *copy = new_set(set->n);
+	if (!copy){ return NULL; }
+	
+	set_entry_t *p;
+	for (p=set->head; p != NULL; p = p->next){
+		set_put(copy, p->key);
+	}
+	
+	set_optimize(copy);
+	return copy;
+}
+
 void set_to_array(const set_t *set, int *arr){
 	assert(set);
 	assert(arr);

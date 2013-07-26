@@ -258,7 +258,7 @@ graph_t * load_graph(char *file_name, bool is_directed){
 	}
 	
 	for (i=0; i < n; i++){
-		set_optimize_pointers(graph->adjacencies[i]);
+		set_optimize(graph->adjacencies[i]);
 	}
 	
 	return graph;
