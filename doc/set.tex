@@ -1,1 +1,150 @@
 \section{\texttt{set}}
+
+This module provides a structure able to efficiently include, remove and query integers in
+a hash table. Its possible to iterate over all elements via a linked list.
+
+ This data structure automatically grows to store more integers efficiently, but will not
+shrink if items are removed, wasting memory. Consider using \lstinline!set_copy! to copy
+the structure using less memory.
+
+\subsection{Constants}
+
+The following constants can be redefined only during compilation.
+
+\begin{table}[!hb]
+ \begin{tabular}{|llr|}
+  \hline
+  Constant                         & Value & Description \\ \hline
+  \lstinline!SET_UTILIZATION_RATE! & 0.75  & Maximum utilization rate of hash table. \\
+  \hline
+ \end{tabular}
+\end{table}
+
+\subsection{Types}
+
+\begin{lstlisting}
+ typedef struct set_t set_t;
+ typedef struct set_entry_t set_entry_t;
+ struct set_entry_t {
+   int key;
+   set_entry_t *next;
+ }
+\end{lstlisting}
+
+A set is an object of the type \lstinline!set_t!, which is basically an array of \lstinline!set_entry_t!.
+An entry contains a key and a pointer to a next element, allowing to traverse all entries as a linked
+list terminated by a \NULL. The head can be fetched with \lstinline!set_head(set_t *set)!.
+
+\subsection{Allocation and deallocation}
+
+\begin{lstlisting}
+ set_t *new_set(int minimum);
+ void  delete_set(set_t *set);
+\end{lstlisting}
+
+A set is created via \lstinline!new_set!, where \lstinline!minimum! is the expected number of
+elements to be inserted. It preallocates a table large enough to contain this number of
+elements, accounting for utilization rate. This may be interesting to avoid multiple memory
+allocations if the table needs to grow. 
+\lstinline!delete_set! deallocates memory requested for the data structure.
+
+\subsection{Insertion and retrieval}
+
+\begin{lstlisting}
+ error_t set_put(set_t *set, int v);
+ 
+ bool set_contains(const set_t *set, int v);
+ int set_get(const set_t *set, int pos);
+ int set_index(const set_t *set, int v);
+\end{lstlisting}
+
+\lstinline!set_put(set,v)! inserts a value \lstinline!v! in \lstinline!set!, with $\mathcal{O}(1)$ amortized cost. 
+If the utilization rate goes beyond \lstinline!SET_UTILIZATION_RATE!, a table roughly twice bigger is allocated 
+and populated with $\mathcal{O}(n)$ operations. If there is no memory available, the function returns \lstinline!ERROR_NO_MEMORY!;
+otherwise, returns \lstinline!ERROR_SUCCESS!.
+
+\lstinline!set_contains! checks whether a value is in the given set, with $\mathcal{O}(1)$ amortized cost. 
+\lstinline!set_get! returns the value in position \lstinline!pos! in the linked list, and \lstinline!set_index!
+returns the position of a value \lstinline!v! in the list, or -1 if there is no such value in the set. 
+Both operations have average cost $\mathcal{O}(n/2)$.
+
+Prerequisites: \lstinline!pos! should be between 0 and $n$ for \lstinline!set_get!.
+
+\subsection{Random retrieval}
+
+\begin{lstlisting}
+ int set_get_random(const set_t *set);
+ int set_get_random_r(const set_t *set, unsigned int *seedp);
+\end{lstlisting}
+
+Both functions pick an element from the table with uniform probability. The reentrant version \lstinline!set_get_random_r!
+accepts a pointer to a seed that will be passed to \lstinline!rand_r!. The non-thread-safe version is equivalent to
+\lstinline!set_get_random_r(set, NULL)!.
+
+The implementation uses two strategies to pick a random element: if the table is almost empty (with $n < 4\sqrt{s}$, where $s$ is
+the size of the table), it selects a number $i$ uniformly from $[0,n)$ and picks the $i$-th element at the linked list. Otherwise, 
+it selects slots at random until it finds a non-empty slot, and returns it. This approach takes $s/n$ selections in average.
+The rationale for this algorithm is explained at annex \ref{annex:random-picking}.
+
+\subsection{Removing}
+
+\begin{lstlisting}
+ bool set_remove(set_t *set, int v);
+ void set_clean(set_t *set);
+\end{lstlisting}
+
+\lstinline!set_remove! removes a given element from the set. If the element is present, the function returns true and the element is 
+removed with $\mathcal{O}(n/2)$ operations in average. Otherwise, the function returns false with $\mathcal{O}(1)$ operations.
+
+\lstinline!set_clean! cleans all slots, without freeing any memory.
+
+The table is not shrinked if the utilization rate is low. If it's necessary to free memory, its recommended to copy the set with
+\lstinline!set_copy! and delete the current structure.
+
+\subsection{Set operations}
+
+\begin{lstlisting}
+ error_t set_union(set_t *dest, const set_t *other);
+ void set_difference(set_t *dest, const set_t *other);
+ void set_intersection(set_t *dest, const set_t *other);
+\end{lstlisting}
+ 
+\lstinline!set_union!, \lstinline!set_difference! and \lstinline!set_intersection! compute, respectively, the union, intersection 
+and difference between the two arguments, and store the result mutating the first one. 
+
+If there is no memory available for \lstinline!set_union!, 
+it returns \lstinline!ERROR_NO_MEMORY!; otherwise, it returns \lstinline!ERROR_SUCCESS!. Computing the difference and intersection 
+does not need additional memory, so both have type \lstinline!void!.
+
+\subsection{Querying}
+
+\begin{lstlisting}
+ int set_size(const set_t *set);
+ int set_table_size(const set_t *set);
+ set_entry_t *set_head(const set_t *set);
+\end{lstlisting}
+
+\lstinline!set_size! returns the number of elements inserted into the set, and \lstinline!set_table_size! returns the size of the
+table used.
+
+\lstinline!set_head! returns the first element in the linked list of entries. If \lstinline!set_optimize! were never called, the
+elements are presented in insertion order. This shouldn't be used to change the content of an entry, which would invalidate set invariants.
+
+\subsection{Structure optimization}
+
+\begin{lstlisting}
+ void set_optimize(set_t *set);
+\end{lstlisting}
+
+As elements are inserted into a hash table, the linked list can get very tangled jumping from far away points in memory. \lstinline!set_optimize!
+try to improve memory locality by rebuilding the linked list in sequential order, thus reducing the amount of cache misses when traversing
+it.
+
+\subsection{Copying}
+
+\begin{lstlisting}
+ set_t *set_copy(const set_t *set);
+ void set_to_array(const set_t *set, int *arr); 
+ int* set_to_dynamic_array(const set_t *set, int *n);
+\end{lstlisting}
+

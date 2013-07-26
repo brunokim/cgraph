@@ -1,0 +1,26 @@
+\section{Annex}
+
+\subsection{Picking an element at random in a hash table}
+\label{annex:random-picking}
+
+Let $n$ be the number of elements in the table, and $s$ the size of the table. The utilization rate is given as $r = n/s$.
+The probability to choose a non-empty slot uniformly at the first try is $r$; at the second try is $r(1-r)$; at the third try
+is $r(1-r)^2$ and so on. The expected number of tries $k$ is 
+
+\begin{align*}
+ k &= 1 \cdot r + 2 \cdot r(1-r) + 3 \cdot r(1-r)^2 + \ldots \\
+   &= r \sum_{n=1}^\infty n (1-r)^{n-1} \\
+   &= r (1/r^2) = 1/r \\
+   &= s/n
+\end{align*}
+
+If we pick a random number between 0 and $n-1$ and walk through the linked list, we expect to step through $n/2$ elements at average. 
+Let $a$ be the time per random try, and $b$ the time of a step. We should use random picking if 
+
+\begin{align*}
+ a \cdot s/n &< b \cdot n/2 \\
+  (2a/b)s    &< n^2 \\
+        n    &> \sqrt{(2a/b)s}
+\end{align*}
+
+We expect that $a>b$, and use $a/b = 8$ to derive the rule that $n > 4\sqrt{s}$ to switch between one approach and the other. 
