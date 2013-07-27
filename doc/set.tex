@@ -148,3 +148,19 @@ it.
  int* set_to_dynamic_array(const set_t *set, int *n);
 \end{lstlisting}
 
+\lstinline!set_copy! creates a new deep copy of the input set, using as much memory as strictly needed. Keys are inserted in the same order as the
+original set. If there isn't enough memory, the function returns \NULL.
+
+\lstinline!set_to_array! populates an array with the keys in the set. The array must already be allocated. 
+
+\lstinline!set_to_dynamic_array! allocates an array and populates it with the keys in the set. The \lstinline!n! parameter is optional, holding the
+size of the array. If there isn't enough memory, \lstinline!n! receives 0 and the function returns \NULL.
+
+\subsection{Printing}
+
+\begin{lstlisting}
+ void set_print(const set_t *set);
+ void set_fprint(FILE *stream, const set_t *set);
+\end{lstlisting}
+
+ Prints a set to the indicated stream, or the standard stream in \lstinline!set_print!.

@@ -393,7 +393,6 @@ set_t *set_copy(const set_t *set){
 		set_put(copy, p->key);
 	}
 	
-	set_optimize(copy);
 	return copy;
 }
 
@@ -408,10 +407,17 @@ void set_to_array(const set_t *set, int *arr){
 	}
 }
 
-int* set_to_dynamic_array(const set_t *set, int *n){
+int* set_to_dynamic_array(const set_t *set, int *_n){
 	assert(set);
-	*n = set->n;
-	int *arr = malloc(*n * sizeof(*arr));
+	
+	int n = set->n;
+	int *arr = malloc(n * sizeof(*arr));
+	if (!arr){
+		if (_n){ *_n = 0; }
+		return NULL;
+	}
 	set_to_array(set, arr);
+	
+	if (_n){ *_n = n; }
 	return arr;
 }
