@@ -1,8 +1,60 @@
 CGraph
 ======
 
-Simple C graph library, not intended for massive graphs or anything of the
-like. Just something I made to learn, and may be useful to others.
+C graph library for complex networks research. Graphs are stored in-memory 
+in the most compact form possible, hoping to be the most efficient and 
+parallel implementation available.
+
+The following example is available in `example/printing.c`, and showcases
+how to create a Barabási-Albert network and plot it as an SVG.
+
+    #include <stdbool.h>
+    #include "graph.h"
+    #include "graph_model.h"
+    #include "graph_layout.h"
+
+    int main(){
+      int n = 100, k = 4;
+      // Creates a graph using the Barabási-Albert model
+      graph_t *g = new_barabasi_albert(n, k);
+      // Position of each node
+      coord_t *points = malloc(n * sizeof(*points));
+
+      // Styles to be printed
+      int radius = 5, width = 1;
+      circle_style_t circle = {
+        .width = width, .radius = radius, 
+        .fill = {255, 0, 0, 255}, // color is a 4-tuple
+        .stroke = {0, 0, 0, 255}
+      };
+      path_style_t edge = {
+        .type = GRAPH_STRAIGHT,
+        .width = width,
+        .color = {0, 0, 0, 255}
+      };
+
+      // Places vertices in shells, where higher degree vertices are 
+      //internal and lower degree are external.
+      int size = (int)
+        graph_layout_degree_shell(g, radius, true, points);
+      
+      // Plots graph at file barabasi.svg
+      graph_print_svg_one_style(
+        "barabasi.svg", size+1, size+1, g, points, circle, edge);
+      
+      delete_graph(g);
+      free(points);
+      return 0;
+    }
+
+![Barabási-Albert graph](https://github.com/brunokim/cgraph/raw/master/barabasi.png)
+
+Code is factored in modules as follow. Each module has corresponding archives
+
+* src/_module_.c
+* include/_module_.h
+* test/test\__module_.c
+* doc/_module_.tex
 
 ### `sorting`
 
@@ -10,24 +62,22 @@ Functions related to searching and sorting.
 
 ### `stat`
 
-Statistical-related stuff. Do not touch it, it stinks.
+Statistical-related stuff. Needs a major refactoring.
 
 ### `list`
 
-Kind of an adaptation of ArrayList from Java, but only works with integers.
+Array list implementation for ints, with support for sorted operations that
+allow O(log n) searching and insertion.
     
 ### `set`
 
-At the moment, it's just a wrapper to a (sorted) list, which has O(log n) 
-complexity for `set_contains` and O(1) for `set_get`.
-Later, it may be needed to create a hash table to back it, which has
-O(1) for `set_contains` and O(n) for `set_get`.
+Hash set implementation for (positive) ints, with O(1) insertion, and O(n) deletion.
 
 ### `graph`
 
-An adjacency list data structure to store connections. You may notice it
-lacks variable number of vertices or edge deletion. I do not find it useful
-for static complex network research. Maybe I'm wrong.
+Basic operations for creating and populating graphs with a fixed number of vertices.
+Edge deletion is not supported, and needs some refactorings to support directed graphs
+properly.
 
 ### `graph_metric`
 
@@ -47,5 +97,11 @@ small-world included.
 
 Information propagation models in networks: SI, SIS, SIR, SEIR and 
 Daley-Kendall.
+
+### `graph_game`
+
+Game theory module, with Iterated Prisioner Dillema implementation.
+
+### Further documentation
 
 For more information, please check the documentation, available in `doc/main.pdf`.
