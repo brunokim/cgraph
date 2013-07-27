@@ -15,9 +15,10 @@ void test_animate(int n, propagation_model_t model, void *params, int steps){
 	unsigned int seed = 42;
 	
 	graph_t *g = new_barabasi_albert_r(n, k, &seed);
+	
 	coord_t *p = malloc(n * sizeof(*p));
 	srand(42);
-	graph_layout_degree_shell(g, radius+width, true, p);
+	graph_layout_core_shell(g, radius+width, true, p); 
 	
 	short *state = malloc(n * sizeof(*state));
 	memset(state, 0, n * sizeof(*state));
