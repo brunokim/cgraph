@@ -49,6 +49,13 @@ how to create a Barabási-Albert network and plot it as an SVG.
 
 ![Barabási-Albert graph](https://github.com/brunokim/cgraph/raw/master/barabasi.png)
 
+## Version
+
+The current version is 0.1 - id est, alpha stage, when API (most surely)
+will break.
+
+## Organization
+
 Code is factored in modules as follow. Each module has corresponding archives
 
 * src/_module_.c
@@ -102,6 +109,6 @@ Daley-Kendall.
 
 Game theory module, with Iterated Prisioner Dillema implementation.
 
-### Further documentation
+## Further documentation
 
 For more information, please check the documentation, available in `doc/main.pdf`.
